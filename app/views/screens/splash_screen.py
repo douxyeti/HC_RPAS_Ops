@@ -1,6 +1,7 @@
 from kivymd.uix.screen import MDScreen
 from kivy.clock import Clock
 from kivy.properties import NumericProperty
+from kivymd.uix.button import MDButton, MDButtonText
 
 class SplashScreen(MDScreen):
     progress = NumericProperty(0)
@@ -15,12 +16,9 @@ class SplashScreen(MDScreen):
         if self.progress >= 100:
             # Arrête l'intervalle
             Clock.unschedule(self.update_progress)
-            # Change d'écran après un court délai
-            Clock.schedule_once(self.switch_screen, 0.5)
             return False
         return True
         
-    def switch_screen(self, dt):
-        """Change vers l'écran principal"""
-        # Pour le moment, nous n'avons pas d'autre écran
-        pass
+    def switch_screen(self):
+        """Change vers l'écran de login"""
+        self.manager.current = "login"

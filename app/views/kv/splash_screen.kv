@@ -38,3 +38,17 @@
             pos_hint: {"center_x": .5}
             type: "determinate"
             value: root.progress
+            
+        MDButton:
+            id: continue_button
+            style: "filled"
+            size_hint_x: None
+            width: "200dp"
+            pos_hint: {"center_x": .5}
+            opacity: 1 if root.progress >= 100 else 0
+            disabled: root.progress < 100
+            on_press: root.switch_screen()
+            
+            MDButtonText:
+                text: "Continuer"
+                pos_hint: {"center_x": .5, "center_y": .5}
