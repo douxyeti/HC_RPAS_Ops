@@ -27,10 +27,11 @@ class ConfigService:
             config_path = base_dir / 'data' / 'config' / 'config.json'
             
             if not config_path.exists():
-                raise FileNotFoundError(f"Fichier de configuration non trouvé: {config_path}")
-                
-            with open(config_path, 'r', encoding='utf-8') as f:
-                self._config = json.load(f)
+                print(f"Note: Fichier de configuration non trouvé: {config_path}")
+                self._config = {}
+            else:
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    self._config = json.load(f)
                 
             print("Configuration chargée avec succès")
             
@@ -48,7 +49,10 @@ class ConfigService:
         Returns:
             La valeur de la variable ou la valeur par défaut
         """
-        return os.getenv(key, default)
+        value = os.getenv(key, default)
+        if value is None:
+            print(f"Attention: Variable d'environnement non trouvée: {key}")
+        return value
 
     def get_config(self, path: str, default: Any = None) -> Any:
         """Récupère une valeur de configuration par son chemin
@@ -74,14 +78,15 @@ class ConfigService:
         Returns:
             Dict contenant toute la configuration Firebase
         """
+        # Configuration Web Firebase
         return {
-            'apiKey': self.get_env('FIREBASE_API_KEY'),
-            'authDomain': self.get_env('FIREBASE_AUTH_DOMAIN'),
-            'databaseURL': self.get_env('FIREBASE_DATABASE_URL'),
-            'projectId': self.get_env('FIREBASE_PROJECT_ID'),
-            'storageBucket': self.get_env('FIREBASE_STORAGE_BUCKET'),
-            'messagingSenderId': self.get_env('FIREBASE_MESSAGING_SENDER_ID'),
-            'appId': self.get_env('FIREBASE_APP_ID')
+            'apiKey': "AIzaSyDy7OgMdyXjAQWhn5h9MpCkTY_HrZYNq04",
+            'authDomain': "highcloud-rpas-ecosystem-86a4f.firebaseapp.com",
+            'databaseURL': "https://highcloud-rpas-ecosystem-86a4f-default-rtdb.firebaseio.com",
+            'projectId': "highcloud-rpas-ecosystem-86a4f",
+            'storageBucket': "highcloud-rpas-ecosystem-86a4f.firebasestorage.app",
+            'messagingSenderId': "648581242054",
+            'appId': "1:648581242054:web:5c072aa0af16b948964bc7"
         }
 
     def get_database_config(self) -> Dict[str, str]:
@@ -104,8 +109,8 @@ class ConfigService:
             Dict contenant la configuration de l'application
         """
         return {
-            'name': self.get_env('APP_NAME'),
-            'version': self.get_env('APP_VERSION'),
+            'name': self.get_env('APP_NAME', 'HighCloud RPAS'),
+            'version': self.get_env('APP_VERSION', '2.0.0'),
             'debug': self.get_env('DEBUG_MODE', 'False').lower() == 'true',
             'sync_interval': int(self.get_env('SYNC_INTERVAL', '300')),
             'max_retry_attempts': int(self.get_env('MAX_RETRY_ATTEMPTS', '3')),

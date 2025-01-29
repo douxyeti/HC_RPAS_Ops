@@ -1,10 +1,11 @@
-kivy==2.2.1
-kivymd2==2.0.1
+kivy==2.3.1
+kivymd==2.0.1.dev0
 firebase-admin==6.2.0
 sqlalchemy>=2.0.0
 mysql-connector-python>=8.1.0
 pillow==10.0.1  # Pour le support des images
 python-dotenv==1.0.0
-requests>=2.31.0
+pyrebase4==4.7.1
+requests==2.31.0
 pyyaml>=6.0.1
 python-dateutil>=2.8.2
