@@ -99,7 +99,9 @@ class DashboardScreen(MDScreen):
         self.nav_drawer = MDNavigationDrawer(
             anchor="left",
             size_hint_x=None,
-            width="240dp"
+            width="240dp",
+            elevation=4,
+            radius=(0, 16, 16, 0)
         )
         
         # Liste des items de navigation
@@ -187,13 +189,14 @@ class DashboardScreen(MDScreen):
         # Contenu des cartes avec ScrollView
         scroll_view = MDScrollView(
             do_scroll_x=False,
-            do_scroll_y=True
+            do_scroll_y=True,
+            pos_hint={'center_x': 0.5, 'top': 0.75}  
         )
         
         self.content_layout = MDBoxLayout(
             orientation='vertical',
             spacing=20,
-            padding=20,
+            padding=[20, 100, 20, 20],  
             size_hint_y=None
         )
         
@@ -204,6 +207,7 @@ class DashboardScreen(MDScreen):
         main_content.add_widget(scroll_view)
         
         # Ajouter le contenu principal au layout
+        self.layout.add_widget(self.nav_drawer)
         self.layout.add_widget(main_content)
         self.add_widget(self.layout)
         self.add_widget(self.nav_drawer)
