@@ -139,7 +139,7 @@ class DashboardScreen(MDScreen):
         )
 
         self.title = MDLabel(
-            text="HC RPAS Ops",
+            text="Tableau de bord principal",
             font_style="Headline",
             font_size="24sp"
         )
@@ -208,208 +208,35 @@ class DashboardScreen(MDScreen):
         self.add_widget(self.layout)
         self.add_widget(self.nav_drawer)
         
-        # Charger les rôles depuis le fichier config
+        # Charger les rôles depuis l'application
         self.roles = self.load_roles()
-        
-        # Créer le menu déroulant des rôles
-        menu_items = []
-        # Créer une liste triée des rôles par nom
-        sorted_roles = sorted(self.roles.items(), key=lambda x: x[1]["name"])
-        
-        for role_id, role_info in sorted_roles:
-            menu_items.append({
-                "viewclass": "MDDropdownTextItem",
-                "text": role_info["name"],
-                "on_release": lambda x=role_id: self.select_role(x)
-            })
-        
-        self.menu = MDDropdownMenu(
-            caller=role_button,
-            items=menu_items,
-            position="bottom",
-            width=600,
-            max_height=400,
-            radius=[24, 24, 24, 24],
-            elevation=4,
-            ver_growth="down",
-            hor_growth="right"
-        )
         
         # Initialiser les cartes
         Clock.schedule_once(self.initialize_cards)
 
     def load_roles(self):
-        config_path = os.path.join('data', 'config', 'config.json')
-        try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                roles = config['interface']['roles']
-                
-                # Liste complète des rôles selon toutes les versions
-                complete_roles = {
-                    "super_admin": {
-                        "name": "Super Administrateur",
-                        "permissions": ["all", "system.config"]
-                    },
-                    "admin": {
-                        "name": "Administrateur",
-                        "permissions": ["all"]
-                    },
-                    "admin_assistant": {
-                        "name": "Adjoint(e) administratif(ve)",
-                        "permissions": ["documentation.view", "documentation.edit", "personnel.view"]
-                    },
-                    "auditor": {
-                        "name": "Auditeur",
-                        "permissions": ["operations.view", "maintenance.view", "personnel.view", "documentation.view"]
-                    },
-                    "senior_manager": {
-                        "name": "Gestionnaire supérieur responsable",
-                        "permissions": ["operations.all", "personnel.all", "maintenance.all"]
-                    },
-                    "ops_manager": {
-                        "name": "Responsable des opérations",
-                        "permissions": ["operations.all", "personnel.view"]
-                    },
-                    "chief_pilot": {
-                        "name": "Chef pilote",
-                        "permissions": ["operations.all", "personnel.view", "formation.all"]
-                    },
-                    "pilot_command": {
-                        "name": "Commandant de bord",
-                        "permissions": ["operations.all", "maintenance.view"]
-                    },
-                    "site_manager": {
-                        "name": "Gestionnaire de site",
-                        "permissions": ["operations.view", "maintenance.view"]
-                    },
-                    "mission_specialist": {
-                        "name": "Spécialiste de mission",
-                        "permissions": ["operations.view", "operations.edit"]
-                    },
-                    "payload_operator": {
-                        "name": "Opérateur de charge utile",
-                        "permissions": ["operations.view"]
-                    },
-                    "pilot_controls": {
-                        "name": "Pilote aux commandes",
-                        "permissions": ["operations.view", "operations.edit"]
-                    },
-                    "copilot": {
-                        "name": "Copilote",
-                        "permissions": ["operations.view"]
-                    },
-                    "pilot": {
-                        "name": "Pilote",
-                        "permissions": ["operations.view", "operations.edit", "maintenance.view"]
-                    },
-                    "ground_station": {
-                        "name": "Opérateur de station au sol",
-                        "permissions": ["operations.view"]
-                    },
-                    "ground_observer": {
-                        "name": "Observateur au sol",
-                        "permissions": ["operations.view"]
-                    },
-                    "system_maintainer": {
-                        "name": "Mainteneur du système",
-                        "permissions": ["maintenance.all"]
-                    },
-                    "sgs_manager": {
-                        "name": "Responsable SGS",
-                        "permissions": ["operations.view", "maintenance.view", "personnel.view"]
-                    },
-                    "quality_manager": {
-                        "name": "Responsable assurance de la qualité",
-                        "permissions": ["operations.view", "maintenance.view", "personnel.view"]
-                    },
-                    "training_manager": {
-                        "name": "Responsable formation",
-                        "permissions": ["formation.all", "personnel.view"]
-                    },
-                    "formateur": {
-                        "name": "Formateur",
-                        "permissions": ["formation.view", "formation.edit", "personnel.view"]
-                    },
-                    "evaluator": {
-                        "name": "Évaluateur",
-                        "permissions": ["formation.all", "personnel.view"]
-                    },
-                    "examiner": {
-                        "name": "Examinateur",
-                        "permissions": ["formation.all", "personnel.view"]
-                    },
-                    "instructor": {
-                        "name": "Instructeur",
-                        "permissions": ["formation.all", "personnel.view"]
-                    },
-                    "inspector": {
-                        "name": "Inspecteur",
-                        "permissions": ["operations.view", "maintenance.view", "personnel.view"]
-                    },
-                    "maintenance_technician": {
-                        "name": "Technicien Maintenance",
-                        "permissions": ["maintenance.view", "maintenance.edit", "operations.view"]
-                    },
-                    "safety_officer": {
-                        "name": "Agent de sécurité",
-                        "permissions": ["operations.view", "maintenance.view"]
-                    },
-                    "quality_inspector": {
-                        "name": "Inspecteur qualité",
-                        "permissions": ["operations.view", "maintenance.view"]
-                    },
-                    "operations_coordinator": {
-                        "name": "Coordinateur des opérations",
-                        "permissions": ["operations.view", "operations.edit"]
-                    },
-                    "flight_director": {
-                        "name": "Directeur des vols",
-                        "permissions": ["operations.all"]
-                    },
-                    "maintenance_manager": {
-                        "name": "Gestionnaire de maintenance",
-                        "permissions": ["maintenance.all"]
-                    },
-                    "training_coordinator": {
-                        "name": "Coordinateur de formation",
-                        "permissions": ["formation.view", "formation.edit"]
-                    },
-                    "compliance_officer": {
-                        "name": "Agent de conformité",
-                        "permissions": ["operations.view", "maintenance.view", "personnel.view"]
-                    },
-                    "documentation_manager": {
-                        "name": "Gestionnaire de documentation",
-                        "permissions": ["documentation.all"]
-                    }
-                }
-                
-                # Remplacer les rôles existants par la liste complète
-                roles.clear()
-                roles.update(complete_roles)
-                return roles
-                
-        except Exception as e:
-            print(f"Erreur lors du chargement des rôles : {e}")
-            return {}
+        app = self.app
+        return app.available_roles if hasattr(app, 'available_roles') else []
 
     def show_role_menu(self, button):
         menu_items = []
-        sorted_roles = sorted(self.roles.items(), key=lambda x: x[1]["name"])
         
-        for role_id, role_info in sorted_roles:
+        # Récupère les rôles depuis l'application
+        app = self.app
+        roles = app.available_roles if hasattr(app, 'available_roles') else []
+        
+        for role_name in roles:
             menu_items.append({
                 "viewclass": "MDDropdownTextItem",
-                "text": role_info["name"],
-                "on_release": lambda x=role_id: self.select_role(x)
+                "text": role_name,
+                "on_release": lambda x=role_name: self.select_role(x)
             })
 
         self.menu = MDDropdownMenu(
             caller=button,
             items=menu_items,
             position="bottom",
-            width=300,
+            width=400,
             max_height=400,
             radius=[24, 24, 24, 24],
             elevation=4,
@@ -419,19 +246,18 @@ class DashboardScreen(MDScreen):
         
         # Calculer la position pour centrer le menu
         button_center_x = button.center_x
-        menu_width = 300  # Largeur du menu
+        menu_width = 400  # Largeur du menu
         self.menu.caller = button
         self.menu.pos = (button_center_x - menu_width/2, button.y)
         
         self.menu.open()
 
-    def select_role(self, role_id):
+    def select_role(self, role_name):
         self.menu.dismiss()
-        role_info = self.roles[role_id]
-        self.role_label.text = role_info["name"]
+        self.role_label.text = role_name
         
         if hasattr(self, 'app'):
-            self.app.set_role(role_id)
+            self.app.set_role(role_name)
 
     def toggle_nav_drawer(self, *args):
         self.nav_drawer.set_state("open")
