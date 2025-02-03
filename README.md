@@ -21,7 +21,7 @@ Application de gestion des opérations de drones pour HighCloud RPAS. Cette vers
 
 1. Cloner le repository :
 ```bash
-git clone https://github.com/votre-repo/HC_RPAS_Ops.git
+git clone https://github.com/douxyeti/HC_RPAS_Ops.git
 cd HC_RPAS_Ops
 ```
 
@@ -79,6 +79,28 @@ pytest tests/
 3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrir une Pull Request
+
+## Configuration Git
+
+### Dépôt distant
+- URL: https://github.com/douxyeti/HC_RPAS_Ops.git
+- Remote name: origin
+
+### Branches principales
+- `development`: branche de développement principal
+- `master`: branche stable
+
+### Commandes utiles
+```bash
+# Vérifier la configuration du dépôt distant
+git remote -v
+
+# Pousser les changements vers le dépôt distant
+git push origin development
+
+# Mettre à jour depuis le dépôt distant
+git pull origin development
+```
 
 ## License
 
