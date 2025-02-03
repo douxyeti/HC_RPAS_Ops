@@ -72,5 +72,10 @@ class HighCloudRPASApp(MDApp):
         Builder.load_file("app/views/kv/login_screen.kv")
         Builder.load_file("app/views/kv/dashboard_screen.kv")
 
+    def toggle_theme(self):
+        """Bascule entre le thème clair et sombre"""
+        self.theme_cls.theme_style = "Dark" if self.theme_cls.theme_style == "Light" else "Light"
+        print(f"Theme changed to: {self.theme_cls.theme_style}")
+
 if __name__ == "__main__":
     HighCloudRPASApp().run()
