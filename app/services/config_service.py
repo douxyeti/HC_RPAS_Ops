@@ -54,16 +54,19 @@ class ConfigService:
             print(f"Attention: Variable d'environnement non trouvée: {key}")
         return value
 
-    def get_config(self, path: str, default: Any = None) -> Any:
+    def get_config(self, path: str = None, default: Any = None) -> Any:
         """Récupère une valeur de configuration par son chemin
         
         Args:
-            path: Chemin de la configuration (ex: "interface.roles.admin")
+            path: Chemin de la configuration (ex: "interface.roles.admin"). Si None, retourne toute la configuration.
             default: Valeur par défaut si non trouvée
             
         Returns:
             La valeur de configuration ou la valeur par défaut
         """
+        if path is None:
+            return self._config
+            
         try:
             value = self._config
             for key in path.split('.'):

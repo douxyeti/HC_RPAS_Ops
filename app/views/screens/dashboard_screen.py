@@ -1,13 +1,12 @@
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.card import MDCard
-from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDIconButton
+from kivymd.uix.label import MDLabel
+from kivymd.uix.card import MDCard
 from kivymd.uix.scrollview import MDScrollView
-from kivymd.uix.navigationdrawer import MDNavigationDrawer
-from kivymd.uix.list import MDList
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.menu.menu import MDDropdownTextItem
+from kivymd.uix.appbar import MDTopAppBar
 from kivy.clock import Clock
 import json
 import os
@@ -59,91 +58,37 @@ class DashboardCard(MDCard):
         self.add_widget(header)
         self.add_widget(description_label)
 
-class NavigationItem(MDBoxLayout):
-    def __init__(self, icon, text, on_release=None, **kwargs):
-        super().__init__(**kwargs)
-        self.orientation = "horizontal"
-        self.size_hint_y = None
-        self.height = 48
-        self.spacing = 10
-        self.padding = [10, 0, 10, 0]
-        
-        # Icône
-        self.icon_button = MDIconButton(
-            icon=icon,
-            pos_hint={"center_y": 0.5}
-        )
-        
-        # Texte
-        self.label = MDLabel(
-            text=text,
-            size_hint_y=None,
-            height=48,
-            pos_hint={"center_y": 0.5}
-        )
-        
-        self.add_widget(self.icon_button)
-        self.add_widget(self.label)
-        
-        if on_release:
-            self.bind(on_touch_down=lambda x, y: on_release(text) if self.collide_point(*y.pos) else None)
-
 class DashboardScreen(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
-        # Layout principal avec navigation drawer
-        self.layout = MDBoxLayout(orientation='horizontal')
-        
-        # Navigation Drawer (menu de gauche)
-        self.nav_drawer = MDNavigationDrawer(
-            anchor="left",
-            size_hint_x=None,
-            width="240dp",
-            elevation=4,
-            radius=(0, 16, 16, 0)
-        )
-        
-        # Liste des items de navigation
-        nav_list = MDList()
-        nav_items = [
-            ("Tableau de bord", "view-dashboard"),
-            ("Gestion des vols", "airplane"),
-            ("Maintenance", "tools"),
-            ("Personnel", "account-group"),
-            ("Paramètres", "cog")
-        ]
-        
-        for text, icon in nav_items:
-            item = NavigationItem(
-                icon=icon,
-                text=text,
-                on_release=self.nav_item_selected
-            )
-            nav_list.add_widget(item)
-            
-        self.nav_drawer.add_widget(nav_list)
+        # Layout principal
+        self.layout = MDBoxLayout(orientation='vertical', spacing=0, padding=0)
         
         # Contenu principal
-        main_content = MDBoxLayout(
+        self.main_content = MDBoxLayout(
             orientation='vertical',
             spacing=20,
-            padding=20
+            padding=20,
+            size_hint=(1, 1)
         )
 
-        # Barre supérieure avec titre
+        # Barre de titre
         top_bar = MDBoxLayout(
             orientation='horizontal',
             size_hint_y=None,
-            height=50,
+            height="56dp",
             spacing=10,
             padding=[10, 0]
         )
 
+        # Titre
         self.title = MDLabel(
             text="Tableau de bord principal",
-            font_style="Headline",
-            font_size="24sp"
+            bold=True,
+            font_size="24sp",
+            size_hint_x=0.9,
+            halign="left"
         )
 
         # Bouton de déconnexion
@@ -152,65 +97,57 @@ class DashboardScreen(MDScreen):
             on_release=self.logout
         )
 
-        # Ajouter les widgets à la barre supérieure
         top_bar.add_widget(self.title)
         top_bar.add_widget(logout_button)
 
-        main_content.add_widget(top_bar)
+        self.main_content.add_widget(top_bar)
 
         # Créer le sélecteur de rôle centré
         role_box = MDBoxLayout(
             orientation='horizontal',
-            size_hint=(None, None),
-            size=(300, 50),
-            pos_hint={'center_x': 0.5, 'top': 0.85},
+            size_hint_y=None,
+            height="56dp",
             spacing=10,
-            padding=[0, 20]
+            padding=[10, 0]
         )
-        
-        self.role_label = MDLabel(
-            text="Choisissez votre rôle",
+
+        role_label = MDLabel(
+            text="Sélectionner un rôle :",
             size_hint_x=None,
-            width=200,
-            halign="right"
+            width="150dp",
+            halign="right",
+            valign="center"
         )
-        
+
         role_button = MDIconButton(
             icon="chevron-down",
             on_release=self.show_role_menu
         )
-        
-        role_box.add_widget(self.role_label)
-        role_box.add_widget(role_button)
-        
-        # Ajouter le sélecteur de rôle au début du contenu principal
-        self.add_widget(role_box)
 
-        # Contenu des cartes avec ScrollView
-        scroll_view = MDScrollView(
-            do_scroll_x=False,
-            do_scroll_y=True,
-            pos_hint={'center_x': 0.5, 'top': 0.75}  
-        )
+        role_box.add_widget(role_label)
+        role_box.add_widget(role_button)
+
+        self.main_content.add_widget(role_box)
+
+        # Créer un ScrollView pour le contenu
+        scroll_view = MDScrollView()
         
+        # Layout pour le contenu défilable
         self.content_layout = MDBoxLayout(
             orientation='vertical',
             spacing=20,
-            padding=[20, 100, 20, 20],  
+            padding=20,
             size_hint_y=None
         )
         
-        # Bind la hauteur du content_layout
         self.content_layout.bind(minimum_height=self.content_layout.setter('height'))
         
         scroll_view.add_widget(self.content_layout)
-        main_content.add_widget(scroll_view)
+        self.main_content.add_widget(scroll_view)
         
         # Ajouter le contenu principal au layout
-        self.layout.add_widget(self.nav_drawer)
-        self.layout.add_widget(main_content)
+        self.layout.add_widget(self.main_content)
         self.add_widget(self.layout)
-        self.add_widget(self.nav_drawer)
         
         # Charger les rôles depuis l'application
         self.roles = self.load_roles()
@@ -249,67 +186,62 @@ class DashboardScreen(MDScreen):
             background_color=self.theme_cls.surfaceColor
         )
         
-        # Calculer la position pour centrer le menu
-        button_center_x = button.center_x
-        menu_width = 400  # Largeur du menu
-        self.menu.caller = button
-        offset_y = 10  # Décalage vers le bas
-        self.menu.pos = (button_center_x - menu_width/2, button.y - offset_y)
-        
         self.menu.open()
 
     def select_role(self, role_name):
-        self.menu.dismiss()
-        self.role_label.text = role_name
+        # Fermer le menu
+        if hasattr(self, 'menu'):
+            self.menu.dismiss()
         
-        if hasattr(self, 'app'):
-            self.app.set_role(role_name)
-
-    def toggle_nav_drawer(self, *args):
-        self.nav_drawer.set_state("open")
-        
-    def nav_item_selected(self, text):
-        print(f"Menu sélectionné : {text}")
-        self.nav_drawer.set_state("close")
+        # Mettre à jour le rôle dans l'application
+        app = self.app
+        if hasattr(app, 'current_role'):
+            app.current_role = role_name
 
     def initialize_cards(self, *args):
-        # Carte 1: Gestion Opérationnelle
-        card1 = DashboardCard(
-            title="Gestion Opérationnelle",
-            description="État des vols en cours\nAlertes opérationnelles\nMissions en cours\nNotifications risques",
-            icon="airplane"
-        )
-        self.content_layout.add_widget(card1)
+        # Créer les cartes pour chaque module
+        cards = [
+            {
+                "title": "Gestion Opérationnelle",
+                "description": "État des vols en cours\nAlertes opérationnelles\nMissions en cours\nNotifications risques",
+                "icon": "airplane"
+            },
+            {
+                "title": "Gestion Personnel",
+                "description": "Formations à jour/expirées\nQualifications actives\nÉvaluations en attente\nAlertes personnel",
+                "icon": "account-group"
+            },
+            {
+                "title": "Maintenance",
+                "description": "État maintenance équipements\nAlertes techniques\nInterventions planifiées\nDéfectuosités en cours",
+                "icon": "wrench"
+            }
+        ]
         
-        # Carte 2: Gestion Personnel
-        card2 = DashboardCard(
-            title="Gestion Personnel",
-            description="Formations à jour/expirées\nQualifications actives\nÉvaluations en attente\nAlertes personnel",
-            icon="account-group"
+        # Créer un conteneur pour les cartes
+        cards_container = MDBoxLayout(
+            orientation='horizontal',
+            spacing=20,
+            size_hint_y=None,
+            height="220dp"  # Hauteur des cartes + padding
         )
-        self.content_layout.add_widget(card2)
         
-        # Carte 3: Maintenance
-        card3 = DashboardCard(
-            title="Maintenance",
-            description="État maintenance équipements\nAlertes techniques\nInterventions planifiées\nDéfectuosités en cours",
-            icon="tools"
-        )
-        self.content_layout.add_widget(card3)
+        # Ajouter les cartes au conteneur
+        for card_info in cards:
+            card = DashboardCard(**card_info)
+            cards_container.add_widget(card)
         
-        # Carte 4: Rapport de Situation
-        card4 = DashboardCard(
-            title="Rapport de Situation",
-            description="Nombre de drones actifs/inactifs\nVols planifiés pour la journée\nRapports en attente de validation",
-            icon="file-document"
-        )
-        self.content_layout.add_widget(card4)
+        # Ajouter le conteneur au contenu principal
+        self.content_layout.add_widget(cards_container)
 
     def logout(self, *args):
-        if hasattr(self, 'app'):
-            self.app.switch_screen('login')
+        """Déconnexion de l'utilisateur"""
+        app = self.app
+        if hasattr(app, 'logout'):
+            app.logout()
 
     @property
     def app(self):
+        """Obtenir l'instance de l'application"""
         from kivy.app import App
         return App.get_running_app()

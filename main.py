@@ -28,27 +28,39 @@ class HighCloudRPASApp(MDApp):
         self.config_service = None
         self.firebase_service = None
         self.current_role = None
-        self.available_roles = [
-            "Commandant de bord",
-            "Pilote",
-            "Observateur",
-            "Technicien maintenance",
-            "Gestionnaire opérations",
-            "Responsable formation"
-        ]
+        self.available_roles = []  # Sera chargé depuis config.json
         
     def build(self):
         # Charge les variables d'environnement
         load_dotenv()
         
-        # Configure le thème
+        # Configuration du thème
         self.theme_cls.material_style = "M3"
         self.theme_cls.primary_palette = "Blue"  # Couleur principale
         self.theme_cls.accent_palette = "Amber"  # Couleur d'accent
         self.theme_cls.theme_style = "Light"     # Thème clair
         
-        # Initialise les services
-        self._init_services()
+        # Initialisation des services
+        try:
+            # Initialise le service de configuration
+            self.config_service = ConfigService()
+            
+            # Charge les rôles depuis la configuration
+            config = self.config_service.get_config()
+            if 'interface' in config and 'roles' in config['interface']:
+                self.available_roles = [
+                    role_info["name"]
+                    for role_info in config['interface']['roles'].values()
+                ]
+                self.available_roles.sort()  # Trie les rôles par ordre alphabétique
+            
+            # Initialise le service Firebase
+            self.firebase_service = FirebaseService()
+            
+            print("Services initialisés avec succès")
+        except Exception as e:
+            print(f"Erreur lors de l'initialisation des services: {str(e)}")
+            raise
         
         # Charge les fichiers KV
         self._load_kv_files()
@@ -60,20 +72,6 @@ class HighCloudRPASApp(MDApp):
         self.screen_manager.current = "splash"
         
         return self.screen_manager
-        
-    def _init_services(self):
-        """Initialise les services de l'application"""
-        try:
-            # Initialise le service de configuration
-            self.config_service = ConfigService()
-            
-            # Initialise Firebase
-            self.firebase_service = FirebaseService()
-            
-            print("Services initialisés avec succès")
-        except Exception as e:
-            print(f"Erreur lors de l'initialisation des services: {str(e)}")
-            raise
         
     def _load_kv_files(self):
         """Charge tous les fichiers KV"""
