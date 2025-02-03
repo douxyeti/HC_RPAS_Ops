@@ -1,0 +1,90 @@
+# Fichier KV pour l'écran de contrôle des vols
+<ControlVolsScreen>:
+    name: 'controle_vols'
+    
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: "16dp"
+        spacing: "8dp"
+        
+        MDTopAppBar:
+            type: "small"
+            
+            MDTopAppBarLeadingButtonContainer:
+                MDActionTopAppBarButton:
+                    icon: "menu"
+                    
+            MDTopAppBarTitle:
+                text: "Contrôle des Vols"
+                pos_hint: {"center_x": .5}
+                
+            MDTopAppBarTrailingButtonContainer:
+                MDActionTopAppBarButton:
+                    icon: "refresh"
+                    
+        MDGridLayout:
+            cols: 2
+            padding: "8dp"
+            spacing: "8dp"
+            
+            # Carte des vols planifiés
+            MDCard:
+                orientation: "vertical"
+                padding: "8dp"
+                size_hint: 1, None
+                height: "200dp"
+                
+                MDLabel:
+                    text: "Vols Planifiés"
+                    bold: True
+                    size_hint_y: None
+                    height: "48dp"
+                
+                ScrollView:
+                    MDList:
+                        id: liste_vols_planifies
+                        
+            # Carte du vol actif
+            MDCard:
+                orientation: "vertical"
+                padding: "8dp"
+                size_hint: 1, None
+                height: "200dp"
+                
+                MDLabel:
+                    text: "Vol Actif"
+                    bold: True
+                    size_hint_y: None
+                    height: "48dp"
+                    
+                MDBoxLayout:
+                    orientation: "vertical"
+                    spacing: "8dp"
+                    
+                    MDLabel:
+                        id: info_vol_actif
+                        text: "Aucun vol en cours"
+                        
+                    MDRaisedButton:
+                        text: "Terminer Vol"
+                        on_release: root.terminer_vol()
+                        disabled: True
+                        
+        # Boutons d'action
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: "8dp"
+            size_hint_y: None
+            height: "56dp"
+            padding: "8dp"
+            
+            Widget:
+                size_hint_x: 0.7
+                
+            MDRaisedButton:
+                text: "Nouveau Vol"
+                on_release: root.nouveau_vol()
+                
+            MDRaisedButton:
+                text: "Démarrer Vol"
+                on_release: root.demarrer_vol()

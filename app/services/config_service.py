@@ -72,22 +72,28 @@ class ConfigService:
         except (KeyError, TypeError):
             return default
 
-    def get_firebase_config(self) -> Dict[str, str]:
+    def get_firebase_config(self) -> Dict[str, Any]:
         """Récupère la configuration Firebase complète
         
         Returns:
             Dict contenant toute la configuration Firebase
         """
-        # Configuration Web Firebase
-        return {
-            'apiKey': "AIzaSyDy7OgMdyXjAQWhn5h9MpCkTY_HrZYNq04",
-            'authDomain': "highcloud-rpas-ecosystem-86a4f.firebaseapp.com",
-            'databaseURL': "https://highcloud-rpas-ecosystem-86a4f-default-rtdb.firebaseio.com",
-            'projectId': "highcloud-rpas-ecosystem-86a4f",
-            'storageBucket': "highcloud-rpas-ecosystem-86a4f.firebasestorage.app",
-            'messagingSenderId': "648581242054",
-            'appId': "1:648581242054:web:5c072aa0af16b948964bc7"
-        }
+        try:
+            # Charge la configuration JSON
+            base_dir = Path(__file__).resolve().parent.parent.parent
+            config_path = base_dir / 'data' / 'config' / 'config.json'
+            
+            if not config_path.exists():
+                raise FileNotFoundError(f"Fichier de configuration non trouvé: {config_path}")
+                
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                
+            return config
+                
+        except Exception as e:
+            print(f"Erreur lors du chargement de la configuration Firebase: {str(e)}")
+            raise
 
     def get_database_config(self) -> Dict[str, str]:
         """Récupère la configuration de la base de données

@@ -1,85 +1,85 @@
-# HighCloud RPAS Operations Manager v2.0
+# HighCloud RPAS Operations Manager
 
-Application de gestion des opérations de drones (RPAS) pour HighCloud, conforme aux réglementations de Transports Canada.
+Application de gestion des opérations de drones pour HighCloud RPAS.
 
-## Structure de l'Application
+## Fonctionnalités
 
-L'application est organisée selon une architecture MVVM avec KivyMD 2.x et utilise une approche de synchronisation multi-niveaux :
+- Interface moderne avec Material Design (KivyMD)
+- Gestion des missions de drones
+- Gestion du personnel et des qualifications
+- Système d'authentification sécurisé avec Firebase
+- Base de données en temps réel
+- Transitions fluides entre les écrans
+- Splash screen interactif
 
-- Interface utilisateur moderne avec KivyMD 2.x
-- Stockage local SQLite pour les opérations hors-ligne
-- Base de données centrale MySQL
-- Services cloud Firebase pour la synchronisation et le backup
+## Prérequis
 
-## Fonctionnalités Principales
-
-1. Gestion des Documents
-   - Manuel d'Exploitation (politiques)
-   - Manuel des Documents Incorporés (procédures)
-   - Système de renvois entre manuels
-
-2. Modules Opérationnels
-   - Contrôle des vols
-   - Gestion du personnel et des qualifications
-   - Maintenance des RPAS
-   - Formation et certification
-
-3. Synchronisation Multi-niveaux
-   - Opérations hors-ligne garanties
-   - Synchronisation automatique
-   - Triple redondance des données
+- Python 3.9+
+- Les dépendances listées dans `requirements.txt`
 
 ## Installation
 
-1. Créer un environnement virtuel Python :
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   venv\Scripts\activate     # Windows
-   ```
-
-2. Installer les dépendances :
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Configurer les variables d'environnement dans `.env`
-
-4. Lancer l'application :
-   ```bash
-   python main.py
-   ```
-
-## Configuration
-
-Créer un fichier `.env` à la racine du projet avec les configurations nécessaires :
-
-```
-DB_HOST=localhost
-DB_USER=user
-DB_PASSWORD=password
-DB_NAME=highcloud_rpas
-
-FIREBASE_CONFIG_PATH=path/to/firebase-config.json
+1. Cloner le repository :
+```bash
+git clone https://github.com/votre-repo/HC_RPAS_Ops.git
+cd HC_RPAS_Ops
 ```
 
-## Structure du Projet
-
-```
-├── app/
-│   ├── models/         # Modèles de données
-│   ├── views/          # Écrans et widgets KivyMD
-│   ├── viewmodels/     # ViewModels (MVVM)
-│   ├── services/       # Services (DB, Firebase, etc.)
-│   └── utils/          # Utilitaires
-├── data/
-│   ├── local/         # Base SQLite
-│   └── config/        # Fichiers de configuration
-├── docs/              # Documentation
-├── resources/         # Ressources (images, etc.)
-└── tests/            # Tests unitaires
+2. Créer et activer un environnement virtuel :
+```bash
+python -m venv venv
+.\venv\Scripts\activate
 ```
 
-## Licence
+3. Installer les dépendances :
+```bash
+pip install -r requirements.txt
+```
 
-Propriétaire - HighCloud © 2025
+4. Configurer les variables d'environnement :
+- Copier le fichier `.env.example` vers `.env`
+- Remplir les variables d'environnement requises dans `.env`
+
+## Lancement de l'application
+
+Pour lancer l'application, exécutez simplement :
+```bash
+python main.py
+```
+
+## Structure du projet
+
+```
+HC_RPAS_Ops/
+├── app/                    # Code source principal
+│   ├── services/          # Services (Firebase, Config, etc.)
+│   ├── views/             # Écrans et fichiers KV
+│   └── utils/             # Utilitaires
+├── assets/                # Ressources (images, fonts, etc.)
+├── data/                  # Données locales
+├── docs/                  # Documentation
+├── modules/               # Modules additionnels
+├── tests/                 # Tests unitaires
+├── .env                   # Variables d'environnement
+├── main.py               # Point d'entrée de l'application
+└── requirements.txt      # Dépendances Python
+```
+
+## Tests
+
+Pour exécuter les tests :
+```bash
+pytest tests/
+```
+
+## Contribution
+
+1. Fork le projet
+2. Créer une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
+3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## License
+
+Ce projet est sous licence propriétaire. Tous droits réservés.

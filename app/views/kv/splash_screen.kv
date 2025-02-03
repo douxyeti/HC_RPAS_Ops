@@ -1,12 +1,13 @@
-#:kivy 2.2.1
+#:kivy 2.3.1
 
 <SplashScreen>:
+    name: 'splash'
     md_bg_color: self.theme_cls.backgroundColor
     
     MDBoxLayout:
         orientation: 'vertical'
-        spacing: "20dp"
-        padding: "20dp"
+        padding: "16dp"
+        spacing: "16dp"
         pos_hint: {"center_x": .5, "center_y": .5}
         adaptive_height: True
         
@@ -19,10 +20,9 @@
         MDLabel:
             text: "HighCloud RPAS"
             halign: "center"
-            font_style: "Display"
             role: "large"
+            font_style: "Display"
             adaptive_height: True
-            theme_text_color: "Primary"
             
         MDLabel:
             text: "Operations Manager"
@@ -30,14 +30,19 @@
             font_style: "Display"
             role: "small"
             adaptive_height: True
-            theme_text_color: "Primary"
             
         MDLinearProgressIndicator:
-            id: progress
+            id: progress_bar
+            value: 0
             size_hint_x: .7
             pos_hint: {"center_x": .5}
             type: "determinate"
-            value: root.progress
+            
+        MDLabel:
+            id: status_label
+            text: "Chargement..."
+            halign: "center"
+            adaptive_height: True
             
         MDButton:
             id: continue_button
@@ -45,10 +50,6 @@
             size_hint_x: None
             width: "200dp"
             pos_hint: {"center_x": .5}
-            opacity: 1 if root.progress >= 100 else 0
-            disabled: root.progress < 100
-            on_press: root.switch_screen()
-            
-            MDButtonText:
-                text: "Continuer"
-                pos_hint: {"center_x": .5, "center_y": .5}
+            text: "Continuer"
+            disabled: True
+            on_release: root.go_to_login()

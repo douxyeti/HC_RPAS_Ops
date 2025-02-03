@@ -1,5 +1,6 @@
 from kivymd.app import MDApp
-from kivy.uix.screenmanager import ScreenManager
+from kivymd.uix.screenmanager import MDScreenManager
+from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
 from dotenv import load_dotenv
 
@@ -11,10 +12,19 @@ from app.views.screens.splash_screen import SplashScreen
 from app.views.screens.login_screen import LoginScreen
 from app.views.screens.dashboard_screen import DashboardScreen
 
+class MainScreenManager(MDScreenManager):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.transition = SlideTransition()
+        # Ajouter les écrans dans l'ordre
+        self.add_widget(SplashScreen(name="splash"))
+        self.add_widget(LoginScreen(name="login"))
+        self.add_widget(DashboardScreen(name="dashboard"))
+
 class HighCloudRPASApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.screen_manager = ScreenManager()
+        self.screen_manager = None
         self.config_service = None
         self.firebase_service = None
         
@@ -24,6 +34,9 @@ class HighCloudRPASApp(MDApp):
         
         # Configure le thème
         self.theme_cls.material_style = "M3"
+        self.theme_cls.primary_palette = "Blue"  # Couleur principale
+        self.theme_cls.accent_palette = "Amber"  # Couleur d'accent
+        self.theme_cls.theme_style = "Light"     # Thème clair
         
         # Initialise les services
         self._init_services()
@@ -31,8 +44,11 @@ class HighCloudRPASApp(MDApp):
         # Charge les fichiers KV
         self._load_kv_files()
         
-        # Configure les écrans
-        self._setup_screens()
+        # Crée le gestionnaire d'écrans
+        self.screen_manager = MainScreenManager()
+        
+        # Définit l'écran initial
+        self.screen_manager.current = "splash"
         
         return self.screen_manager
         
@@ -55,16 +71,6 @@ class HighCloudRPASApp(MDApp):
         Builder.load_file("app/views/kv/splash_screen.kv")
         Builder.load_file("app/views/kv/login_screen.kv")
         Builder.load_file("app/views/kv/dashboard_screen.kv")
-        
-    def _setup_screens(self):
-        """Configure les écrans de l'application"""
-        # Ajoute les écrans
-        self.screen_manager.add_widget(SplashScreen(name="splash"))
-        self.screen_manager.add_widget(LoginScreen(name="login"))
-        self.screen_manager.add_widget(DashboardScreen(name="dashboard"))
-        
-        # Définit l'écran initial
-        self.screen_manager.current = "splash"
 
 if __name__ == "__main__":
     HighCloudRPASApp().run()

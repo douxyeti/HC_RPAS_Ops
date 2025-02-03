@@ -1,6 +1,6 @@
 kivy==2.3.1
-kivymd==2.0.1.dev0
-firebase-admin==6.2.0
+git+https://github.com/kivymd/KivyMD.git@master
+firebase-admin~=6.2.0
 sqlalchemy>=2.0.0
 mysql-connector-python>=8.1.0
 pillow==10.0.1  # Pour le support des images

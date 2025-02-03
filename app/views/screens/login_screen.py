@@ -3,12 +3,19 @@ from kivymd.uix.button import MDButton, MDButtonText
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.label import MDLabel
 from app.services.firebase_service import FirebaseService
+import os
 
 class LoginScreen(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.name = "login"
         self.firebase = FirebaseService()
+        
+    def on_enter(self):
+        """Appelé quand l'écran devient actif"""
+        if os.getenv('DEBUG_MODE') == 'True':
+            self.ids.email.text = os.getenv('DEV_EMAIL', '')
+            self.ids.password.text = os.getenv('DEV_PASSWORD', '')
         
     def on_login(self, email, password):
         """Gère la connexion de l'utilisateur"""
