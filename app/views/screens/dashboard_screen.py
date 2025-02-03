@@ -161,7 +161,7 @@ class DashboardScreen(MDScreen):
             orientation='horizontal',
             size_hint=(None, None),
             size=(300, 50),
-            pos_hint={'center_x': 0.5, 'top': 0.95},
+            pos_hint={'center_x': 0.5, 'top': 0.85},
             spacing=10,
             padding=[0, 20]
         )
@@ -241,14 +241,16 @@ class DashboardScreen(MDScreen):
             radius=[24, 24, 24, 24],
             elevation=4,
             ver_growth="down",
-            hor_growth="right"
+            hor_growth="right",
+            background_color=self.theme_cls.surfaceColor
         )
         
         # Calculer la position pour centrer le menu
         button_center_x = button.center_x
         menu_width = 400  # Largeur du menu
         self.menu.caller = button
-        self.menu.pos = (button_center_x - menu_width/2, button.y)
+        offset_y = 10  # Décalage vers le bas
+        self.menu.pos = (button_center_x - menu_width/2, button.y - offset_y)
         
         self.menu.open()
 
