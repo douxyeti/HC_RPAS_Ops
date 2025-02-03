@@ -1,0 +1,220 @@
+#:kivy 2.3.1
+
+<MainScreen>:
+    md_bg_color: self.theme_cls.backgroundColor
+    
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: "16dp"
+        spacing: "16dp"
+        
+        # Barre supérieure avec menu et sélection de rôle
+        MDTopAppBar:
+            id: toolbar
+            title: "HighCloud RPAS"
+            elevation: 4
+            pos_hint: {"top": 1}
+            left_action_items: [["menu", lambda x: root.toggle_nav_drawer()]]
+            right_action_items: [["account-switch", lambda x: root.show_role_selection()], ["logout", lambda x: root.logout()]]
+        
+        MDScrollView:
+            MDGridLayout:
+                cols: 1
+                spacing: "16dp"
+                padding: "8dp"
+                size_hint_y: None
+                height: self.minimum_height
+                
+                # Rapport de Situation
+                MDCard:
+                    orientation: "vertical"
+                    padding: "16dp"
+                    spacing: "8dp"
+                    size_hint_y: None
+                    height: "200dp"
+                    
+                    MDLabel:
+                        text: "Rapport de Situation"
+                        halign: "center"
+                        role: "large"
+                        adaptive_height: True
+                        
+                    MDGridLayout:
+                        cols: 3
+                        spacing: "8dp"
+                        adaptive_height: True
+                        
+                        # Statistiques Clés
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "4dp"
+                            adaptive_height: True
+                            
+                            MDLabel:
+                                text: "Statistiques Clés"
+                                halign: "center"
+                                role: "medium"
+                            
+                            MDLabel:
+                                text: "Drones actifs: 3/5"
+                                halign: "left"
+                            
+                            MDLabel:
+                                text: "Vols planifiés: 4"
+                                halign: "left"
+                            
+                            MDLabel:
+                                text: "Rapports en attente: 2"
+                                halign: "left"
+                        
+                        # État des Opérations
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "4dp"
+                            adaptive_height: True
+                            
+                            MDLabel:
+                                text: "État des Opérations"
+                                halign: "center"
+                                role: "medium"
+                            
+                            MDLabel:
+                                text: "Vols en cours: 2"
+                                halign: "left"
+                            
+                            MDLabel:
+                                text: "Météo: Favorable"
+                                halign: "left"
+                            
+                            MDLabel:
+                                text: "Alertes: 0"
+                                halign: "left"
+                        
+                        # Actions Rapides
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "4dp"
+                            adaptive_height: True
+                            
+                            MDLabel:
+                                text: "Actions Rapides"
+                                halign: "center"
+                                role: "medium"
+                            
+                            MDButton:
+                                style: "tonal"
+                                size_hint_x: 1
+                                on_press: root.create_report()
+                                
+                                MDButtonText:
+                                    text: "Nouveau Rapport"
+                            
+                            MDButton:
+                                style: "tonal"
+                                size_hint_x: 1
+                                on_press: root.view_reports()
+                                
+                                MDButtonText:
+                                    text: "Consulter Rapports"
+                            
+                            MDButton:
+                                style: "tonal"
+                                size_hint_x: 1
+                                on_press: root.validate_reports()
+                                
+                                MDButtonText:
+                                    text: "Valider Rapports"
+                
+                # Vue Générale des Modules
+                MDGridLayout:
+                    cols: 2
+                    spacing: "16dp"
+                    size_hint_y: None
+                    height: self.minimum_height
+                    
+                    # Module Gestion Opérationnelle
+                    MDCard:
+                        orientation: "vertical"
+                        padding: "16dp"
+                        spacing: "8dp"
+                        size_hint_y: None
+                        height: "200dp"
+                        
+                        MDLabel:
+                            text: "Gestion Opérationnelle"
+                            halign: "center"
+                            role: "large"
+                        
+                        MDLabel:
+                            text: "État des vols en cours: 2"
+                            halign: "left"
+                        
+                        MDLabel:
+                            text: "Alertes opérationnelles: 0"
+                            halign: "left"
+                        
+                        MDLabel:
+                            text: "Missions en cours: 1"
+                            halign: "left"
+                        
+                        MDLabel:
+                            text: "Notifications risques: 0"
+                            halign: "left"
+                    
+                    # Module Gestion Personnel
+                    MDCard:
+                        orientation: "vertical"
+                        padding: "16dp"
+                        spacing: "8dp"
+                        size_hint_y: None
+                        height: "200dp"
+                        
+                        MDLabel:
+                            text: "Gestion Personnel"
+                            halign: "center"
+                            role: "large"
+                        
+                        MDLabel:
+                            text: "Formations à jour: 15"
+                            halign: "left"
+                        
+                        MDLabel:
+                            text: "Qualifications actives: 8"
+                            halign: "left"
+                        
+                        MDLabel:
+                            text: "Évaluations en attente: 3"
+                            halign: "left"
+                        
+                        MDLabel:
+                            text: "Alertes personnel: 1"
+                            halign: "left"
+                    
+                    # Module Maintenance
+                    MDCard:
+                        orientation: "vertical"
+                        padding: "16dp"
+                        spacing: "8dp"
+                        size_hint_y: None
+                        height: "200dp"
+                        
+                        MDLabel:
+                            text: "Maintenance"
+                            halign: "center"
+                            role: "large"
+                        
+                        MDLabel:
+                            text: "État maintenance: 2 en cours"
+                            halign: "left"
+                        
+                        MDLabel:
+                            text: "Alertes techniques: 1"
+                            halign: "left"
+                        
+                        MDLabel:
+                            text: "Interventions planifiées: 3"
+                            halign: "left"
+                        
+                        MDLabel:
+                            text: "Défectuosités en cours: 2"
+                            halign: "left"
