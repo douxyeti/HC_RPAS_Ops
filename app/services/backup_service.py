@@ -106,37 +106,40 @@ class BackupService:
             return False
             
     def rotate_backups(self, max_backups: int = 5):
-        """Supprime les sauvegardes les plus anciennes"""
+        """Conserve uniquement les N sauvegardes les plus récentes"""
         try:
             backups = sorted(
-                [d for d in self.backup_dir.iterdir() if d.is_dir()],
-                key=lambda x: x.stat().st_mtime
+                self.backup_dir.iterdir(),
+                key=lambda x: x.stat().st_mtime,
+                reverse=True
             )
             
-            while len(backups) > max_backups:
-                oldest = backups.pop(0)
-                shutil.rmtree(oldest)
-                self.logger.info(f"Sauvegarde supprimée: {oldest}")
-                
+            # Supprime les sauvegardes excédentaires (les plus anciennes)
+            for backup in backups[max_backups:]:
+                if backup.is_dir():
+                    shutil.rmtree(backup)
+                    self.logger.info(f"Sauvegarde supprimée: {backup}")
+                    
         except Exception as e:
             self.logger.error(f"Erreur lors de la rotation des sauvegardes: {str(e)}")
             
     def get_backup_list(self):
         """Retourne la liste des sauvegardes disponibles"""
-        backups = []
         try:
+            backups = []
             for backup_dir in self.backup_dir.iterdir():
-                if backup_dir.is_dir():
-                    manifest_path = backup_dir / "manifest.json"
-                    if manifest_path.exists():
-                        with open(manifest_path) as f:
-                            manifest = json.load(f)
-                            backups.append({
-                                "path": str(backup_dir),
-                                "timestamp": manifest["timestamp"],
-                                "version": manifest.get("version", "unknown")
-                            })
-            return backups
+                if not backup_dir.is_dir():
+                    continue
+                    
+                manifest_path = backup_dir / "manifest.json"
+                if manifest_path.exists():
+                    with open(manifest_path) as f:
+                        manifest = json.load(f)
+                        manifest["path"] = str(backup_dir)
+                        backups.append(manifest)
+                        
+            return sorted(backups, key=lambda x: x["timestamp"], reverse=True)
+            
         except Exception as e:
-            self.logger.error(f"Erreur lors de la lecture des sauvegardes: {str(e)}")
+            self.logger.error(f"Erreur lors de la récupération de la liste des sauvegardes: {str(e)}")
             return []
