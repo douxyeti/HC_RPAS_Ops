@@ -27,6 +27,15 @@ class HighCloudRPASApp(MDApp):
         self.screen_manager = None
         self.config_service = None
         self.firebase_service = None
+        self.current_role = None
+        self.available_roles = [
+            "Commandant de bord",
+            "Pilote",
+            "Observateur",
+            "Technicien maintenance",
+            "Gestionnaire opérations",
+            "Responsable formation"
+        ]
         
     def build(self):
         # Charge les variables d'environnement
@@ -68,14 +77,33 @@ class HighCloudRPASApp(MDApp):
         
     def _load_kv_files(self):
         """Charge tous les fichiers KV"""
-        Builder.load_file("app/views/kv/splash_screen.kv")
-        Builder.load_file("app/views/kv/login_screen.kv")
-        Builder.load_file("app/views/kv/dashboard_screen.kv")
+        kv_files = [
+            'app/views/kv/splash_screen.kv',
+            'app/views/kv/login_screen.kv',
+            'app/views/kv/dashboard_screen.kv'
+        ]
+        for kv_file in kv_files:
+            Builder.load_file(kv_file)
 
     def toggle_theme(self):
         """Bascule entre le thème clair et sombre"""
         self.theme_cls.theme_style = "Dark" if self.theme_cls.theme_style == "Light" else "Light"
         print(f"Theme changed to: {self.theme_cls.theme_style}")
+
+    def switch_screen(self, screen_name, direction='left'):
+        """Change l'écran courant avec une transition"""
+        if screen_name in self.screen_manager.screen_names:
+            self.screen_manager.transition.direction = direction
+            self.screen_manager.current = screen_name
+
+    def set_role(self, role):
+        """Définit le rôle actuel de l'utilisateur"""
+        if role in self.available_roles:
+            self.current_role = role
+            # Met à jour le tableau de bord avec les informations du rôle
+            dashboard_screen = self.screen_manager.get_screen('dashboard')
+            if dashboard_screen:
+                dashboard_screen.title.text = f"Tableau de bord - {role}"
 
 if __name__ == "__main__":
     HighCloudRPASApp().run()

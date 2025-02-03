@@ -1,0 +1,17 @@
+#:kivy 2.2.1
+
+<DashboardScreen>:
+    name: 'dashboard'
+    
+<DashboardCard>:
+    md_bg_color: app.theme_cls.bg_dark if app.theme_cls.theme_style == "Dark" else app.theme_cls.bg_light
+    radius: [10, 10, 10, 10]
+    ripple_behavior: True
+    
+    canvas.before:
+        Color:
+            rgba: app.theme_cls.primary_color[:-1] + [0.1]
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [10, 10, 10, 10]
