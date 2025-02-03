@@ -2,5 +2,9 @@ kivy==2.3.1
 kivymd==2.0.1.dev0
 python-dotenv==1.0.0
 pyrebase4==4.7.1
-requests==2.29.0
-firebase-admin==6.4.0
+pytest==7.4.3
+pytest-cov==4.1.0
+flake8==6.1.0
+coverage==7.3.2
+mysql-connector-python==8.2.0
+SQLAlchemy==2.0.23
