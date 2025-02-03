@@ -93,7 +93,7 @@
                 "permissions": ["operations.view", "maintenance.view", "personnel.view"]
             },
             "training_manager": {
-                "name": "Responsable formation",
+                "name": "Gestionnaire de la formation",
                 "permissions": ["formation.all", "personnel.view"]
             },
             "formateur": {
@@ -132,24 +132,16 @@
                 "name": "Coordinateur des opérations",
                 "permissions": ["operations.view", "operations.edit"]
             },
-            "flight_director": {
-                "name": "Directeur des vols",
-                "permissions": ["operations.all"]
-            },
             "maintenance_manager": {
-                "name": "Gestionnaire de maintenance",
+                "name": "Gestionnaire des activités de maintenance",
                 "permissions": ["maintenance.all"]
             },
             "training_coordinator": {
                 "name": "Coordinateur de formation",
                 "permissions": ["formation.view", "formation.edit"]
             },
-            "compliance_officer": {
-                "name": "Agent de conformité",
-                "permissions": ["operations.view", "maintenance.view", "personnel.view"]
-            },
             "documentation_manager": {
-                "name": "Gestionnaire de documentation",
+                "name": "Gestionnaire du cadre documentaire",
                 "permissions": ["documentation.all"]
             }
         },
