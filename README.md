@@ -1,6 +1,6 @@
-# HighCloud RPAS Operations Manager
+# HighCloud RPAS Operations Manager (Development Version)
 
-Application de gestion des opérations de drones pour HighCloud RPAS.
+Application de gestion des opérations de drones pour HighCloud RPAS. Cette version est en développement actif et peut contenir des fonctionnalités expérimentales.
 
 ## Fonctionnalités
 
