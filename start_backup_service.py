@@ -3,8 +3,14 @@ from app.services.scheduler_service import SchedulerService
 import time
 import logging
 from pathlib import Path
+import argparse
 
 def main():
+    # Parse les arguments
+    parser = argparse.ArgumentParser(description='Service de sauvegarde automatique')
+    parser.add_argument('--test', action='store_true', help='Effectue une seule sauvegarde et quitte')
+    args = parser.parse_args()
+
     # 1. Configuration des logs
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
@@ -30,24 +36,30 @@ def main():
     # 3. Initialisation des services
     try:
         backup_service = BackupService()
-        scheduler = SchedulerService()
+        if not args.test:
+            scheduler = SchedulerService()
         logging.info("Services initialisés avec succès")
     except Exception as e:
         logging.error(f"Erreur d'initialisation des services: {e}")
         return
     
-    # 4. Première sauvegarde
+    # 4. Sauvegarde
     try:
         backup_path = backup_service.create_backup()
         if backup_path:
-            logging.info(f"Sauvegarde initiale créée: {backup_path}")
+            logging.info(f"Sauvegarde créée: {backup_path}")
         else:
-            logging.error("Échec de la sauvegarde initiale")
+            logging.error("Échec de la sauvegarde")
             return
     except Exception as e:
-        logging.error(f"Erreur lors de la sauvegarde initiale: {e}")
+        logging.error(f"Erreur lors de la sauvegarde: {e}")
         return
     
+    # Si mode test, on s'arrête ici
+    if args.test:
+        logging.info("Test terminé avec succès")
+        return
+        
     # 5. Démarrage du planificateur
     try:
         scheduler.start(backup_service)
