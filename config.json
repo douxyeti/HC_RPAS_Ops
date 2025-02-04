@@ -1,0 +1,52 @@
+{
+    "mqtt": {
+        "broker": "localhost",
+        "port": 1883,
+        "keepalive": 60,
+        "topics": {
+            "dashboard": {
+                "general": "hc_rpas/dashboard/general/#",
+                "stats": "hc_rpas/dashboard/stats/#",
+                "alerts": "hc_rpas/dashboard/alerts/#"
+            },
+            "roles": {
+                "tasks": "hc_rpas/roles/{role}/tasks/#",
+                "notifications": "hc_rpas/roles/{role}/notifications/#",
+                "status": "hc_rpas/roles/{role}/status/#"
+            },
+            "modules": {
+                "operations": "hc_rpas/modules/operations/#",
+                "maintenance": "hc_rpas/modules/maintenance/#",
+                "personnel": "hc_rpas/modules/personnel/#"
+            }
+        }
+    },
+    "interface": {
+        "roles": [
+            {
+                "name": "Commandant de bord",
+                "id": "commander"
+            },
+            {
+                "name": "Pilote",
+                "id": "pilot"
+            },
+            {
+                "name": "Observateur",
+                "id": "observer"
+            },
+            {
+                "name": "Technicien maintenance",
+                "id": "maintenance"
+            },
+            {
+                "name": "Gestionnaire opérations",
+                "id": "operations"
+            },
+            {
+                "name": "Responsable formation",
+                "id": "training"
+            }
+        ]
+    }
+}

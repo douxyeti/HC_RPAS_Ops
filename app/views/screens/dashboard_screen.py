@@ -1,42 +1,31 @@
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDIconButton, MDFabButton
+from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel
 from kivymd.uix.card import MDCard
 from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.menu.menu import MDDropdownTextItem
-from kivymd.uix.segmentedbutton import MDSegmentedButton, MDSegmentedButtonItem
-from kivymd.uix.chip import MDChip
 from kivy.metrics import dp
 from kivy.clock import Clock
-import json
-import os
 
-class TabContent(MDBoxLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.orientation = "vertical"
-        self.adaptive_height = True
-        self.spacing = 10
-        self.padding = 10
-
-class DashboardCard(MDCard):
-    def __init__(self, title, description, icon="information", **kwargs):
+class ModuleCard(MDCard):
+    def __init__(self, title, status_examples, icon="information", **kwargs):
         super().__init__(**kwargs)
         self.orientation = "vertical"
         self.padding = 15
         self.spacing = 10
         self.size_hint_y = None
-        self.height = 200
+        self.height = dp(200)
         self.elevation = 2
         self.radius = [12, 12, 12, 12]
+        self.md_bg_color = [0.95, 0.95, 0.95, 1]
 
         # Header avec titre et icône
         header = MDBoxLayout(
             orientation="horizontal",
             size_hint_y=None,
-            height=40,
+            height=dp(40),
             spacing=10
         )
         
@@ -48,326 +37,368 @@ class DashboardCard(MDCard):
         title_label = MDLabel(
             text=title,
             bold=True,
-            font_size="18sp",
+            font_size="16sp",
             size_hint_y=None,
-            height=40
+            height=dp(40)
         )
         
         header.add_widget(icon_button)
         header.add_widget(title_label)
         
-        # Description
-        description_label = MDLabel(
-            text=description,
-            font_size="14sp",
-            size_hint_y=None,
-            height=100
+        # Contenu avec exemples de statuts
+        content = MDBoxLayout(
+            orientation="vertical",
+            spacing=5,
+            padding=[5, 5]
         )
         
-        # Ajouter les widgets à la carte
+        for status in status_examples:
+            status_box = MDBoxLayout(
+                orientation="horizontal",
+                size_hint_y=None,
+                height=dp(30)
+            )
+            
+            status_icon = MDIconButton(
+                icon="circle-small",
+                size_hint_x=None,
+                width=dp(30)
+            )
+            
+            status_label = MDLabel(
+                text=status,
+                font_size="14sp"
+            )
+            
+            status_box.add_widget(status_icon)
+            status_box.add_widget(status_label)
+            content.add_widget(status_box)
+        
         self.add_widget(header)
-        self.add_widget(description_label)
+        self.add_widget(content)
 
 class DashboardScreen(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
         # Layout principal
-        self.layout = MDBoxLayout(orientation='vertical', spacing=0, padding=0)
+        self.layout = MDBoxLayout(orientation='vertical', spacing=10, padding=10)
         
-        # Contenu principal
-        self.main_content = MDBoxLayout(
-            orientation='vertical',
-            spacing=10,
-            padding=10,
-            size_hint=(1, 1)
-        )
-
-        # Barre de titre
+        # Barre supérieure
         top_bar = MDBoxLayout(
             orientation='horizontal',
             size_hint_y=None,
-            height="56dp",
+            height=dp(56),
             spacing=10,
             padding=[10, 0]
+        )
+
+        # Conteneur gauche (pour le titre)
+        left_container = MDBoxLayout(
+            orientation='horizontal',
+            size_hint_x=0.25
+        )
+
+        # Conteneur central (pour le menu déroulant)
+        center_container = MDBoxLayout(
+            orientation='horizontal',
+            size_hint_x=0.5,
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        )
+
+        # Conteneur droit (pour les icônes d'action)
+        right_container = MDBoxLayout(
+            orientation='horizontal',
+            size_hint_x=0.25,
+            spacing=2,
+            padding=[0, 0, 10, 0],
+            pos_hint={'center_y': 0.5}
         )
 
         # Titre
-        self.title = MDLabel(
+        title = MDLabel(
             text="Tableau de bord principal",
             bold=True,
             font_size="24sp",
-            size_hint_x=0.9,
-            halign="left"
+            valign="center",
+            height=dp(56)
+        )
+        
+        # Menu déroulant des rôles
+        role_box = MDBoxLayout(
+            orientation='horizontal',
+            size_hint=(None, None),
+            size=(dp(200), dp(56)),
+            spacing=5,
+            padding=[5, 0],
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
         )
 
+        self.role_label = MDLabel(
+            text="Sélectionner un rôle",
+            size_hint=(None, None),
+            size=(dp(160), dp(56)),
+            halign="center",
+            valign="center",
+            pos_hint={'center_y': 0.5}
+        )
+
+        self.role_button = MDIconButton(
+            icon="chevron-down",
+            size_hint=(None, None),
+            size=(dp(35), dp(35)),
+            pos_hint={'center_y': 0.5}
+        )
+        self.role_button.bind(on_release=self.show_role_menu)
+
+        # Centrer le texte dans le role_box
+        role_box.add_widget(self.role_label)
+        role_box.add_widget(self.role_button)
+        
+        # Icône notifications
+        notifications_button = MDIconButton(
+            icon="bell-outline",
+            on_release=self.show_notifications,
+            pos_hint={'center_y': 0.5}
+        )
+
+        # Icône rapports
+        reports_button = MDIconButton(
+            icon="file-document-outline",
+            on_release=self.show_reports,
+            pos_hint={'center_y': 0.5}
+        )
+
+        # Icône paramètres
+        settings_button = MDIconButton(
+            icon="cog-outline",
+            on_release=self.show_settings,
+            pos_hint={'center_y': 0.5}
+        )
+
+        # Icône aide
+        help_button = MDIconButton(
+            icon="help-circle-outline",
+            on_release=self.show_help,
+            pos_hint={'center_y': 0.5}
+        )
+        
         # Bouton de déconnexion
         logout_button = MDIconButton(
             icon="logout",
-            on_release=self.logout
-        )
-
-        top_bar.add_widget(self.title)
-        top_bar.add_widget(logout_button)
-
-        self.main_content.add_widget(top_bar)
-
-        # Boutons de navigation
-        nav_box = MDBoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height="48dp",
-            spacing=10,
-            padding=[10, 0]
+            on_release=self.logout,
+            pos_hint={'center_y': 0.5}
         )
         
-        nav_items = [
-            {"text": "Vue Générale", "icon": "view-dashboard"},
-            {"text": "Opérations", "icon": "airplane"},
-            {"text": "Maintenance", "icon": "wrench"},
-            {"text": "Personnel", "icon": "account-group"}
-        ]
+        # Ajouter les boutons au conteneur droit
+        right_container.add_widget(notifications_button)
+        right_container.add_widget(reports_button)
+        right_container.add_widget(settings_button)
+        right_container.add_widget(help_button)
+        right_container.add_widget(logout_button)
         
-        for item in nav_items:
-            btn = MDIconButton(
-                icon=item["icon"],
-                on_release=lambda x, text=item["text"]: self.switch_view(text)
-            )
-            nav_box.add_widget(btn)
+        # Ajouter les widgets aux conteneurs
+        left_container.add_widget(title)
+        center_container.add_widget(role_box)
+        top_bar.add_widget(left_container)
+        top_bar.add_widget(center_container)
+        top_bar.add_widget(right_container)
         
-        self.main_content.add_widget(nav_box)
-
-        # Créer le sélecteur de rôle centré
-        role_box = MDBoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height="56dp",
-            spacing=10,
-            padding=[10, 0]
-        )
-
-        role_label = MDLabel(
-            text="Sélectionner un rôle :",
-            size_hint_x=None,
-            width="150dp",
-            halign="right",
-            valign="center"
-        )
-
-        role_button = MDIconButton(
-            icon="chevron-down",
-            on_release=self.show_role_menu
-        )
-
-        role_box.add_widget(role_label)
-        role_box.add_widget(role_button)
-
-        self.main_content.add_widget(role_box)
-
-        # Filtres rapides avec MDChips
-        filters_box = MDBoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height="50dp",
-            spacing=10,
-            padding=[10, 0]
+        # ScrollView pour la grille de cartes
+        scroll = MDScrollView(
+            size_hint=(1, 1),
+            do_scroll_x=False
         )
         
-        filters = ["Tous", "Priorité haute", "En cours", "Terminé"]
-        for filter_text in filters:
-            chip = MDChip(
-                on_release=lambda x, text=filter_text: self.filter_selected(text)
-            )
-            chip.text = filter_text
-            filters_box.add_widget(chip)
-            
-        self.main_content.add_widget(filters_box)
-
-        # Boutons segmentés pour la vue
-        view_box = MDBoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height="50dp",
-            padding=[10, 0]
-        )
-        
-        segmented_button = MDSegmentedButton(
-            size_hint_x=None,
-            width="300dp"
-        )
-        
-        for text in ["Vue Carte", "Vue Liste", "Vue Calendrier"]:
-            label = MDLabel(text=text)
-            item = MDSegmentedButtonItem()
-            item.add_widget(label)
-            segmented_button.add_widget(item)
-            
-        view_box.add_widget(segmented_button)
-        self.main_content.add_widget(view_box)
-
-        # Créer un ScrollView pour le contenu
-        scroll_view = MDScrollView(
-            size_hint=(1, 0.8),
-            do_scroll_x=False,
-            do_scroll_y=True
-        )
-        
-        # Layout pour le contenu défilable
-        self.content_layout = MDBoxLayout(
-            orientation='vertical',
-            spacing=20,
-            padding=20,
+        # Grille pour les cartes
+        self.grid = MDGridLayout(
+            cols=3,
+            spacing=dp(20),
+            padding=dp(10),
             size_hint_y=None
         )
+        self.grid.bind(minimum_height=self.grid.setter('height'))
         
-        # Bind la hauteur minimale
-        self.content_layout.bind(minimum_height=self.content_layout.setter('height'))
-        
-        # Ajouter les cartes de test
-        cards_data = [
-            {
-                "title": "État des Opérations",
-                "description": "3 vols en cours\n2 missions planifiées\nConditions météo: Favorables",
-                "icon": "airplane"
+        # Définition des modules et leurs statuts
+        modules = {
+            'Cadre Documentaire': {
+                'icon': 'file-document-outline',
+                'statuts': [
+                    'Documentation mise à jour le 02/02/2024',
+                    '3 documents en attente de validation',
+                    '1 révision planifiée'
+                ]
             },
-            {
-                "title": "Maintenance",
-                "description": "1 drone en maintenance\n2 interventions planifiées\nAucune alerte critique",
-                "icon": "wrench"
+            'Contrôle Opérationnel': {
+                'icon': 'airplane',
+                'statuts': [
+                    '2 vols en cours',
+                    'Conditions météo favorables',
+                    '4 missions planifiées aujourd\'hui'
+                ]
             },
-            {
-                "title": "Personnel",
-                "description": "8 pilotes disponibles\n3 formations en cours\n1 évaluation à planifier",
-                "icon": "account-group"
+            'Assurance Qualité': {
+                'icon': 'check-circle-outline',
+                'statuts': [
+                    '98% conformité procédures',
+                    '2 audits en cours',
+                    '1 non-conformité à traiter'
+                ]
             },
-            {
-                "title": "Statistiques",
-                "description": "15 vols cette semaine\n45 heures de vol cumulées\n98% de missions réussies",
-                "icon": "chart-bar"
+            'Gestion Sécurité': {
+                'icon': 'shield-check-outline',
+                'statuts': [
+                    'Niveau de risque: Faible',
+                    '0 incident en cours',
+                    '2 exercices planifiés'
+                ]
+            },
+            'Formation': {
+                'icon': 'school-outline',
+                'statuts': [
+                    '3 formations en cours',
+                    '2 évaluations à planifier',
+                    '5 certifications à renouveler'
+                ]
+            },
+            'Maintenance': {
+                'icon': 'tools',
+                'statuts': [
+                    '2 maintenances préventives prévues',
+                    '1 intervention en cours',
+                    '4 drones opérationnels'
+                ]
+            },
+            'Contrôle Maintenance': {
+                'icon': 'clipboard-check-outline',
+                'statuts': [
+                    '15 inspections réalisées',
+                    '2 validations en attente',
+                    '1 rapport à finaliser'
+                ]
+            },
+            'Navigation-Détection': {
+                'icon': 'radar',
+                'statuts': [
+                    'Systèmes de navigation: OK',
+                    '3 zones surveillées',
+                    'Détection: Active'
+                ]
+            },
+            'Contrôle Aérien': {
+                'icon': 'air-traffic-tower',
+                'statuts': [
+                    'Espace aérien: Dégagé',
+                    '2 autorisations en cours',
+                    '1 restriction active'
+                ]
+            },
+            'Gestion Personnel': {
+                'icon': 'account-group-outline',
+                'statuts': [
+                    '12 personnes en service',
+                    '3 plannings à valider',
+                    '2 demandes en attente'
+                ]
+            },
+            'Contrôle Sites': {
+                'icon': 'map-marker-outline',
+                'statuts': [
+                    '5 sites actifs',
+                    '2 inspections planifiées',
+                    '1 rapport en cours'
+                ]
+            },
+            'Gestion Flotte': {
+                'icon': 'drone',
+                'statuts': [
+                    '8 drones en état opérationnel',
+                    '2 drones en maintenance',
+                    '1 mise à jour firmware disponible'
+                ]
             }
-        ]
+        }
         
-        for card_data in cards_data:
-            card = DashboardCard(
-                title=card_data["title"],
-                description=card_data["description"],
-                icon=card_data["icon"]
+        # Création des cartes
+        for title, info in modules.items():
+            card = ModuleCard(
+                title=title,
+                status_examples=info['statuts'],
+                icon=info['icon']
             )
-            self.content_layout.add_widget(card)
+            self.grid.add_widget(card)
         
-        scroll_view.add_widget(self.content_layout)
-        self.main_content.add_widget(scroll_view)
+        scroll.add_widget(self.grid)
         
-        # Ajouter le contenu principal au layout
-        self.layout.add_widget(self.main_content)
+        # Assemblage final
+        self.layout.add_widget(top_bar)
+        self.layout.add_widget(scroll)
         self.add_widget(self.layout)
         
-        # Charger les rôles depuis l'application
-        self.roles = self.load_roles()
-        
-        # Initialiser les cartes
-        Clock.schedule_once(self.initialize_cards)
-        
-        # Ajouter un MDFabButton pour les actions rapides
-        fab_button = MDFabButton(
-            icon="plus",
-            pos_hint={"right": 0.95, "bottom": 0.05},
-            on_release=self.show_quick_actions
-        )
-        self.add_widget(fab_button)
-
-    def switch_view(self, view_name):
-        """Change la vue active"""
-        print(f"Changement vers la vue : {view_name}")
-
-    def load_roles(self):
-        app = self.app
-        return app.available_roles if hasattr(app, 'available_roles') else []
-
     def show_role_menu(self, button):
+        """Affiche le menu déroulant des rôles"""
         menu_items = []
-        
-        # Récupère les rôles depuis l'application
         app = self.app
         roles = app.available_roles if hasattr(app, 'available_roles') else []
-        sorted_roles = sorted(roles, key=lambda x: x.lower())
-        for role_name in sorted_roles:
+        
+        # Trier les rôles par ordre alphabétique
+        sorted_roles = sorted(roles)
+        
+        for role in sorted_roles:
             menu_items.append({
                 "viewclass": "MDDropdownTextItem",
-                "text": role_name,
-                "on_release": lambda x=role_name: self.select_role(x)
+                "text": role,
+                "on_release": lambda x=role: self.select_role(x)
             })
-
+        
         self.menu = MDDropdownMenu(
             caller=button,
             items=menu_items,
             position="bottom",
-            width=400,
-            max_height=400,
-            radius=[24, 24, 24, 24],
-            elevation=4,
-            ver_growth="down",
-            hor_growth="right",
-            background_color=self.theme_cls.surfaceColor
+            width=dp(300),
+            max_height=dp(400),
+            radius=[12, 12, 12, 12],
         )
-        
         self.menu.open()
-
+    
     def select_role(self, role_name):
-        # Fermer le menu
+        """Sélectionne un rôle"""
         if hasattr(self, 'menu'):
             self.menu.dismiss()
         
-        # Mettre à jour le rôle dans l'application
         app = self.app
         if hasattr(app, 'current_role'):
             app.current_role = role_name
-
-    def initialize_cards(self, *args):
-        pass
-
-    def filter_selected(self, filter_text):
-        """Gestionnaire pour la sélection des filtres"""
-        print(f"Filtre sélectionné : {filter_text}")
-
-    def show_quick_actions(self, instance):
-        """Afficher le menu des actions rapides"""
-        quick_actions = [
-            {"text": "Nouvelle mission", "icon": "airplane-plus"},
-            {"text": "Rapport rapide", "icon": "file-document-plus"},
-            {"text": "Alerte maintenance", "icon": "alert"},
-        ]
-        
-        menu_items = [
-            {
-                "viewclass": "MDDropdownTextItem",
-                "text": action["text"],
-                "on_release": lambda x=action["text"]: self.quick_action_selected(x)
-            }
-            for action in quick_actions
-        ]
-        
-        self.quick_menu = MDDropdownMenu(
-            caller=instance,
-            items=menu_items,
-            width=200,
-            position="top",
-            radius=[12, 12, 12, 12],
-        )
-        self.quick_menu.open()
-
-    def quick_action_selected(self, action):
-        """Gestionnaire pour la sélection des actions rapides"""
-        print(f"Action rapide sélectionnée : {action}")
-        if hasattr(self, 'quick_menu'):
-            self.quick_menu.dismiss()
-
+            # Mettre à jour le texte du label
+            self.role_label.text = role_name
+            print(f"Rôle sélectionné : {role_name}")
+    
     def logout(self, *args):
         """Déconnexion de l'utilisateur"""
         app = self.app
         if hasattr(app, 'logout'):
             app.logout()
-
+    
+    def show_notifications(self, *args):
+        """Affiche les notifications"""
+        print("Affichage des notifications")
+        # TODO: Implémenter l'affichage des notifications
+    
+    def show_reports(self, *args):
+        """Affiche les rapports"""
+        print("Affichage des rapports")
+        # TODO: Implémenter l'affichage des rapports
+    
+    def show_settings(self, *args):
+        """Affiche les paramètres"""
+        print("Affichage des paramètres")
+        # TODO: Implémenter l'affichage des paramètres
+    
+    def show_help(self, *args):
+        """Affiche l'aide"""
+        print("Affichage de l'aide")
+        # TODO: Implémenter l'affichage de l'aide
+    
     @property
     def app(self):
         """Obtenir l'instance de l'application"""

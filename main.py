@@ -3,9 +3,11 @@ from kivymd.uix.screenmanager import MDScreenManager
 from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
 from dotenv import load_dotenv
+import os
 
 # Import des services
 from app.services import ConfigService, FirebaseService
+from app.services.mqtt_service import MQTTService
 
 # Import des écrans
 from app.views.screens.splash_screen import SplashScreen
@@ -27,6 +29,7 @@ class HighCloudRPASApp(MDApp):
         self.screen_manager = None
         self.config_service = None
         self.firebase_service = None
+        self.mqtt_service = None
         self.current_role = None
         self.available_roles = []  # Sera chargé depuis config.json
         
@@ -45,8 +48,22 @@ class HighCloudRPASApp(MDApp):
             # Initialise le service de configuration
             self.config_service = ConfigService()
             
-            # Charge les rôles depuis la configuration
+            # Initialise le service MQTT
+            self.mqtt_service = MQTTService()
+            
+            # Utilise les variables d'environnement pour MQTT
+            broker = os.getenv('MQTT_BROKER', 'localhost')
+            port = int(os.getenv('MQTT_PORT', 1883))
+            
+            if self.mqtt_service.connect(broker, port):
+                print("Service MQTT initialisé avec succès")
+            else:
+                print("Erreur lors de l'initialisation du service MQTT")
+            
+            # Charge la configuration
             config = self.config_service.get_config()
+            
+            # Charge les rôles depuis la configuration
             if 'interface' in config and 'roles' in config['interface']:
                 self.available_roles = [
                     role_info["name"]
