@@ -16,6 +16,28 @@ class ConfigService:
             cls._instance._initialize()
         return cls._instance
     
+    def _replace_env_vars(self, config: Any) -> Any:
+        """Remplace les variables d'environnement dans la configuration
+        
+        Args:
+            config: Configuration à traiter (dict, list, str, ou autre type)
+            
+        Returns:
+            Configuration avec les variables d'environnement remplacées
+        """
+        if isinstance(config, dict):
+            return {key: self._replace_env_vars(value) for key, value in config.items()}
+        elif isinstance(config, list):
+            return [self._replace_env_vars(item) for item in config]
+        elif isinstance(config, str) and config.startswith("${") and config.endswith("}"):
+            env_var = config[2:-1]
+            env_value = os.getenv(env_var)
+            if env_value is None:
+                print(f"Attention: Variable d'environnement non trouvée: {env_var}")
+                return config
+            return env_value
+        return config
+    
     def _initialize(self) -> None:
         """Initialise le service de configuration"""
         try:
@@ -31,7 +53,9 @@ class ConfigService:
                 self._config = {}
             else:
                 with open(config_path, 'r', encoding='utf-8') as f:
-                    self._config = json.load(f)
+                    config = json.load(f)
+                    # Remplace les variables d'environnement
+                    self._config = self._replace_env_vars(config)
                 
             print("Configuration chargée avec succès")
             
@@ -81,22 +105,7 @@ class ConfigService:
         Returns:
             Dict contenant toute la configuration Firebase
         """
-        try:
-            # Charge la configuration JSON
-            base_dir = Path(__file__).resolve().parent.parent.parent
-            config_path = base_dir / 'data' / 'config' / 'config.json'
-            
-            if not config_path.exists():
-                raise FileNotFoundError(f"Fichier de configuration non trouvé: {config_path}")
-                
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                
-            return config
-                
-        except Exception as e:
-            print(f"Erreur lors du chargement de la configuration Firebase: {str(e)}")
-            raise
+        return self.get_config('firebase', {})
 
     def get_database_config(self) -> Dict[str, str]:
         """Récupère la configuration de la base de données

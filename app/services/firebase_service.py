@@ -10,15 +10,15 @@ class FirebaseService:
         config = ConfigService().get_firebase_config()
         
         # Initialisation de Pyrebase pour l'authentification
-        self.firebase = pyrebase.initialize_app(config['firebase'])
+        self.firebase = pyrebase.initialize_app(config)
         self.auth_client = self.firebase.auth()
         
         # Initialisation de l'Admin SDK avec les permissions par défaut
         if not firebase_admin._apps:
             cred = credentials.ApplicationDefault()
             firebase_admin.initialize_app(cred, {
-                'projectId': config['firebase']['projectId'],
-                'storageBucket': config['firebase']['storageBucket']
+                'projectId': config['projectId'],
+                'storageBucket': config['storageBucket']
             })
         
         self.auth = auth
