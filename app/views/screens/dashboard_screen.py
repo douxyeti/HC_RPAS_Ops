@@ -365,13 +365,12 @@ class DashboardScreen(MDScreen):
         """Sélectionne un rôle"""
         if hasattr(self, 'menu'):
             self.menu.dismiss()
-        
-        app = self.app
-        if hasattr(app, 'current_role'):
-            app.current_role = role_name
-            # Mettre à jour le texte du label
-            self.role_label.text = role_name
-            print(f"Rôle sélectionné : {role_name}")
+        self.role_label.text = role_name
+        print(f"Rôle sélectionné : {role_name}")
+
+        # Rediriger vers le tableau de bord spécialisé selon le rôle
+        if role_name == "Commandant de bord":
+            self.manager.current = 'commander_dashboard'
     
     def logout(self, *args):
         """Déconnexion de l'utilisateur"""
