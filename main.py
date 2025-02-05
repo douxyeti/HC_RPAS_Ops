@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 
 # Import des services
-from app.services import ConfigService, FirebaseService
+from app.services import ConfigService, FirebaseService, RolesManagerService
 from app.services.mqtt_service import MQTTService
 
 # Import des écrans
@@ -14,6 +14,7 @@ from app.views.screens.splash_screen import SplashScreen
 from app.views.screens.login_screen import LoginScreen
 from app.views.screens.dashboard_screen import DashboardScreen
 from app.views.screens.specialized_dashboard_screen import SpecializedDashboardScreen
+from app.views.screens.roles_manager_screen import RolesManagerScreen
 
 class MainScreenManager(MDScreenManager):
     def __init__(self, **kwargs):
@@ -24,6 +25,7 @@ class MainScreenManager(MDScreenManager):
         self.add_widget(LoginScreen(name="login"))
         self.add_widget(DashboardScreen(name="dashboard"))
         self.add_widget(SpecializedDashboardScreen(name="specialized_dashboard"))
+        self.add_widget(RolesManagerScreen(name="roles_manager"))
 
 class HighCloudRPASApp(MDApp):
     def __init__(self, **kwargs):
@@ -32,6 +34,7 @@ class HighCloudRPASApp(MDApp):
         self.config_service = None
         self.firebase_service = None
         self.mqtt_service = None
+        self.roles_manager_service = None
         self.current_role = None
         self.available_roles = []  # Sera chargé depuis config.json
         
@@ -76,6 +79,9 @@ class HighCloudRPASApp(MDApp):
             # Initialise le service Firebase
             self.firebase_service = FirebaseService()
             
+            # Initialise le service de gestion des rôles
+            self.roles_manager_service = RolesManagerService()
+            
             print("Services initialisés avec succès")
         except Exception as e:
             print(f"Erreur lors de l'initialisation des services: {str(e)}")
@@ -97,7 +103,8 @@ class HighCloudRPASApp(MDApp):
         kv_files = [
             'app/views/kv/splash_screen.kv',
             'app/views/kv/login_screen.kv',
-            'app/views/kv/dashboard_screen.kv'
+            'app/views/kv/dashboard_screen.kv',
+            'app/views/kv/roles_manager_screen.kv'
         ]
         for kv_file in kv_files:
             Builder.load_file(kv_file)

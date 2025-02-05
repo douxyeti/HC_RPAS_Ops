@@ -168,3 +168,30 @@ class ConfigService:
             Liste des dépendances du module
         """
         return self.get_config(f"modules.dependencies.{module_name}", [])
+
+    def get_roles_and_tasks(self) -> Dict[str, Any]:
+        """Récupère les rôles et tâches, prioritairement depuis Firebase
+        
+        Returns:
+            Dict contenant les rôles et leurs tâches
+        """
+        from .firebase_service import FirebaseService
+        
+        # Essaie d'abord de récupérer depuis Firebase
+        firebase_roles = FirebaseService.get_instance().get_roles_and_tasks()
+        if firebase_roles is not None:
+            return firebase_roles
+            
+        # Fallback sur config.json si Firebase échoue
+        return self.get_config("interface.roles", {})
+
+    def migrate_roles_to_firebase(self) -> bool:
+        """Migre les rôles et tâches vers Firebase
+        
+        Returns:
+            True si la migration a réussi, False sinon
+        """
+        from .firebase_service import FirebaseService
+        
+        roles_config = self.get_config("interface.roles", {})
+        return FirebaseService.get_instance().migrate_roles_from_config(roles_config)

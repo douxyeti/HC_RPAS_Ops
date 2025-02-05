@@ -33,16 +33,26 @@
             "documentation"
         ],
         "dependencies": {
-            "operations": ["personnel", "maintenance"],
-            "formation": ["personnel"],
-            "maintenance": ["personnel"]
+            "operations": [
+                "personnel",
+                "maintenance"
+            ],
+            "formation": [
+                "personnel"
+            ],
+            "maintenance": [
+                "personnel"
+            ]
         }
     },
     "interface": {
         "roles": {
             "super_admin": {
                 "name": "Super Administrateur",
-                "permissions": ["all", "system.config"],
+                "permissions": [
+                    "all",
+                    "system.config"
+                ],
                 "tasks": [
                     {
                         "title": "Configuration système",
@@ -54,25 +64,21 @@
                         "title": "Gestion des accès",
                         "icon": "account-key",
                         "module": "system",
-                        "description": "Gérer les accès et authentifications"
+                        "description": "Gérer les accès et permissions"
                     },
                     {
                         "title": "Maintenance système",
-                        "icon": "wrench",
+                        "icon": "tools",
                         "module": "system",
-                        "description": "Maintenance et mises à jour système"
-                    },
-                    {
-                        "title": "Gestion des rôles",
-                        "icon": "account-cog",
-                        "module": "roles_manager",
-                        "description": "Créer, modifier et supprimer les rôles"
+                        "description": "Maintenance et mise à jour du système"
                     }
                 ]
             },
             "admin": {
                 "name": "Administrateur",
-                "permissions": ["all"],
+                "permissions": [
+                    "all"
+                ],
                 "tasks": [
                     {
                         "title": "Gestion des utilisateurs",
@@ -96,7 +102,11 @@
             },
             "admin_assistant": {
                 "name": "Adjoint(e) administratif(ve)",
-                "permissions": ["documentation.view", "documentation.edit", "personnel.view"],
+                "permissions": [
+                    "documentation.view",
+                    "documentation.edit",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Gestion documentaire",
@@ -120,55 +130,27 @@
             },
             "auditor": {
                 "name": "Auditeur",
-                "permissions": ["operations.view", "maintenance.view", "personnel.view", "documentation.view"],
-                "tasks": [
-                    {
-                        "title": "Audit opérationnel",
-                        "icon": "clipboard-check",
-                        "module": "operations",
-                        "description": "Réaliser des audits opérationnels"
-                    },
-                    {
-                        "title": "Audit maintenance",
-                        "icon": "wrench",
-                        "module": "maintenance",
-                        "description": "Réaliser des audits de maintenance"
-                    },
-                    {
-                        "title": "Rapports d'audit",
-                        "icon": "file-chart",
-                        "module": "documentation",
-                        "description": "Rédiger les rapports d'audit"
-                    }
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view",
+                    "personnel.view",
+                    "documentation.view"
                 ]
             },
             "senior_manager": {
                 "name": "Gestionnaire supérieur responsable",
-                "permissions": ["operations.all", "personnel.all", "maintenance.all"],
-                "tasks": [
-                    {
-                        "title": "Supervision stratégique",
-                        "icon": "chart-timeline-variant",
-                        "module": "operations",
-                        "description": "Supervision stratégique des opérations"
-                    },
-                    {
-                        "title": "Gestion des ressources",
-                        "icon": "account-cash",
-                        "module": "personnel",
-                        "description": "Gérer les ressources de l'entreprise"
-                    },
-                    {
-                        "title": "Rapports de direction",
-                        "icon": "file-chart",
-                        "module": "documentation",
-                        "description": "Préparer les rapports de direction"
-                    }
+                "permissions": [
+                    "operations.all",
+                    "personnel.all",
+                    "maintenance.all"
                 ]
             },
             "ops_manager": {
                 "name": "Responsable des opérations",
-                "permissions": ["operations.all", "personnel.view"],
+                "permissions": [
+                    "operations.all",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Gestion des opérations",
@@ -192,7 +174,11 @@
             },
             "chief_pilot": {
                 "name": "Chef pilote",
-                "permissions": ["operations.all", "personnel.view", "formation.all"],
+                "permissions": [
+                    "operations.all",
+                    "personnel.view",
+                    "formation.all"
+                ],
                 "tasks": [
                     {
                         "title": "Supervision des pilotes",
@@ -216,7 +202,10 @@
             },
             "pilot_command": {
                 "name": "Commandant de bord",
-                "permissions": ["operations.all", "maintenance.view"],
+                "permissions": [
+                    "operations.all",
+                    "maintenance.view"
+                ],
                 "tasks": [
                     {
                         "title": "Planification des vols",
@@ -246,7 +235,9 @@
             },
             "maintenance_manager": {
                 "name": "Gestionnaire des activités de maintenance",
-                "permissions": ["maintenance.all"],
+                "permissions": [
+                    "maintenance.all"
+                ],
                 "tasks": [
                     {
                         "title": "Planning maintenance",
@@ -268,17 +259,12 @@
                     }
                 ]
             },
-            "auditor": {
-                "name": "Auditeur",
-                "permissions": ["operations.view", "maintenance.view", "personnel.view", "documentation.view"]
-            },
-            "senior_manager": {
-                "name": "Gestionnaire supérieur responsable",
-                "permissions": ["operations.all", "personnel.all", "maintenance.all"]
-            },
             "site_manager": {
                 "name": "Gestionnaire de site",
-                "permissions": ["operations.view", "maintenance.view"],
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view"
+                ],
                 "tasks": [
                     {
                         "title": "Gestion du site",
@@ -302,7 +288,10 @@
             },
             "mission_specialist": {
                 "name": "Spécialiste de mission",
-                "permissions": ["operations.view", "operations.edit"],
+                "permissions": [
+                    "operations.view",
+                    "operations.edit"
+                ],
                 "tasks": [
                     {
                         "title": "Planification mission",
@@ -326,7 +315,9 @@
             },
             "payload_operator": {
                 "name": "Opérateur de charge utile",
-                "permissions": ["operations.view"],
+                "permissions": [
+                    "operations.view"
+                ],
                 "tasks": [
                     {
                         "title": "Gestion payload",
@@ -350,7 +341,10 @@
             },
             "pilot_controls": {
                 "name": "Pilote aux commandes",
-                "permissions": ["operations.view", "operations.edit"],
+                "permissions": [
+                    "operations.view",
+                    "operations.edit"
+                ],
                 "tasks": [
                     {
                         "title": "Pilotage RPAS",
@@ -374,7 +368,9 @@
             },
             "copilot": {
                 "name": "Copilote",
-                "permissions": ["operations.view"],
+                "permissions": [
+                    "operations.view"
+                ],
                 "tasks": [
                     {
                         "title": "Support pilotage",
@@ -398,7 +394,11 @@
             },
             "pilot": {
                 "name": "Pilote",
-                "permissions": ["operations.view", "operations.edit", "maintenance.view"],
+                "permissions": [
+                    "operations.view",
+                    "operations.edit",
+                    "maintenance.view"
+                ],
                 "tasks": [
                     {
                         "title": "Opérations vol",
@@ -422,7 +422,9 @@
             },
             "ground_station": {
                 "name": "Opérateur de station au sol",
-                "permissions": ["operations.view"],
+                "permissions": [
+                    "operations.view"
+                ],
                 "tasks": [
                     {
                         "title": "Gestion station sol",
@@ -446,7 +448,9 @@
             },
             "ground_observer": {
                 "name": "Observateur au sol",
-                "permissions": ["operations.view"],
+                "permissions": [
+                    "operations.view"
+                ],
                 "tasks": [
                     {
                         "title": "Surveillance zone",
@@ -470,7 +474,9 @@
             },
             "system_maintainer": {
                 "name": "Mainteneur du système",
-                "permissions": ["maintenance.all"],
+                "permissions": [
+                    "maintenance.all"
+                ],
                 "tasks": [
                     {
                         "title": "Maintenance RPAS",
@@ -494,7 +500,11 @@
             },
             "sgs_manager": {
                 "name": "Responsable SGS",
-                "permissions": ["operations.view", "maintenance.view", "personnel.view"],
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Gestion sécurité",
@@ -518,7 +528,11 @@
             },
             "quality_manager": {
                 "name": "Responsable assurance de la qualité",
-                "permissions": ["operations.view", "maintenance.view", "personnel.view"],
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Audits qualité",
@@ -542,7 +556,10 @@
             },
             "training_manager": {
                 "name": "Gestionnaire de la formation",
-                "permissions": ["formation.all", "personnel.view"],
+                "permissions": [
+                    "formation.all",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Programme formation",
@@ -566,7 +583,11 @@
             },
             "formateur": {
                 "name": "Formateur",
-                "permissions": ["formation.view", "formation.edit", "personnel.view"],
+                "permissions": [
+                    "formation.view",
+                    "formation.edit",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Donner formation",
@@ -590,7 +611,10 @@
             },
             "evaluator": {
                 "name": "Évaluateur",
-                "permissions": ["formation.all", "personnel.view"],
+                "permissions": [
+                    "formation.all",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Évaluation compétences",
@@ -614,7 +638,10 @@
             },
             "examiner": {
                 "name": "Examinateur",
-                "permissions": ["formation.all", "personnel.view"],
+                "permissions": [
+                    "formation.all",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Examens théoriques",
@@ -638,7 +665,10 @@
             },
             "instructor": {
                 "name": "Instructeur",
-                "permissions": ["formation.all", "personnel.view"],
+                "permissions": [
+                    "formation.all",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Formation pratique",
@@ -662,7 +692,11 @@
             },
             "inspector": {
                 "name": "Inspecteur",
-                "permissions": ["operations.view", "maintenance.view", "personnel.view"],
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view",
+                    "personnel.view"
+                ],
                 "tasks": [
                     {
                         "title": "Inspection conformité",
@@ -686,7 +720,11 @@
             },
             "maintenance_technician": {
                 "name": "Technicien Maintenance",
-                "permissions": ["maintenance.view", "maintenance.edit", "operations.view"],
+                "permissions": [
+                    "maintenance.view",
+                    "maintenance.edit",
+                    "operations.view"
+                ],
                 "tasks": [
                     {
                         "title": "Maintenance préventive",
@@ -710,7 +748,10 @@
             },
             "safety_officer": {
                 "name": "Agent de sécurité",
-                "permissions": ["operations.view", "maintenance.view"],
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view"
+                ],
                 "tasks": [
                     {
                         "title": "Contrôle sécurité",
@@ -734,7 +775,10 @@
             },
             "quality_inspector": {
                 "name": "Inspecteur qualité",
-                "permissions": ["operations.view", "maintenance.view"],
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view"
+                ],
                 "tasks": [
                     {
                         "title": "Inspection qualité",
@@ -758,7 +802,10 @@
             },
             "operations_coordinator": {
                 "name": "Coordinateur des opérations",
-                "permissions": ["operations.view", "operations.edit"],
+                "permissions": [
+                    "operations.view",
+                    "operations.edit"
+                ],
                 "tasks": [
                     {
                         "title": "Coordination vols",
@@ -782,7 +829,10 @@
             },
             "training_coordinator": {
                 "name": "Coordinateur de formation",
-                "permissions": ["formation.view", "formation.edit"],
+                "permissions": [
+                    "formation.view",
+                    "formation.edit"
+                ],
                 "tasks": [
                     {
                         "title": "Planning formation",
@@ -806,7 +856,9 @@
             },
             "documentation_manager": {
                 "name": "Gestionnaire du cadre documentaire",
-                "permissions": ["documentation.all"],
+                "permissions": [
+                    "documentation.all"
+                ],
                 "tasks": [
                     {
                         "title": "Gestion documents",
@@ -830,16 +882,32 @@
             }
         },
         "workflows": {
-            "flight_operation": ["pre_flight", "flight", "post_flight"],
-            "maintenance": ["inspection", "service", "validation"],
-            "training": ["theory", "practice", "evaluation"]
+            "flight_operation": [
+                "pre_flight",
+                "flight",
+                "post_flight"
+            ],
+            "maintenance": [
+                "inspection",
+                "service",
+                "validation"
+            ],
+            "training": [
+                "theory",
+                "practice",
+                "evaluation"
+            ]
         },
         "ui": {
             "theme": "light",
             "language": "fr",
             "layouts": {
                 "dashboard": {
-                    "default_widgets": ["active_flights", "maintenance_alerts", "weather"]
+                    "default_widgets": [
+                        "active_flights",
+                        "maintenance_alerts",
+                        "weather"
+                    ]
                 }
             }
         }

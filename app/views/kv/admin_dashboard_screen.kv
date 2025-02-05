@@ -1,4 +1,18 @@
 #:kivy 2.0.0
+#:import MDButton kivymd.uix.button.MDButton
 
 <AdminDashboardScreen>:
-    name: "admin_dashboard"
+    MDBoxLayout:
+        orientation: 'vertical'
+        spacing: dp(10)
+        padding: dp(10)
+
+        MDLabel:
+            text: "Tableau de Bord Super Administrateur"
+            halign: "center"
+            font_style: "Display"
+            size_hint_y: None
+            height: dp(50)
+
+        MDList:
+            id: tasks_list

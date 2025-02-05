@@ -1,0 +1,29 @@
+#:kivy 2.0.0
+#:import MDButton kivymd.uix.button.MDButton
+
+<RolesManagerScreen>:
+    name: 'roles_manager'
+    MDBoxLayout:
+        orientation: 'vertical'
+        spacing: dp(10)
+        padding: dp(10)
+
+        MDBoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(10)
+
+            MDLabel:
+                text: "Gestion des Rôles"
+                halign: "left"
+                font_style: "Display"
+
+            MDButton:
+                text: "Nouveau Rôle"
+                style: "filled"
+                on_release: root.show_role_dialog()
+
+        ScrollView:
+            MDList:
+                id: roles_list

@@ -1,383 +1,269 @@
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.button import MDIconButton
+from kivymd.uix.button import MDButton
 from kivymd.uix.label import MDLabel
-from kivymd.uix.card import MDCard
-from kivymd.uix.scrollview import MDScrollView
-from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.list import MDListItem, MDListItemLeadingIcon
-from kivy.metrics import dp
-from kivy.clock import Clock
-
-class IconListItem(MDListItem):
-    """Item personnalisé pour le menu déroulant avec icône"""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-class TaskCard(MDCard):
-    """Carte pour afficher une tâche de l'administrateur"""
-    def __init__(self, title, description, status, icon="checkbox-marked-circle", **kwargs):
-        super().__init__(**kwargs)
-        self.orientation = "vertical"
-        self.padding = 15
-        self.spacing = 10
-        self.size_hint_y = None
-        self.height = dp(200)
-        self.elevation = 2
-        self.radius = [12, 12, 12, 12]
-        self.md_bg_color = [1, 1, 1, 1]  # Fond blanc
-
-        # En-tête de la carte
-        header = MDBoxLayout(
-            orientation="horizontal",
-            size_hint_y=None,
-            height=dp(40),
-            spacing=10,
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
-        )
-
-        icon = MDIconButton(
-            icon=icon,
-            pos_hint={"center_y": 0.5},
-            theme_text_color="Primary"
-        )
-
-        title_label = MDLabel(
-            text=title,
-            bold=True,
-            font_size="16sp",
-            size_hint_y=None,
-            height=dp(40),
-            theme_text_color="Primary"
-        )
-
-        header.add_widget(icon)
-        header.add_widget(title_label)
-
-        # Description
-        description_box = MDBoxLayout(
-            orientation="vertical",
-            spacing=5,
-            padding=[5, 5],
-            md_bg_color=[1, 1, 1, 1]
-        )
-
-        description_label = MDLabel(
-            text=description,
-            font_size="14sp",
-            theme_text_color="Primary"
-        )
-
-        # Statut avec icône
-        status_box = MDBoxLayout(
-            orientation="horizontal",
-            size_hint_y=None,
-            height=dp(30),
-            md_bg_color=[1, 1, 1, 1]
-        )
-
-        status_icon = MDIconButton(
-            icon="circle-small",
-            size_hint_x=None,
-            width=dp(30),
-            theme_text_color="Primary"
-        )
-
-        status_label = MDLabel(
-            text=f"Statut: {status}",
-            font_size="14sp",
-            theme_text_color="Primary"
-        )
-
-        status_box.add_widget(status_icon)
-        status_box.add_widget(status_label)
-
-        # Ajouter les widgets à description_box
-        description_box.add_widget(description_label)
-        description_box.add_widget(status_box)
-
-        # Ajouter tous les éléments à la carte
-        self.add_widget(header)
-        self.add_widget(description_box)
+from kivymd.uix.list import (
+    MDList,
+    MDListItem,
+    MDListItemLeadingIcon,
+    MDListItemHeadlineText,
+    MDListItemSupportingText,
+)
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.selectioncontrol import MDCheckbox
+from kivymd.app import MDApp
 
 class AdminDashboardScreen(MDScreen):
-    """Écran du tableau de bord spécialisé pour l'administrateur"""
+    """Écran d'administration pour gérer les rôles et tâches"""
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.app = MDApp.get_running_app()
+        self.roles_tasks_service = self.app.roles_tasks_service
+        self.current_user = None
+        self.setup_ui()
         
-        # Layout principal avec fond blanc
-        self.layout = MDBoxLayout(
-            orientation='vertical',
-            spacing=10,
-            padding=10,
-            md_bg_color=[1, 1, 1, 1]
-        )
+    def setup_ui(self):
+        """Configure l'interface utilisateur"""
+        layout = MDBoxLayout(orientation='vertical', spacing=10, padding=10)
         
-        # Barre supérieure
-        top_bar = MDBoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height=dp(56),
-            spacing=10,
-            padding=[10, 0],
-            md_bg_color=[1, 1, 1, 1]
-        )
-
-        # Conteneur gauche (pour le titre)
-        left_container = MDBoxLayout(
-            orientation='horizontal',
-            size_hint_x=0.25,
-            md_bg_color=[1, 1, 1, 1]
-        )
-
-        # Conteneur central (pour le menu déroulant)
-        center_container = MDBoxLayout(
-            orientation='horizontal',
-            size_hint_x=0.5,
-            pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            md_bg_color=[1, 1, 1, 1]
-        )
-
-        # Conteneur droit (pour les icônes d'action)
-        right_container = MDBoxLayout(
-            orientation='horizontal',
-            size_hint_x=0.25,
-            spacing=2,
-            padding=[0, 0, 10, 0],
-            pos_hint={'center_y': 0.5},
-            md_bg_color=[1, 1, 1, 1]
-        )
-
-        # Titre
-        title = MDLabel(
-            text="Tableau de bord Administrateur",
-            bold=True,
-            font_size="24sp",
-            valign="center",
-            height=dp(56),
-            theme_text_color="Primary"
-        )
-
-        # Menu déroulant des tâches
-        task_box = MDBoxLayout(
-            orientation='horizontal',
-            size_hint=(None, None),
-            size=(dp(200), dp(56)),
-            spacing=5,
-            padding=[5, 0],
-            pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            md_bg_color=[1, 1, 1, 1]
-        )
-
-        self.task_label = MDLabel(
-            text="Sélectionner une tâche",
-            size_hint=(None, None),
-            size=(dp(160), dp(56)),
+        # En-tête
+        header = MDLabel(
+            text="Tableau de Bord Super Administrateur",
             halign="center",
-            valign="center",
-            pos_hint={'center_y': 0.5},
-            theme_text_color="Primary"
+            font_style="Display"
         )
-
-        self.task_button = MDIconButton(
-            icon="chevron-down",
-            size_hint=(None, None),
-            size=(dp(35), dp(35)),
-            pos_hint={'center_y': 0.5},
-            theme_text_color="Primary"
-        )
-        self.task_button.bind(on_release=self.show_task_menu)
-
-        # Ajouter les widgets au task_box
-        task_box.add_widget(self.task_label)
-        task_box.add_widget(self.task_button)
-
-        # Icônes d'action
-        notifications_button = MDIconButton(
-            icon="bell-outline",
-            on_release=self.show_notifications,
-            pos_hint={'center_y': 0.5}
-        )
-
-        # Icône rapports
-        reports_button = MDIconButton(
-            icon="file-document-outline",
-            on_release=self.show_reports,
-            pos_hint={'center_y': 0.5}
-        )
-
-        # Icône paramètres
-        settings_button = MDIconButton(
-            icon="cog-outline",
-            on_release=self.show_settings,
-            pos_hint={'center_y': 0.5}
-        )
-
-        # Icône aide
-        help_button = MDIconButton(
-            icon="help-circle-outline",
-            on_release=self.show_help,
-            pos_hint={'center_y': 0.5}
-        )
-
-        # Bouton de retour
-        back_button = MDIconButton(
-            icon="arrow-left",
-            on_release=self.go_back,
-            pos_hint={'center_y': 0.5}
-        )
-
-        # Ajouter les widgets aux conteneurs
-        left_container.add_widget(title)
-        center_container.add_widget(task_box)
-        right_container.add_widget(notifications_button)
-        right_container.add_widget(reports_button)
-        right_container.add_widget(settings_button)
-        right_container.add_widget(help_button)
-        right_container.add_widget(back_button)
-
-        # Ajouter les conteneurs à la barre supérieure
-        top_bar.add_widget(left_container)
-        top_bar.add_widget(center_container)
-        top_bar.add_widget(right_container)
-
-        # ScrollView pour la grille de cartes
-        scroll = MDScrollView()
+        layout.add_widget(header)
         
-        # Grille pour les cartes
-        self.grid = MDGridLayout(
-            cols=2,
-            spacing=20,
-            padding=20,
-            size_hint_y=None
+        # Liste des tâches disponibles
+        tasks_list = MDList()
+        
+        # Tâche de gestion des rôles
+        roles_task = MDListItem(
+            on_release=lambda x: self.app.root.switch_screen('roles_manager')
         )
-        self.grid.bind(minimum_height=self.grid.setter('height'))
-
-        # Ajouter les cartes de tâches
-        self.add_task_cards()
-
-        # Assembler le layout
-        scroll.add_widget(self.grid)
-        self.layout.add_widget(top_bar)
-        self.layout.add_widget(scroll)
-        self.add_widget(self.layout)
-
-    def add_task_cards(self):
-        """Ajouter les cartes de tâches spécifiques à l'administrateur"""
-        tasks = [
-            {
-                "title": "Gestion des utilisateurs",
-                "icon": "account-multiple",
-                "description": "Gérer les comptes et les permissions",
-                "status": "2 demandes en attente",
-                "module": "user_management"
-            },
-            {
-                "title": "Configuration système",
-                "icon": "cog",
-                "description": "Paramètres et configuration du système",
-                "status": "Système à jour",
-                "module": "system_config"
-            },
-            {
-                "title": "Audit système",
-                "icon": "shield-check",
-                "description": "Vérification de la sécurité et des accès",
-                "status": "Dernier audit: aujourd'hui",
-                "module": "system_audit"
-            },
-            {
-                "title": "Gestion des rôles",
-                "icon": "account-key",
-                "description": "Configuration des rôles et permissions",
-                "status": "32 rôles actifs",
-                "module": "role_management"
-            }
-        ]
-
-        for task in tasks:
-            card = TaskCard(
-                title=task["title"],
-                description=task["description"],
-                status=task["status"],
-                icon=task["icon"]
+        
+        roles_task.add_widget(MDListItemLeadingIcon(
+            icon="account-cog"
+        ))
+        
+        roles_task.add_widget(MDListItemHeadlineText(
+            text="Gestion des Rôles"
+        ))
+        
+        roles_task.add_widget(MDListItemSupportingText(
+            text="Créer, modifier et supprimer les rôles du système"
+        ))
+        
+        tasks_list.add_widget(roles_task)
+        
+        # Autres tâches administratives peuvent être ajoutées ici
+        
+        layout.add_widget(tasks_list)
+        
+        # Boutons d'action
+        actions = MDBoxLayout(spacing=10, padding=10, size_hint_y=None, height=50)
+        
+        add_role_btn = MDButton(
+            text="Ajouter Rôle",
+            on_release=lambda x: self.show_role_dialog()
+        )
+        add_task_btn = MDButton(
+            text="Ajouter Tâche",
+            on_release=lambda x: self.show_task_dialog()
+        )
+        
+        actions.add_widget(add_role_btn)
+        actions.add_widget(add_task_btn)
+        layout.add_widget(actions)
+        
+        # Liste des rôles et tâches
+        self.roles_list = MDList()
+        self.update_roles_list()
+        layout.add_widget(self.roles_list)
+        
+        self.add_widget(layout)
+        
+    def update_roles_list(self):
+        """Met à jour la liste des rôles"""
+        self.roles_list.clear_widgets()
+        roles = self.roles_tasks_service.get_all_roles()
+        
+        for role_id, role_data in roles.items():
+            item = MDListItem()
+            
+            item.add_widget(MDListItemLeadingIcon(
+                icon="account-circle"
+            ))
+            
+            item.add_widget(MDListItemHeadlineText(
+                text=role_data['name']
+            ))
+            
+            item.add_widget(MDListItemSupportingText(
+                text="Créer et gérer les rôles et leurs permissions"
+            ))
+            
+            edit_icon = MDListItemLeadingIcon(
+                icon="pencil",
+                on_release=lambda x, r=role_id: self.show_role_dialog(r)
             )
-            self.grid.add_widget(card)
-
-    def show_task_menu(self, button):
-        """Affiche le menu déroulant des tâches"""
-        tasks = [
-            {
-                "title": "Gestion des utilisateurs",
-                "icon": "account-multiple",
-                "module": "user_management"
-            },
-            {
-                "title": "Configuration système",
-                "icon": "cog",
-                "module": "system_config"
-            },
-            {
-                "title": "Audit système",
-                "icon": "shield-check",
-                "module": "system_audit"
-            },
-            {
-                "title": "Gestion des rôles",
-                "icon": "account-key",
-                "module": "role_management"
-            }
-        ]
-
-        menu_items = [
-            {
-                "viewclass": "MDDropdownLeadingIconItem",
-                "text": task["title"],
-                "on_release": lambda x=task: self.select_task(x),
-                "leading_icon": task["icon"]
-            } for task in tasks
-        ]
-
-        self.menu = MDDropdownMenu(
-            caller=button,
-            items=menu_items,
-            position="bottom",
-            width=dp(400),
-            max_height=dp(400),
-            radius=[12, 12, 12, 12],
+            delete_icon = MDListItemLeadingIcon(
+                icon="delete",
+                on_release=lambda x, r=role_id: self.delete_role(r)
+            )
+            
+            item.add_widget(edit_icon)
+            item.add_widget(delete_icon)
+            
+            self.roles_list.add_widget(item)
+            
+    def show_role_dialog(self, role_id=None):
+        """Affiche le dialogue pour ajouter/modifier un rôle"""
+        role_data = None
+        if role_id:
+            role_data = self.roles_tasks_service.get_role(role_id)
+            
+        content = MDBoxLayout(orientation='vertical', spacing=10, padding=10)
+        
+        name_field = MDTextField(
+            hint_text="Nom du rôle",
+            text=role_data['name'] if role_data else ""
         )
-        self.menu.open()
-
-    def select_task(self, task):
-        """Sélectionne une tâche et redirige vers le module approprié"""
-        if hasattr(self, 'menu'):
-            self.menu.dismiss()
-        self.task_label.text = task["title"]
-        print(f"Tâche sélectionnée : {task['title']}")
-        print(f"Redirection vers le module : {task['module']}")
-        # TODO: Implémenter la redirection vers le module approprié
-
-    def show_notifications(self, *args):
-        """Affiche les notifications"""
-        print("Affichage des notifications")
-        # TODO: Implémenter l'affichage des notifications
-    
-    def show_reports(self, *args):
-        """Affiche les rapports"""
-        print("Affichage des rapports")
-        # TODO: Implémenter l'affichage des rapports
-    
-    def show_settings(self, *args):
-        """Affiche les paramètres"""
-        print("Affichage des paramètres")
-        # TODO: Implémenter l'affichage des paramètres
-    
-    def show_help(self, *args):
-        """Affiche l'aide"""
-        print("Affichage de l'aide")
-        # TODO: Implémenter l'affichage de l'aide
-
-    def go_back(self, *args):
-        """Retourne au tableau de bord principal"""
-        self.manager.current = 'dashboard'
+        content.add_widget(name_field)
+        
+        # Liste des permissions disponibles
+        permissions = ["create_user", "edit_user", "delete_user", 
+                      "create_task", "edit_task", "delete_task"]
+        permission_boxes = []
+        
+        for perm in permissions:
+            checkbox = MDCheckbox(
+                active=perm in (role_data.get('permissions', []) if role_data else [])
+            )
+            row = MDBoxLayout(orientation='horizontal')
+            row.add_widget(MDLabel(text=perm))
+            row.add_widget(checkbox)
+            content.add_widget(row)
+            permission_boxes.append((perm, checkbox))
+            
+        def save_role(dialog):
+            permissions = [perm for perm, box in permission_boxes if box.active]
+            if role_id:
+                self.roles_tasks_service.update_role(
+                    role_id, name_field.text, permissions
+                )
+            else:
+                self.roles_tasks_service.create_role(
+                    name_field.text, permissions, self.current_user.uid
+                )
+            self.update_roles_list()
+            dialog.dismiss()
+            
+        dialog = MDDialog(
+            title="Ajouter/Modifier Rôle",
+            content_cls=content,
+            buttons=[
+                MDButton(
+                    text="Annuler",
+                    on_release=lambda x: dialog.dismiss()
+                ),
+                MDButton(
+                    text="Sauvegarder",
+                    on_release=lambda x: save_role(dialog)
+                )
+            ]
+        )
+        dialog.open()
+        
+    def show_task_dialog(self, task_id=None):
+        """Affiche le dialogue pour ajouter/modifier une tâche"""
+        task_data = None
+        if task_id:
+            task_data = self.roles_tasks_service.get_task(task_id)
+            
+        content = MDBoxLayout(orientation='vertical', spacing=10, padding=10)
+        
+        title_field = MDTextField(
+            hint_text="Titre de la tâche",
+            text=task_data['title'] if task_data else ""
+        )
+        desc_field = MDTextField(
+            hint_text="Description",
+            text=task_data['description'] if task_data else "",
+            multiline=True
+        )
+        icon_field = MDTextField(
+            hint_text="Icône",
+            text=task_data['icon'] if task_data else ""
+        )
+        module_field = MDTextField(
+            hint_text="Module",
+            text=task_data['module'] if task_data else ""
+        )
+        
+        content.add_widget(title_field)
+        content.add_widget(desc_field)
+        content.add_widget(icon_field)
+        content.add_widget(module_field)
+        
+        def save_task(dialog):
+            if task_id:
+                self.roles_tasks_service.update_task(
+                    task_id, title_field.text, desc_field.text,
+                    icon_field.text, module_field.text
+                )
+            else:
+                self.roles_tasks_service.create_task(
+                    title_field.text, desc_field.text,
+                    icon_field.text, module_field.text,
+                    self.current_user.uid
+                )
+            dialog.dismiss()
+            
+        dialog = MDDialog(
+            title="Ajouter/Modifier Tâche",
+            content_cls=content,
+            buttons=[
+                MDButton(
+                    text="Annuler",
+                    on_release=lambda x: dialog.dismiss()
+                ),
+                MDButton(
+                    text="Sauvegarder",
+                    on_release=lambda x: save_task(dialog)
+                )
+            ]
+        )
+        dialog.open()
+        
+    def delete_role(self, role_id):
+        """Supprime un rôle après confirmation"""
+        def confirm_delete(dialog):
+            self.roles_tasks_service.delete_role(role_id)
+            self.update_roles_list()
+            dialog.dismiss()
+            
+        dialog = MDDialog(
+            title="Confirmer la suppression",
+            text="Êtes-vous sûr de vouloir supprimer ce rôle ?",
+            buttons=[
+                MDButton(
+                    text="Annuler",
+                    on_release=lambda x: dialog.dismiss()
+                ),
+                MDButton(
+                    text="Supprimer",
+                    on_release=lambda x: confirm_delete(dialog)
+                )
+            ]
+        )
+        dialog.open()
+        
+    def on_enter(self):
+        """Appelé quand l'écran devient actif"""
+        self.current_user = self.app.auth_service.current_user
+        if not self.roles_tasks_service.is_super_admin(self.current_user.uid):
+            self.app.switch_screen('dashboard')
+        self.update_roles_list()

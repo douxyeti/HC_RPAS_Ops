@@ -341,7 +341,11 @@ class SpecializedDashboardScreen(MDScreen):
         self.task_label.text = task["title"]
         print(f"Tâche sélectionnée : {task['title']}")
         print(f"Redirection vers le module : {task['module']}")
-        # TODO: Implémenter la redirection vers le module approprié
+        
+        # Redirection vers le module approprié
+        if task['module'] == 'roles_manager':
+            self.manager.current = 'roles_manager'
+        # TODO: Ajouter d'autres redirections de modules au besoin
 
     def show_notifications(self, *args):
         """Affiche les notifications"""
