@@ -7,6 +7,7 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.list import MDListItem, MDListItemLeadingIcon
+from kivymd.app import MDApp
 from kivy.metrics import dp
 from kivy.clock import Clock
 
@@ -101,34 +102,33 @@ class TaskCard(MDCard):
         self.add_widget(header)
         self.add_widget(description_box)
 
-class CommanderDashboardScreen(MDScreen):
-    """Écran du tableau de bord spécialisé pour le commandant de bord"""
+class SpecializedDashboardScreen(MDScreen):
+    """Écran du tableau de bord spécialisé dynamique selon le rôle"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
-        # Layout principal avec fond blanc
+        self.current_role = None
         self.layout = MDBoxLayout(
             orientation='vertical',
             spacing=10,
             padding=10,
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            md_bg_color=[1, 1, 1, 1]
         )
         
         # Barre supérieure
-        top_bar = MDBoxLayout(
+        self.top_bar = MDBoxLayout(
             orientation='horizontal',
             size_hint_y=None,
             height=dp(56),
             spacing=10,
             padding=[10, 0],
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            md_bg_color=[1, 1, 1, 1]
         )
 
         # Conteneur gauche (pour le titre)
         left_container = MDBoxLayout(
             orientation='horizontal',
             size_hint_x=0.25,
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            md_bg_color=[1, 1, 1, 1]
         )
 
         # Conteneur central (pour le menu déroulant)
@@ -136,7 +136,7 @@ class CommanderDashboardScreen(MDScreen):
             orientation='horizontal',
             size_hint_x=0.5,
             pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            md_bg_color=[1, 1, 1, 1]
         )
 
         # Conteneur droit (pour les icônes d'action)
@@ -146,38 +146,38 @@ class CommanderDashboardScreen(MDScreen):
             spacing=2,
             padding=[0, 0, 10, 0],
             pos_hint={'center_y': 0.5},
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            md_bg_color=[1, 1, 1, 1]
         )
 
-        # Titre
-        title = MDLabel(
-            text="Tableau de bord Commandant",
+        # Titre dynamique
+        self.title_label = MDLabel(
+            text="Tableau de bord spécialisé",
             bold=True,
             font_size="24sp",
             valign="center",
             height=dp(56),
-            theme_text_color="Primary"  # Couleur de texte primaire
+            theme_text_color="Primary"
         )
 
         # Menu déroulant des tâches
         task_box = MDBoxLayout(
             orientation='horizontal',
             size_hint=(None, None),
-            size=(dp(200), dp(56)),  
+            size=(dp(200), dp(56)),
             spacing=5,
             padding=[5, 0],
             pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            md_bg_color=[1, 1, 1, 1]
         )
 
         self.task_label = MDLabel(
             text="Sélectionner une tâche",
             size_hint=(None, None),
-            size=(dp(160), dp(56)),  
+            size=(dp(160), dp(56)),
             halign="center",
             valign="center",
             pos_hint={'center_y': 0.5},
-            theme_text_color="Primary"  # Couleur de texte primaire
+            theme_text_color="Primary"
         )
 
         self.task_button = MDIconButton(
@@ -185,7 +185,7 @@ class CommanderDashboardScreen(MDScreen):
             size_hint=(None, None),
             size=(dp(35), dp(35)),
             pos_hint={'center_y': 0.5},
-            theme_text_color="Primary"  # Couleur de texte primaire
+            theme_text_color="Primary"
         )
         self.task_button.bind(on_release=self.show_task_menu)
 
@@ -200,28 +200,24 @@ class CommanderDashboardScreen(MDScreen):
             pos_hint={'center_y': 0.5}
         )
 
-        # Icône rapports
         reports_button = MDIconButton(
             icon="file-document-outline",
             on_release=self.show_reports,
             pos_hint={'center_y': 0.5}
         )
 
-        # Icône paramètres
         settings_button = MDIconButton(
             icon="cog-outline",
             on_release=self.show_settings,
             pos_hint={'center_y': 0.5}
         )
 
-        # Icône aide
         help_button = MDIconButton(
             icon="help-circle-outline",
             on_release=self.show_help,
             pos_hint={'center_y': 0.5}
         )
 
-        # Bouton de retour
         back_button = MDIconButton(
             icon="arrow-left",
             on_release=self.go_back,
@@ -229,7 +225,7 @@ class CommanderDashboardScreen(MDScreen):
         )
 
         # Ajouter les widgets aux conteneurs
-        left_container.add_widget(title)
+        left_container.add_widget(self.title_label)
         center_container.add_widget(task_box)
         right_container.add_widget(notifications_button)
         right_container.add_widget(reports_button)
@@ -238,9 +234,9 @@ class CommanderDashboardScreen(MDScreen):
         right_container.add_widget(back_button)
 
         # Ajouter les conteneurs à la barre supérieure
-        top_bar.add_widget(left_container)
-        top_bar.add_widget(center_container)
-        top_bar.add_widget(right_container)
+        self.top_bar.add_widget(left_container)
+        self.top_bar.add_widget(center_container)
+        self.top_bar.add_widget(right_container)
 
         # ScrollView pour la grille de cartes
         scroll = MDScrollView()
@@ -254,92 +250,31 @@ class CommanderDashboardScreen(MDScreen):
         )
         self.grid.bind(minimum_height=self.grid.setter('height'))
 
-        # Ajouter les cartes de tâches
-        self.add_task_cards()
-
         # Assembler le layout
         scroll.add_widget(self.grid)
-        self.layout.add_widget(top_bar)
+        self.layout.add_widget(self.top_bar)
         self.layout.add_widget(scroll)
         self.add_widget(self.layout)
 
+    def update_for_role(self, role_name):
+        """Met à jour le tableau de bord pour un rôle spécifique"""
+        self.current_role = role_name
+        self.title_label.text = f"Tableau de bord {role_name}"
+        
+        # Vider la grille existante
+        self.grid.clear_widgets()
+        
+        # Charger et ajouter les nouvelles cartes
+        self.add_task_cards()
+        
     def add_task_cards(self):
-        """Ajouter les cartes de tâches spécifiques au commandant"""
-        tasks = [
-            # Planification et préparation
-            {
-                "title": "Planification des vols",
-                "icon": "airplane-clock",
-                "module": "flight_planning"
-            },
-            {
-                "title": "Vérification qualifications équipage",
-                "icon": "certificate",
-                "module": "crew_management"
-            },
-            # Sécurité et opérations
-            {
-                "title": "Supervision sécurité du vol",
-                "icon": "shield-check",
-                "module": "flight_safety"
-            },
-            {
-                "title": "Procédures d'urgence",
-                "icon": "alert-octagon",
-                "module": "emergency_procedures"
-            },
-            # Communications
-            {
-                "title": "Communications mission",
-                "icon": "radio",
-                "module": "mission_comms",
-                "description": "Communication avec spécialiste mission, gestionnaire site, observateur sol, opérateur station"
-            },
-            # Gestion technique
-            {
-                "title": "Paramètres vol autonome",
-                "icon": "console",
-                "module": "flight_parameters",
-                "description": "Configuration station sol et téléversement ATP"
-            },
-            {
-                "title": "Supervision vol manuel",
-                "icon": "gamepad-variant",
-                "module": "manual_flight"
-            },
-            # Gestion incidents
-            {
-                "title": "Rapport incident/accident",
-                "icon": "alert",
-                "module": "incident_reporting"
-            },
-            # Tâches post-vol
-            {
-                "title": "Tâches complétion vol",
-                "icon": "clipboard-check",
-                "module": "post_flight"
-            },
-            # Évaluation risques
-            {
-                "title": "Évaluation des risques",
-                "icon": "chart-risk",
-                "module": "risk_assessment"
-            },
-            # Gestion des rôles
-            {
-                "title": "Délégation des tâches",
-                "icon": "account-switch",
-                "module": "task_delegation",
-                "description": "Délégation des tâches à l'équipe de vol"
-            },
-            {
-                "title": "Transfert de contrôle",
-                "icon": "account-arrow-right",
-                "module": "control_transfer",
-                "description": "Transfert du contrôle à un autre pilote"
-            }
-        ]
-
+        """Ajoute les cartes de tâches spécifiques au rôle"""
+        if not self.current_role:
+            return
+            
+        # Obtenir les tâches pour le rôle actuel
+        tasks = self.get_tasks_for_role()
+        
         for task in tasks:
             self.grid.add_widget(
                 TaskCard(
@@ -350,99 +285,52 @@ class CommanderDashboardScreen(MDScreen):
                 )
             )
 
-    def show_task_menu(self, button):
-        """Affiche le menu déroulant des tâches selon le manuel d'exploitation section 4.1.5"""
-        tasks = [
-            # Planification et préparation
-            {
-                "title": "Planification des vols",
-                "icon": "airplane-clock",
-                "module": "flight_planning"
-            },
-            {
-                "title": "Vérification qualifications équipage",
-                "icon": "certificate",
-                "module": "crew_management"
-            },
-            # Sécurité et opérations
-            {
-                "title": "Supervision sécurité du vol",
-                "icon": "shield-check",
-                "module": "flight_safety"
-            },
-            {
-                "title": "Procédures d'urgence",
-                "icon": "alert-octagon",
-                "module": "emergency_procedures"
-            },
-            # Communications
-            {
-                "title": "Communications mission",
-                "icon": "radio",
-                "module": "mission_comms",
-                "description": "Communication avec spécialiste mission, gestionnaire site, observateur sol, opérateur station"
-            },
-            # Gestion technique
-            {
-                "title": "Paramètres vol autonome",
-                "icon": "console",
-                "module": "flight_parameters",
-                "description": "Configuration station sol et téléversement ATP"
-            },
-            {
-                "title": "Supervision vol manuel",
-                "icon": "gamepad-variant",
-                "module": "manual_flight"
-            },
-            # Gestion incidents
-            {
-                "title": "Rapport incident/accident",
-                "icon": "alert",
-                "module": "incident_reporting"
-            },
-            # Tâches post-vol
-            {
-                "title": "Tâches complétion vol",
-                "icon": "clipboard-check",
-                "module": "post_flight"
-            },
-            # Évaluation risques
-            {
-                "title": "Évaluation des risques",
-                "icon": "chart-risk",
-                "module": "risk_assessment"
-            },
-            # Gestion des rôles
-            {
-                "title": "Délégation des tâches",
-                "icon": "account-switch",
-                "module": "task_delegation",
-                "description": "Délégation des tâches à l'équipe de vol"
-            },
-            {
-                "title": "Transfert de contrôle",
-                "icon": "account-arrow-right",
-                "module": "control_transfer",
-                "description": "Transfert du contrôle à un autre pilote"
-            }
-        ]
+    def get_tasks_for_role(self):
+        """Retourne les tâches spécifiques au rôle actuel depuis la configuration"""
+        if not self.current_role:
+            return []
+            
+        app = MDApp.get_running_app()
+        if not app.config_service:
+            return []
+            
+        config = app.config_service.get_config()
+        if not config:
+            return []
+            
+        # Chercher le rôle dans la configuration
+        roles = config.get('interface', {}).get('roles', {})
+        for role_id, role_info in roles.items():
+            if role_info.get('name') == self.current_role:
+                return role_info.get('tasks', [])
+                
+        return []
 
+    def show_task_menu(self, button):
+        """Affiche le menu déroulant des tâches"""
+        if not self.current_role:
+            return
+            
+        tasks = self.get_tasks_for_role()
+        # Trier les tâches par ordre alphabétique
+        sorted_tasks = sorted(tasks, key=lambda x: x["title"])
+        
         menu_items = [
             {
-                "viewclass": "MDDropdownLeadingIconItem",
+                "viewclass": "MDDropdownTextItem",
                 "text": task["title"],
-                "on_release": lambda x=task: self.select_task(x),
-                "leading_icon": task["icon"]
-            } for task in tasks
+                "on_release": lambda x=task: self.select_task(x)
+            } for task in sorted_tasks
         ]
 
         self.menu = MDDropdownMenu(
             caller=button,
             items=menu_items,
             position="bottom",
-            width=dp(400),
+            width=dp(600),
             max_height=dp(400),
-            radius=[12, 12, 12, 12],
+            radius=[24, 24, 24, 24],
+            elevation=4
         )
         self.menu.open()
 

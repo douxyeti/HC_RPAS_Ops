@@ -368,10 +368,11 @@ class DashboardScreen(MDScreen):
         self.role_label.text = role_name
         print(f"Rôle sélectionné : {role_name}")
 
-        # Rediriger vers le tableau de bord spécialisé selon le rôle
-        if role_name == "Commandant de bord":
-            self.manager.current = 'commander_dashboard'
-    
+        # Rediriger vers le tableau de bord spécialisé
+        specialized_dashboard = self.manager.get_screen('specialized_dashboard')
+        specialized_dashboard.update_for_role(role_name)
+        self.manager.current = 'specialized_dashboard'
+
     def logout(self, *args):
         """Déconnexion de l'utilisateur"""
         app = self.app

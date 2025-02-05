@@ -13,7 +13,7 @@ from app.services.mqtt_service import MQTTService
 from app.views.screens.splash_screen import SplashScreen
 from app.views.screens.login_screen import LoginScreen
 from app.views.screens.dashboard_screen import DashboardScreen
-from app.views.screens.commander_dashboard_screen import CommanderDashboardScreen
+from app.views.screens.specialized_dashboard_screen import SpecializedDashboardScreen
 
 class MainScreenManager(MDScreenManager):
     def __init__(self, **kwargs):
@@ -23,7 +23,7 @@ class MainScreenManager(MDScreenManager):
         self.add_widget(SplashScreen(name="splash"))
         self.add_widget(LoginScreen(name="login"))
         self.add_widget(DashboardScreen(name="dashboard"))
-        self.add_widget(CommanderDashboardScreen(name="commander_dashboard"))
+        self.add_widget(SpecializedDashboardScreen(name="specialized_dashboard"))
 
 class HighCloudRPASApp(MDApp):
     def __init__(self, **kwargs):
