@@ -1,29 +1,29 @@
 #:kivy 2.0.0
 #:import MDButton kivymd.uix.button.MDButton
+#:import MDTopAppBar kivymd.uix.appbar.MDTopAppBar
+#:import MDGridLayout kivymd.uix.gridlayout.MDGridLayout
+#:import MDScrollView kivymd.uix.scrollview.MDScrollView
 
 <RolesManagerScreen>:
     name: 'roles_manager'
+    
     MDBoxLayout:
         orientation: 'vertical'
         spacing: dp(10)
         padding: dp(10)
 
-        MDBoxLayout:
-            orientation: 'horizontal'
-            size_hint_y: None
-            height: dp(50)
-            spacing: dp(10)
+        # En-tête avec titre et bouton
+        MDTopAppBar:
+            title: "Gestion des Rôles"
+            right_action_items: [["plus", lambda x: root.create_role()]]
+            elevation: 0
 
-            MDLabel:
-                text: "Gestion des Rôles"
-                halign: "left"
-                font_style: "Display"
-
-            MDButton:
-                text: "Nouveau Rôle"
-                style: "filled"
-                on_release: root.show_role_dialog()
-
-        ScrollView:
-            MDList:
-                id: roles_list
+        # Zone scrollable avec la grille
+        MDScrollView:
+            MDGridLayout:
+                id: roles_grid
+                cols: 1
+                spacing: dp(10)
+                padding: dp(10)
+                size_hint_y: None
+                height: self.minimum_height

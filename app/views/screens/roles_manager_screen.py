@@ -1,76 +1,111 @@
 from kivy.metrics import dp
 from kivymd.uix.screen import MDScreen
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.card import MDCard
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDFabButton, MDIconButton
 from kivymd.uix.label import MDLabel
-from kivymd.uix.list import (
-    MDList,
-    MDListItem,
-    MDListItemLeadingIcon,
-    MDListItemHeadlineText,
-    MDListItemSupportingText,
-    MDListItemTrailingIcon,
-)
+from kivymd.uix.gridlayout import MDGridLayout
 from app.services.roles_manager_service import RolesManagerService
+
+class RoleCard(MDCard):
+    def __init__(self, role_data, on_edit, on_delete, **kwargs):
+        super().__init__(**kwargs)
+        print(f"Création de la carte pour le rôle : {role_data}")  # Debug
+        
+        self.orientation = 'vertical'
+        self.size_hint_y = None
+        self.height = dp(120)
+        self.padding = dp(16)
+        self.spacing = dp(8)
+        self.elevation = 1
+        
+        # Layout pour le titre et les boutons
+        header = MDBoxLayout(orientation='horizontal', adaptive_height=True)
+        
+        # Titre avec vérification
+        title_text = role_data.get('name', '')
+        print(f"Titre du rôle : {title_text}")  # Debug
+        
+        title = MDLabel(
+            text=title_text,
+            theme_font_size="Custom",
+            font_size="20sp",
+            adaptive_height=True
+        )
+        header.add_widget(title)
+        
+        # Boutons d'action
+        actions = MDBoxLayout(
+            orientation='horizontal',
+            adaptive_width=True,
+            spacing=dp(8)
+        )
+        
+        edit_btn = MDIconButton(
+            icon='pencil',
+            on_release=lambda x: on_edit(role_data)
+        )
+        delete_btn = MDIconButton(
+            icon='delete',
+            on_release=lambda x: on_delete(role_data)
+        )
+        
+        actions.add_widget(edit_btn)
+        actions.add_widget(delete_btn)
+        header.add_widget(actions)
+        
+        # Description avec vérification
+        desc_text = role_data.get('description', 'Aucune description')
+        print(f"Description du rôle : {desc_text}")  # Debug
+        
+        description = MDLabel(
+            text=desc_text,
+            adaptive_height=True
+        )
+        
+        self.add_widget(header)
+        self.add_widget(description)
 
 class RolesManagerScreen(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.roles_service = RolesManagerService()
         
-        # Crée la liste des rôles
-        self.roles_list = MDList()
-        self.add_widget(self.roles_list)
-        
-        # Ajoute le bouton flottant pour créer un rôle
-        self.add_button = MDFabButton(
-            icon="plus",
-            pos_hint={"right": 0.95, "bottom": 0.05},
-            on_release=lambda x: self.create_role()
+        # Crée la grille pour les rôles
+        self.roles_grid = MDGridLayout(
+            id='roles_grid',
+            cols=1,
+            size_hint_y=None,
+            height=0,
+            padding=dp(16),
+            spacing=dp(16)
         )
-        self.add_widget(self.add_button)
+        self.add_widget(self.roles_grid)
         
-        # Charge les rôles
         self.load_roles()
         
     def load_roles(self):
         """Charge et affiche la liste des rôles"""
-        self.roles_list.clear_widgets()
+        self.ids.roles_grid.clear_widgets()
+        self.ids.roles_grid.height = 0
         roles = self.roles_service.get_all_roles()
         
         for role_id, role_data in roles.items():
+            print(f"Chargement du rôle : ID={role_id}, Nom={role_data.get('name', 'NON DÉFINI')}")
+            # Vérifie que le rôle a au moins un nom
+            if not role_data.get('name'):
+                print(f"Rôle ignoré car sans nom : {role_id}")
+                continue
+                
             role_data['id'] = role_id
-            
-            # Crée un élément de liste pour chaque rôle
-            list_item = MDListItem()
-            
-            # Ajoute l'icône principale
-            list_item.add_widget(MDListItemLeadingIcon(
-                icon="account-circle"
-            ))
-            
-            # Ajoute le titre et la description
-            list_item.add_widget(MDListItemHeadlineText(
-                text=role_data.get('name', '')
-            ))
-            list_item.add_widget(MDListItemSupportingText(
-                text=role_data.get('description', '')
-            ))
-            
-            # Ajoute les icônes d'action
-            edit_button = MDIconButton(
-                icon="pencil",
-                on_release=lambda x, r=role_data: self.edit_role(r)
+            card = RoleCard(
+                role_data,
+                on_edit=self.edit_role,
+                on_delete=self.delete_role,
+                size_hint_x=1
             )
-            delete_button = MDIconButton(
-                icon="delete",
-                on_release=lambda x, r=role_data: self.delete_role(r)
-            )
-            
-            list_item.add_widget(edit_button)
-            list_item.add_widget(delete_button)
-            
-            self.roles_list.add_widget(list_item)
+            self.ids.roles_grid.add_widget(card)
+            # self.ids.roles_grid.height += card.height + self.ids.roles_grid.spacing
             
     def create_role(self):
         """Crée un nouveau rôle"""
