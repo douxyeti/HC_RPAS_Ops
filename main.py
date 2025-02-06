@@ -15,6 +15,7 @@ from app.views.screens.login_screen import LoginScreen
 from app.views.screens.dashboard_screen import DashboardScreen
 from app.views.screens.specialized_dashboard_screen import SpecializedDashboardScreen
 from app.views.screens.roles_manager_screen import RolesManagerScreen
+from app.views.screens.role_edit_screen import RoleEditScreen
 
 class MainScreenManager(MDScreenManager):
     def __init__(self, **kwargs):
@@ -26,6 +27,7 @@ class MainScreenManager(MDScreenManager):
         self.add_widget(DashboardScreen(name="dashboard"))
         self.add_widget(SpecializedDashboardScreen(name="specialized_dashboard"))
         self.add_widget(RolesManagerScreen(name="roles_manager"))
+        self.add_widget(RoleEditScreen(name="role_edit"))
 
 class HighCloudRPASApp(MDApp):
     def __init__(self, **kwargs):
@@ -45,6 +47,7 @@ class HighCloudRPASApp(MDApp):
         # Configuration du thème
         self.theme_cls.material_style = "M3"
         self.theme_cls.primary_palette = "Blue"  # Couleur principale
+        self.theme_cls.primary_hue = "700"  # Teinte plus foncée
         self.theme_cls.accent_palette = "Amber"  # Couleur d'accent
         self.theme_cls.theme_style = "Light"     # Thème clair
         
@@ -104,7 +107,8 @@ class HighCloudRPASApp(MDApp):
             'app/views/kv/splash_screen.kv',
             'app/views/kv/login_screen.kv',
             'app/views/kv/dashboard_screen.kv',
-            'app/views/kv/roles_manager_screen.kv'
+            'app/views/kv/roles_manager_screen.kv',
+            'app/views/kv/role_edit_screen.kv'  # Ajout du fichier KV pour l'édition des rôles
         ]
         for kv_file in kv_files:
             Builder.load_file(kv_file)

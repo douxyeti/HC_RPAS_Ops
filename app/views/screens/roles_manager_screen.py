@@ -5,6 +5,7 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.label import MDLabel
 from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.scrollview import MDScrollView
 from app.services.roles_manager_service import RolesManagerService
 
 class RoleCard(MDCard):
@@ -69,25 +70,18 @@ class RoleCard(MDCard):
 class RolesManagerScreen(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.name = 'roles_manager'
         self.roles_service = RolesManagerService()
-        
-        # Crée la grille pour les rôles
-        self.roles_grid = MDGridLayout(
-            id='roles_grid',
-            cols=1,
-            size_hint_y=None,
-            height=0,
-            padding=dp(16),
-            spacing=dp(16)
-        )
-        self.add_widget(self.roles_grid)
-        
         self.load_roles()
+        
+    def on_enter(self):
+        """Appelé quand l'écran devient actif"""
+        self.load_roles()  # Recharge les rôles à chaque fois qu'on revient sur l'écran
         
     def load_roles(self):
         """Charge et affiche la liste des rôles"""
-        self.ids.roles_grid.clear_widgets()
-        self.ids.roles_grid.height = 0
+        roles_grid = self.ids.roles_grid
+        roles_grid.clear_widgets()
         roles = self.roles_service.get_all_roles()
         
         for role_id, role_data in roles.items():
@@ -104,8 +98,7 @@ class RolesManagerScreen(MDScreen):
                 on_delete=self.delete_role,
                 size_hint_x=1
             )
-            self.ids.roles_grid.add_widget(card)
-            # self.ids.roles_grid.height += card.height + self.ids.roles_grid.spacing
+            roles_grid.add_widget(card)
             
     def create_role(self):
         """Crée un nouveau rôle"""
@@ -118,13 +111,14 @@ class RolesManagerScreen(MDScreen):
         self.load_roles()
         
     def edit_role(self, role_data):
-        """Modifie un rôle existant"""
-        # Pour l'instant, on met juste à jour le nom
-        role_data['name'] = role_data['name'] + ' (modifié)'
-        self.roles_service.update_role(role_data['id'], role_data)
-        self.load_roles()
+        """Ouvre l'écran d'édition pour le rôle"""
+        edit_screen = self.manager.get_screen('role_edit')
+        edit_screen.role_data = role_data.copy()
+        self.manager.current = 'role_edit'
         
     def delete_role(self, role_data):
         """Supprime un rôle"""
-        self.roles_service.delete_role(role_data['id'])
-        self.load_roles()
+        role_id = role_data.get('id')
+        if role_id:
+            self.roles_service.delete_role(role_id)
+            self.load_roles()
