@@ -28,6 +28,12 @@ class RolesManagerService:
             role_id = self.db.add_document(self.collection, role_data)
             if role_id:
                 role_data['id'] = role_id
+                # Met à jour la liste des rôles disponibles dans l'application
+                from kivymd.app import MDApp
+                app = MDApp.get_running_app()
+                if hasattr(app, 'available_roles'):
+                    app.available_roles.append(role_data['name'])
+                    app.available_roles.sort()
                 return True
             return False
         except Exception as e:
@@ -37,8 +43,18 @@ class RolesManagerService:
     def update_role(self, role_id, role_data):
         """Met à jour un rôle existant"""
         try:
-            self.db.update_document(self.collection, role_id, role_data)
-            return True
+            old_role = self.get_role(role_id)
+            if self.db.update_document(self.collection, role_id, role_data):
+                # Met à jour la liste des rôles disponibles dans l'application
+                from kivymd.app import MDApp
+                app = MDApp.get_running_app()
+                if hasattr(app, 'available_roles') and old_role:
+                    if old_role.get('name') in app.available_roles:
+                        app.available_roles.remove(old_role.get('name'))
+                    app.available_roles.append(role_data['name'])
+                    app.available_roles.sort()
+                return True
+            return False
         except Exception as e:
             print(f"Erreur lors de la mise à jour du rôle : {e}")
             return False
@@ -46,8 +62,16 @@ class RolesManagerService:
     def delete_role(self, role_id):
         """Supprime un rôle"""
         try:
-            self.db.delete_document(self.collection, role_id)
-            return True
+            role = self.get_role(role_id)
+            if self.db.delete_document(self.collection, role_id):
+                # Met à jour la liste des rôles disponibles dans l'application
+                from kivymd.app import MDApp
+                app = MDApp.get_running_app()
+                if hasattr(app, 'available_roles') and role:
+                    if role.get('name') in app.available_roles:
+                        app.available_roles.remove(role.get('name'))
+                return True
+            return False
         except Exception as e:
             print(f"Erreur lors de la suppression du rôle : {e}")
             return False

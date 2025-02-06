@@ -38,7 +38,7 @@ class HighCloudRPASApp(MDApp):
         self.mqtt_service = None
         self.roles_manager_service = None
         self.current_role = None
-        self.available_roles = []  # Sera chargé depuis config.json
+        self.available_roles = []  # Sera chargé depuis Firebase
         
     def build(self):
         # Charge les variables d'environnement
@@ -68,22 +68,16 @@ class HighCloudRPASApp(MDApp):
             else:
                 print("Erreur lors de l'initialisation du service MQTT")
             
-            # Charge la configuration
-            config = self.config_service.get_config()
-            
-            # Charge les rôles depuis la configuration
-            if 'interface' in config and 'roles' in config['interface']:
-                self.available_roles = [
-                    role_info["name"]
-                    for role_info in config['interface']['roles'].values()
-                ]
-                self.available_roles.sort()  # Trie les rôles par ordre alphabétique
-            
             # Initialise le service Firebase
             self.firebase_service = FirebaseService()
             
             # Initialise le service de gestion des rôles
             self.roles_manager_service = RolesManagerService()
+            
+            # Charge les rôles depuis Firebase
+            roles_data = self.roles_manager_service.get_all_roles()
+            self.available_roles = [role.get('name') for role in roles_data.values()]
+            self.available_roles.sort()  # Trie les rôles par ordre alphabétique
             
             print("Services initialisés avec succès")
         except Exception as e:
