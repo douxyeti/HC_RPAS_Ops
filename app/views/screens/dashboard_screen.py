@@ -135,7 +135,7 @@ class DashboardScreen(MDScreen):
         )
 
         self.role_label = MDLabel(
-            text="Sélectionner un rôle",
+            text="Choisissez votre tâche",
             size_hint=(None, None),
             size=(dp(160), dp(56)),
             halign="center",

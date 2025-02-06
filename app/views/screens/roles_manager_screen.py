@@ -9,6 +9,8 @@ from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.dialog import MDDialog, MDDialogHeadlineText, MDDialogContentContainer, MDDialogButtonContainer
 from kivymd.uix.textfield import MDTextField
 from app.services.roles_manager_service import RolesManagerService
+from kivy.uix.widget import Widget
+from kivy.clock import Clock
 
 class RoleCard(MDCard):
     def __init__(self, role_data, on_edit, on_delete, **kwargs):
@@ -86,14 +88,19 @@ class RolesManagerScreen(MDScreen):
         roles_grid.clear_widgets()
         roles = self.roles_manager_service.get_all_roles()
         
-        for role_id, role_data in roles.items():
-            print(f"Chargement du rôle : ID={role_id}, Nom={role_data.get('name', 'NON DÉFINI')}")
+        # Convertir le dictionnaire en liste et trier par nom
+        sorted_roles = sorted(
+            [{'id': role_id, **role_data} for role_id, role_data in roles.items()],
+            key=lambda x: x.get('name', '').lower()  # Tri insensible à la casse
+        )
+        
+        for role_data in sorted_roles:
+            print(f"Chargement du rôle : ID={role_data['id']}, Nom={role_data.get('name', 'NON DÉFINI')}")
             # Vérifie que le rôle a au moins un nom
             if not role_data.get('name'):
-                print(f"Rôle ignoré car sans nom : {role_id}")
+                print(f"Rôle ignoré car sans nom : {role_data['id']}")
                 continue
                 
-            role_data['id'] = role_id
             card = RoleCard(
                 role_data,
                 on_edit=self.edit_role,
@@ -121,11 +128,12 @@ class RolesManagerScreen(MDScreen):
             padding=dp(20)
         )
         
-        self.role_name_field = MDTextField(
+        name_field = MDTextField(
             hint_text="Nom du rôle",
-            mode="outlined"
+            mode="outlined",
+            size_hint_x=1
         )
-        content_container.add_widget(self.role_name_field)
+        content_container.add_widget(name_field)
         dialog.add_widget(content_container)
         
         button_container = MDDialogButtonContainer(
@@ -141,21 +149,20 @@ class RolesManagerScreen(MDScreen):
         )
         cancel_button.add_widget(MDButtonText(text="Annuler"))
         
-        confirm_button = MDButton(
+        create_button = MDButton(
             style="text",
-            on_release=lambda x: self.create_role_with_name(dialog)
+            on_release=lambda x: self.create_role_with_name(name_field.text, dialog)
         )
-        confirm_button.add_widget(MDButtonText(text="Créer"))
+        create_button.add_widget(MDButtonText(text="Créer"))
         
         button_container.add_widget(cancel_button)
-        button_container.add_widget(confirm_button)
+        button_container.add_widget(create_button)
         dialog.add_widget(button_container)
         
         dialog.open()
 
-    def create_role_with_name(self, dialog):
+    def create_role_with_name(self, role_name, dialog):
         """Crée un nouveau rôle avec le nom saisi"""
-        role_name = self.role_name_field.text
         if role_name.strip():
             role_data = {
                 'name': role_name,
