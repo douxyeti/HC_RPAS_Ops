@@ -260,6 +260,7 @@ class SpecializedDashboardScreen(MDScreen):
         """Met à jour le tableau de bord pour un rôle spécifique"""
         self.current_role = role_name
         self.title_label.text = f"Tableau de bord {role_name}"
+        self.task_label.text = "Sélectionner une tâche"
         
         # Vider la grille existante
         self.grid.clear_widgets()
