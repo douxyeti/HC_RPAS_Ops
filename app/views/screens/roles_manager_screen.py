@@ -50,12 +50,19 @@ class RoleCard(MDCard):
             icon='pencil',
             on_release=lambda x: on_edit(role_data)
         )
+        actions.add_widget(edit_btn)
+
+        # Ajout du bouton de gestion des tâches
+        tasks_btn = MDIconButton(
+            icon='clipboard-list',
+            on_release=lambda x: on_edit(role_data, manage_tasks=True)
+        )
+        actions.add_widget(tasks_btn)
+        
         delete_btn = MDIconButton(
             icon='delete',
             on_release=lambda x: on_delete(role_data)
         )
-        
-        actions.add_widget(edit_btn)
         actions.add_widget(delete_btn)
         header.add_widget(actions)
         
@@ -177,11 +184,21 @@ class RolesManagerScreen(MDScreen):
         """Affiche le dialogue de création d'un nouveau rôle"""
         self.show_create_role_dialog()
 
-    def edit_role(self, role_data):
-        """Ouvre l'écran d'édition pour le rôle"""
-        edit_screen = self.manager.get_screen('role_edit')
-        edit_screen.role_data = role_data.copy()
-        self.manager.current = 'role_edit'
+    def edit_role(self, role_data, manage_tasks=False):
+        """Ouvre l'écran d'édition pour le rôle ou l'écran de gestion des tâches"""
+        if manage_tasks:
+            task_screen = self.manager.get_screen('task_manager')
+            task_screen.current_role_id = role_data.get('id', '')
+            task_screen.current_role_name = role_data.get('name', '')
+            self.manager.transition.direction = 'left'
+            self.manager.current = 'task_manager'
+        else:
+            # Code existant pour l'édition du rôle
+            edit_screen = self.manager.get_screen('role_edit')
+            edit_screen.role_id = role_data.get('id', '')
+            edit_screen.role_name = role_data.get('name', '')
+            self.manager.transition.direction = 'left'
+            self.manager.current = 'role_edit'
         
     def show_delete_confirmation_dialog(self, role_id):
         dialog = MDDialog(

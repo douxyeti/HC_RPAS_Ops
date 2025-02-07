@@ -8,14 +8,13 @@
 #:import MDLabel kivymd.uix.label.MDLabel
 #:import dp kivy.metrics.dp
 
-<RolesManagerScreen>:
-    name: 'roles_manager'
+<TaskManagerScreen>:
+    name: 'task_manager'
     
     MDBoxLayout:
         orientation: 'vertical'
         spacing: dp(10)
         padding: dp(10)
-        md_bg_color: [1, 1, 1, 1]  # Fond blanc
 
         # En-tête avec titre et boutons
         MDBoxLayout:
@@ -31,12 +30,12 @@
                 icon: "arrow-left"
                 theme_text_color: "Custom"
                 text_color: [1, 1, 1, 1]
-                on_release: app.root.current = 'dashboard'
+                on_release: root.go_back()
                 pos_hint: {"center_y": 0.5}
 
             # Titre
             MDLabel:
-                text: "Gestion des Rôles"
+                text: "Gestion des Tâches"
                 bold: True
                 font_size: "24sp"
                 theme_text_color: "Custom"
@@ -50,15 +49,27 @@
                 icon: "plus"
                 theme_text_color: "Custom"
                 text_color: [1, 1, 1, 1]
-                on_release: root.add_role()
+                on_release: root.show_add_task_dialog()
                 pos_hint: {"center_y": 0.5}
 
-        # Zone scrollable avec la grille
+        # Sous-titre avec le nom du rôle
+        MDLabel:
+            text: f"Tâches pour le rôle : {root.current_role_name}"
+            bold: True
+            font_size: "20sp"
+            size_hint_y: None
+            height: dp(40)
+            padding: [dp(10), 0]
+
+        # Liste des tâches
         MDScrollView:
+            do_scroll_x: False
+            
             MDGridLayout:
-                id: roles_grid
+                id: tasks_list
                 cols: 1
                 spacing: dp(10)
                 padding: dp(10)
                 size_hint_y: None
                 height: self.minimum_height
+                adaptive_height: True

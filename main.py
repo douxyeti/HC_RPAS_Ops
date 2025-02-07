@@ -16,6 +16,7 @@ from app.views.screens.dashboard_screen import DashboardScreen
 from app.views.screens.specialized_dashboard_screen import SpecializedDashboardScreen
 from app.views.screens.roles_manager_screen import RolesManagerScreen
 from app.views.screens.role_edit_screen import RoleEditScreen
+from app.views.screens.task_manager_screen import TaskManagerScreen
 
 class MainScreenManager(MDScreenManager):
     def __init__(self, **kwargs):
@@ -28,6 +29,7 @@ class MainScreenManager(MDScreenManager):
         self.add_widget(SpecializedDashboardScreen(name="specialized_dashboard"))
         self.add_widget(RolesManagerScreen(name="roles_manager"))
         self.add_widget(RoleEditScreen(name="role_edit"))
+        self.add_widget(TaskManagerScreen(name="task_manager"))
 
 class HighCloudRPASApp(MDApp):
     def __init__(self, **kwargs):
@@ -102,7 +104,8 @@ class HighCloudRPASApp(MDApp):
             'app/views/kv/login_screen.kv',
             'app/views/kv/dashboard_screen.kv',
             'app/views/kv/roles_manager_screen.kv',
-            'app/views/kv/role_edit_screen.kv'  # Ajout du fichier KV pour l'édition des rôles
+            'app/views/kv/role_edit_screen.kv',  # Ajout du fichier KV pour l'édition des rôles
+            'app/views/kv/task_manager_screen.kv'  # Ajout du fichier KV pour la gestion des tâches
         ]
         for kv_file in kv_files:
             Builder.load_file(kv_file)
