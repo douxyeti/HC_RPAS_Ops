@@ -209,7 +209,7 @@ class RolesManagerScreen(MDScreen):
                 children=[
                     MDTextField(
                         hint_text="Nom du rôle",
-                        mode="rectangle",
+                        mode="outlined",
                         size_hint_y=None,
                         height=dp(48)
                     )

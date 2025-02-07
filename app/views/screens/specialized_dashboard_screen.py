@@ -358,7 +358,7 @@ class SpecializedDashboardScreen(MDScreen):
         if module == "system":
             if task.get('title') == "Gérer les tâches":
                 self.manager.transition.direction = 'left'
-                self.manager.current = 'task_manager'
+                self.manager.current = 'roles_manager'
         # Autres redirections selon les modules...
 
     def show_notifications(self, *args):
