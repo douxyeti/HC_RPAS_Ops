@@ -39,26 +39,53 @@ class AdminDashboardScreen(MDScreen):
         # Liste des tâches disponibles
         tasks_list = MDList()
         
-        # Tâche de gestion des rôles
-        roles_task = MDListItem(
-            on_release=lambda x: self.app.root.switch_screen('roles_manager')
-        )
+        # Charger les tâches du super admin depuis la configuration
+        super_admin_config = self.app.config.get('interface', {}).get('roles', {}).get('super_admin', {})
+        tasks = super_admin_config.get('tasks', [])
         
-        roles_task.add_widget(MDListItemLeadingIcon(
-            icon="account-cog"
-        ))
-        
-        roles_task.add_widget(MDListItemHeadlineText(
-            text="Gestion des Rôles"
-        ))
-        
-        roles_task.add_widget(MDListItemSupportingText(
-            text="Créer, modifier et supprimer les rôles du système"
-        ))
-        
-        tasks_list.add_widget(roles_task)
-        
-        # Autres tâches administratives peuvent être ajoutées ici
+        for task in tasks:
+            task_item = MDListItem(
+                on_release=lambda x, t=task: self.on_task_selected(t)
+            )
+            
+            # Icône
+            icon = MDListItemLeadingIcon(
+                icon=task.get('icon', 'android')
+            )
+            
+            # Appliquer les styles de l'icône s'ils existent
+            if 'style' in task and 'icon_color' in task['style']:
+                icon.theme_text_color = "Custom"
+                icon.text_color = task['style']['icon_color']
+            
+            task_item.add_widget(icon)
+            
+            # Titre
+            title = MDListItemHeadlineText(
+                text=task.get('title', '')
+            )
+            
+            # Appliquer les styles du texte s'ils existent
+            if 'style' in task and 'text_color' in task['style']:
+                title.theme_text_color = "Custom"
+                title.text_color = task['style']['text_color']
+            
+            task_item.add_widget(title)
+            
+            # Description
+            if task.get('description'):
+                description = MDListItemSupportingText(
+                    text=task.get('description', '')
+                )
+                
+                # Appliquer les styles de la description s'ils existent
+                if 'style' in task and 'text_color' in task['style']:
+                    description.theme_text_color = "Custom"
+                    description.text_color = task['style']['text_color']
+                
+                task_item.add_widget(description)
+            
+            tasks_list.add_widget(task_item)
         
         layout.add_widget(tasks_list)
         
@@ -77,11 +104,6 @@ class AdminDashboardScreen(MDScreen):
         actions.add_widget(add_role_btn)
         actions.add_widget(add_task_btn)
         layout.add_widget(actions)
-        
-        # Liste des rôles et tâches
-        self.roles_list = MDList()
-        self.update_roles_list()
-        layout.add_widget(self.roles_list)
         
         self.add_widget(layout)
         
@@ -261,6 +283,27 @@ class AdminDashboardScreen(MDScreen):
         )
         dialog.open()
         
+    def on_task_selected(self, task):
+        """Gère la sélection d'une tâche"""
+        print(f"Tâche sélectionnée : {task.get('title', '')}")
+        print(f"Redirection vers le module : {task.get('module', '')}")
+        
+        # Si c'est la tâche de gestion des tâches
+        if task.get('title') == 'Gérer les tâches':
+            # Rediriger vers la page de gestion des tâches sans rôle spécifique
+            task_screen = self.manager.get_screen('task_manager')
+            task_screen.current_role_id = ''  # Pas de rôle spécifique
+            task_screen.current_role_name = ''
+            self.manager.transition.direction = 'left'
+            self.manager.current = 'task_manager'
+            return
+            
+        # Pour les autres tâches, rediriger vers le module correspondant
+        module = task.get('module', '')
+        if module:
+            # TODO: Implémenter la redirection vers les autres modules
+            pass
+            
     def on_enter(self):
         """Appelé quand l'écran devient actif"""
         self.current_user = self.app.auth_service.current_user

@@ -46,12 +46,10 @@ class HighCloudRPASApp(MDApp):
         # Charge les variables d'environnement
         load_dotenv()
         
-        # Configuration du thème
-        self.theme_cls.material_style = "M3"
+        # Définir le thème clair par défaut
+        self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Blue"  # Couleur principale
-        self.theme_cls.primary_hue = "700"  # Teinte plus foncée
         self.theme_cls.accent_palette = "Amber"  # Couleur d'accent
-        self.theme_cls.theme_style = "Light"     # Thème clair
         
         # Initialisation des services
         try:

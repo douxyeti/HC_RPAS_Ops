@@ -45,6 +45,28 @@
                 "permissions": ["all", "system.config"],
                 "tasks": [
                     {
+                        "title": "Accès rapide aux tâches",
+                        "icon": "clipboard-list",
+                        "module": "system",
+                        "description": "Accéder rapidement au gestionnaire de tâches",
+                        "style": {
+                            "theme_text_color": "Custom",
+                            "text_color": [1, 0, 0, 1],
+                            "icon_color": [1, 0, 0, 1]
+                        }
+                    },
+                    {
+                        "title": "Gérer les tâches",
+                        "icon": "clipboard-list",
+                        "module": "system",
+                        "description": "Gérer les tâches des rôles",
+                        "style": {
+                            "theme_text_color": "Custom",
+                            "text_color": [1, 0, 0, 1],
+                            "icon_color": [1, 0, 0, 1]
+                        }
+                    },
+                    {
                         "title": "Configuration système",
                         "icon": "cog",
                         "module": "system",
@@ -61,12 +83,6 @@
                         "icon": "wrench",
                         "module": "system",
                         "description": "Maintenance et mises à jour système"
-                    },
-                    {
-                        "title": "Gestion des rôles",
-                        "icon": "account-cog",
-                        "module": "roles_manager",
-                        "description": "Créer, modifier et supprimer les rôles"
                     }
                 ]
             },

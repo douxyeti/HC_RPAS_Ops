@@ -337,16 +337,29 @@ class SpecializedDashboardScreen(MDScreen):
 
     def select_task(self, task):
         """Sélectionne une tâche et redirige vers le module approprié"""
+        # Fermer le menu déroulant s'il est ouvert
         if hasattr(self, 'menu'):
             self.menu.dismiss()
-        self.task_label.text = task["title"]
-        print(f"Tâche sélectionnée : {task['title']}")
-        print(f"Redirection vers le module : {task['module']}")
+            
+        self.task_label.text = task.get('title', '')
         
-        # Redirection vers le module approprié
-        if task['module'] == 'roles_manager':
-            self.manager.current = 'roles_manager'
-        # TODO: Ajouter d'autres redirections de modules au besoin
+        # Si c'est l'accès rapide aux tâches, rediriger vers le gestionnaire de tâches
+        if task.get('title') == "Accès rapide aux tâches":
+            self.manager.transition.direction = 'left'
+            self.manager.current = 'task_manager'
+            return
+            
+        # Pour les autres tâches, rediriger vers le module approprié
+        module = task.get('module', '')
+        print(f"Tâche sélectionnée : {task.get('title')}")
+        print(f"Redirection vers le module : {module}")
+        
+        # Redirection selon le module
+        if module == "system":
+            if task.get('title') == "Gérer les tâches":
+                self.manager.transition.direction = 'left'
+                self.manager.current = 'task_manager'
+        # Autres redirections selon les modules...
 
     def show_notifications(self, *args):
         """Affiche les notifications"""

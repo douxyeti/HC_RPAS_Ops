@@ -13,7 +13,7 @@ from kivy.uix.widget import Widget
 from kivy.clock import Clock
 
 class RoleCard(MDCard):
-    def __init__(self, role_data, on_edit, on_delete, **kwargs):
+    def __init__(self, role_data, on_edit, on_delete, on_manage_tasks, **kwargs):
         super().__init__(**kwargs)
         print(f"Création de la carte pour le rôle : {role_data}")  # Debug
         
@@ -52,10 +52,12 @@ class RoleCard(MDCard):
         )
         actions.add_widget(edit_btn)
 
-        # Ajout du bouton de gestion des tâches
+        # Bouton de gestion des tâches
         tasks_btn = MDIconButton(
             icon='clipboard-list',
-            on_release=lambda x: on_edit(role_data, manage_tasks=True)
+            on_release=lambda x: on_manage_tasks(role_data),
+            theme_icon_color="Custom",
+            icon_color=[1, 0, 0, 1]  # Rouge
         )
         actions.add_widget(tasks_btn)
         
@@ -83,6 +85,81 @@ class RolesManagerScreen(MDScreen):
         super().__init__(**kwargs)
         self.name = 'roles_manager'
         self.roles_manager_service = RolesManagerService()
+        
+        # Créer l'en-tête avec le bouton de gestion des tâches
+        header = MDBoxLayout(
+            orientation='horizontal',
+            size_hint_y=None,
+            height=dp(56),
+            spacing=dp(10),
+            padding=[dp(10), 0],
+            md_bg_color=[0.2, 0.2, 0.9, 1]  # Bleu foncé
+        )
+        
+        # Bouton retour
+        back_btn = MDIconButton(
+            icon="arrow-left",
+            theme_text_color="Custom",
+            text_color=[1, 1, 1, 1],
+            on_release=lambda x: self.go_back(),
+            pos_hint={"center_y": 0.5}
+        )
+        header.add_widget(back_btn)
+        
+        # Titre
+        title = MDLabel(
+            text="Gestion des Rôles",
+            theme_text_color="Custom",
+            text_color=[1, 1, 1, 1],
+            theme_font_size="Custom",
+            font_size="24sp",
+            size_hint_x=0.7,
+            halign="center"
+        )
+        header.add_widget(title)
+        
+        # Bouton rapport (redirige vers gestion des tâches)
+        report_btn = MDIconButton(
+            icon="file-document-outline",
+            theme_text_color="Custom",
+            text_color=[1, 0, 0, 1],  # Rouge comme le bouton de gestion des tâches
+            on_release=lambda x: self.go_to_tasks(),
+            pos_hint={"center_y": 0.5},
+            size_hint_x=0.15
+        )
+        header.add_widget(report_btn)
+        
+        # Bouton d'ajout de rôle
+        add_btn = MDIconButton(
+            icon="plus",
+            theme_text_color="Custom",
+            text_color=[1, 1, 1, 1],
+            on_release=lambda x: self.show_add_role_dialog(),
+            pos_hint={"center_y": 0.5},
+            size_hint_x=0.15
+        )
+        header.add_widget(add_btn)
+        
+        # Ajouter l'en-tête à l'écran
+        self.add_widget(header)
+        
+        # Créer la grille pour les cartes de rôles
+        self.roles_grid = MDBoxLayout(
+            orientation='vertical',
+            spacing=dp(10),
+            padding=dp(10),
+            adaptive_height=True
+        )
+        
+        # Mettre la grille dans un ScrollView
+        scroll = MDScrollView(
+            do_scroll_x=False,
+            size_hint=(1, 1)
+        )
+        scroll.add_widget(self.roles_grid)
+        self.add_widget(scroll)
+        
+        # Charger les rôles
         self.load_roles()
         
     def on_enter(self):
@@ -112,19 +189,113 @@ class RolesManagerScreen(MDScreen):
                 role_data,
                 on_edit=self.edit_role,
                 on_delete=self.delete_role,
+                on_manage_tasks=self.manage_tasks,
                 size_hint_x=1
             )
             roles_grid.add_widget(card)
             
-    def show_create_role_dialog(self):
+    def show_add_role_dialog(self):
         """Affiche un dialogue pour saisir le nom du nouveau rôle"""
+        dialog = MDDialog(
+            radius=20,
+            title="Ajouter un nouveau rôle",
+            type="custom",
+            content_cls=MDBoxLayout(
+                orientation="vertical",
+                spacing=dp(10),
+                padding=dp(10),
+                size_hint_y=None,
+                height=dp(100),
+                children=[
+                    MDTextField(
+                        hint_text="Nom du rôle",
+                        mode="rectangle",
+                        size_hint_y=None,
+                        height=dp(48)
+                    )
+                ]
+            ),
+            buttons=[
+                MDButton(
+                    style="text",
+                    on_release=lambda x: dialog.dismiss(),
+                    children=[MDButtonText(text="ANNULER")]
+                ),
+                MDButton(
+                    style="text",
+                    on_release=lambda x: self.create_role(dialog),
+                    children=[MDButtonText(text="CRÉER")]
+                )
+            ]
+        )
+        dialog.open()
+
+    def create_role(self, dialog):
+        """Crée un nouveau rôle avec le nom saisi"""
+        role_name = dialog.content_cls.children[0].text
+        if role_name.strip():
+            # Générer un ID unique pour le rôle
+            role_id = role_name.lower().replace(" ", "_")
+            
+            role_data = {
+                'id': role_id,
+                'name': role_name,
+                'description': '',
+                'permissions': [],
+                'tasks': []
+            }
+            
+            # Créer le rôle dans Firebase
+            success = self.roles_manager_service.create_role(role_data)
+            
+            if success:
+                # Fermer le dialogue
+                dialog.dismiss()
+                
+                # Rafraîchir l'affichage
+                self.load_roles()
+            else:
+                print("Erreur lors de la création du rôle")
+        else:
+            print("Le nom du rôle ne peut pas être vide")
+
+    def add_role(self):
+        """Affiche le dialogue de création d'un nouveau rôle"""
+        self.show_add_role_dialog()
+
+    def edit_role(self, role_data):
+        """Ouvre l'écran d'édition pour le rôle"""
+        edit_screen = self.manager.get_screen('role_edit')
+        edit_screen.role_id = role_data.get('id', '')
+        edit_screen.role_name = role_data.get('name', '')
+        self.manager.transition.direction = 'left'
+        self.manager.current = 'role_edit'
+
+    def manage_tasks(self, role_data=None):
+        """Ouvre l'écran de gestion des tâches pour le rôle"""
+        task_screen = self.manager.get_screen('task_manager')
+        
+        # Si on vient d'une carte de rôle, définir le rôle courant
+        if role_data:
+            task_screen.current_role_id = role_data.get('id', '')
+            task_screen.current_role_name = role_data.get('name', '')
+        else:
+            # Sinon, on vient du tableau de bord admin, ne pas définir de rôle courant
+            task_screen.current_role_id = ''
+            task_screen.current_role_name = ''
+            
+        self.manager.transition.direction = 'left'
+        self.manager.current = 'task_manager'
+
+    def delete_role(self, role_data):
+        """Supprime un rôle après confirmation"""
         dialog = MDDialog(
             radius=20,
             size_hint=(.8, None)
         )
         
         dialog.add_widget(MDDialogHeadlineText(
-            text="Créer un nouveau rôle",
+            text="Confirmer la suppression",
             theme_font_size="Custom",
             font_size="24sp"
         ))
@@ -135,98 +306,13 @@ class RolesManagerScreen(MDScreen):
             padding=dp(20)
         )
         
-        name_field = MDTextField(
-            hint_text="Nom du rôle",
-            mode="outlined",
-            size_hint_x=1
-        )
-        content_container.add_widget(name_field)
-        dialog.add_widget(content_container)
-        
-        button_container = MDDialogButtonContainer(
-            orientation='horizontal',
-            spacing=dp(10),
-            size_hint_y=None,
-            height=dp(50)
-        )
-        
-        cancel_button = MDButton(
-            style="text",
-            on_release=lambda x: dialog.dismiss()
-        )
-        cancel_button.add_widget(MDButtonText(text="Annuler"))
-        
-        create_button = MDButton(
-            style="text",
-            on_release=lambda x: self.create_role_with_name(name_field.text, dialog)
-        )
-        create_button.add_widget(MDButtonText(text="Créer"))
-        
-        button_container.add_widget(cancel_button)
-        button_container.add_widget(create_button)
-        dialog.add_widget(button_container)
-        
-        dialog.open()
-
-    def create_role_with_name(self, role_name, dialog):
-        """Crée un nouveau rôle avec le nom saisi"""
-        if role_name.strip():
-            role_data = {
-                'name': role_name,
-                'description': 'Description du rôle',
-                'tasks': []
-            }
-            self.roles_manager_service.create_role(role_data)
-            self.load_roles()
-            dialog.dismiss()
-
-    def add_role(self):
-        """Affiche le dialogue de création d'un nouveau rôle"""
-        self.show_create_role_dialog()
-
-    def edit_role(self, role_data, manage_tasks=False):
-        """Ouvre l'écran d'édition pour le rôle ou l'écran de gestion des tâches"""
-        if manage_tasks:
-            task_screen = self.manager.get_screen('task_manager')
-            task_screen.current_role_id = role_data.get('id', '')
-            task_screen.current_role_name = role_data.get('name', '')
-            self.manager.transition.direction = 'left'
-            self.manager.current = 'task_manager'
-        else:
-            # Code existant pour l'édition du rôle
-            edit_screen = self.manager.get_screen('role_edit')
-            edit_screen.role_id = role_data.get('id', '')
-            edit_screen.role_name = role_data.get('name', '')
-            self.manager.transition.direction = 'left'
-            self.manager.current = 'role_edit'
-        
-    def show_delete_confirmation_dialog(self, role_id):
-        dialog = MDDialog(
-            radius=20,
-            size_hint=(.8, None),
-            height=dp(200)
-        )
-        
-        # Titre du dialogue
-        dialog.add_widget(MDDialogHeadlineText(
-            text="Confirmation de suppression",
-            theme_font_size="Custom",
-            font_size="24sp"
-        ))
-        
-        # Contenu du dialogue
-        content_container = MDDialogContentContainer(
-            orientation='vertical',
-            spacing=dp(20),
-            padding=dp(20)
-        )
         content_container.add_widget(MDLabel(
-            text="Êtes-vous sûr de vouloir supprimer ce rôle ?",
-            theme_text_color="Secondary"
+            text=f"Voulez-vous vraiment supprimer le rôle {role_data.get('name', '')} ?",
+            theme_font_size="Custom",
+            font_size="16sp"
         ))
         dialog.add_widget(content_container)
         
-        # Boutons
         button_container = MDDialogButtonContainer(
             orientation='horizontal',
             spacing=dp(10),
@@ -234,29 +320,37 @@ class RolesManagerScreen(MDScreen):
             height=dp(50)
         )
         
-        # Bouton Annuler
         cancel_button = MDButton(
             style="text",
             on_release=lambda x: dialog.dismiss()
         )
         cancel_button.add_widget(MDButtonText(text="Annuler"))
-        button_container.add_widget(cancel_button)
         
-        # Bouton Confirmer
-        confirm_button = MDButton(
+        delete_button = MDButton(
             style="text",
-            on_release=lambda x: self.confirm_delete_role(role_id, dialog)
+            on_release=lambda x: self.confirm_delete_role(role_data.get('id', ''), dialog)
         )
-        confirm_button.add_widget(MDButtonText(text="Confirmer"))
-        button_container.add_widget(confirm_button)
+        delete_button.add_widget(MDButtonText(text="Supprimer"))
         
+        button_container.add_widget(cancel_button)
+        button_container.add_widget(delete_button)
         dialog.add_widget(button_container)
+        
         dialog.open()
 
     def confirm_delete_role(self, role_id, dialog):
+        """Confirme et effectue la suppression du rôle"""
+        if role_id:
+            self.roles_manager_service.delete_role(role_id)
+            self.load_roles()
         dialog.dismiss()
-        self.roles_manager_service.delete_role(role_id)
-        self.load_roles()
 
-    def delete_role(self, role_data):
-        self.show_delete_confirmation_dialog(role_data['id'])
+    def go_to_tasks(self):
+        """Rediriger vers l'écran de gestion des tâches"""
+        self.manager.transition.direction = 'left'
+        self.manager.current = 'task_manager'
+
+    def go_back(self):
+        """Retourner à l'écran précédent"""
+        self.manager.transition.direction = 'right'
+        self.manager.current = 'dashboard'

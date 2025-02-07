@@ -162,6 +162,27 @@ class FirebaseService:
             print(f"Erreur lors de l'ajout du document: {e}")
             return None
             
+    def add_document_with_id(self, collection, doc_id, data):
+        """Ajoute un nouveau document avec un ID spécifique dans une collection
+        
+        Args:
+            collection: Nom de la collection
+            doc_id: ID du document à créer
+            data: Données du document
+            
+        Returns:
+            bool: True si le document a été créé avec succès, False sinon
+        """
+        try:
+            # Crée une référence au document avec l'ID spécifié
+            doc_ref = self.db.collection(collection).document(doc_id)
+            # Ajoute les données au document
+            doc_ref.set(data)
+            return True
+        except Exception as e:
+            print(f"Erreur lors de l'ajout du document : {e}")
+            return False
+            
     def update_document(self, collection_name, doc_id, data):
         """Met à jour un document existant"""
         try:
