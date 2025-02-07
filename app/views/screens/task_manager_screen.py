@@ -124,7 +124,7 @@ class TaskInputDialog(MDBoxLayout):
         
         self.task_name = MDTextField(
             hint_text="Nom de la tâche",
-            mode="filled",
+            mode="outlined",
             required=True
         )
         self.add_widget(self.task_name)
@@ -137,6 +137,8 @@ class TaskManagerScreen(MDScreen):
         super().__init__(**kwargs)
         self.name = "task_manager"
         self.task_dialog = None
+        self.edit_dialog = None
+        self.delete_dialog = None
     
     def on_enter(self):
         """Called when the screen is entered"""
@@ -157,49 +159,185 @@ class TaskManagerScreen(MDScreen):
         for task in example_tasks:
             task_card = TaskCard(
                 task,
-                on_edit=self.edit_task,
-                on_delete=self.delete_task
+                on_edit=self.show_edit_task_dialog,
+                on_delete=self.show_delete_task_dialog
             )
             tasks_list.add_widget(task_card)
     
     def show_add_task_dialog(self):
         """Show dialog to add a new task"""
-        if not self.task_dialog:
-            content = TaskInputDialog()
-            self.task_dialog = MDDialog(
-                MDDialogHeadlineText(text="Ajouter une tâche"),
-                MDDialogContentContainer(content),
-                MDDialogButtonContainer(
-                    MDButton(
-                        MDButtonText(text="ANNULER"),
-                        style="text",
-                        on_release=lambda x: self.task_dialog.dismiss()
-                    ),
-                    MDButton(
-                        MDButtonText(text="AJOUTER"),
-                        style="text",
-                        on_release=lambda x: self.add_task(content.task_name.text)
-                    )
-                )
-            )
-        self.task_dialog.open()
+        dialog = MDDialog(
+            radius=20,
+            size_hint=(.8, None)
+        )
+        
+        dialog.add_widget(MDDialogHeadlineText(
+            text="Ajouter une tâche",
+            theme_font_size="Custom",
+            font_size="24sp"
+        ))
+        
+        content_container = MDDialogContentContainer(
+            orientation='vertical',
+            spacing=dp(20),
+            padding=dp(20)
+        )
+        
+        name_field = MDTextField(
+            hint_text="Nom de la tâche",
+            mode="outlined",
+            size_hint_x=1
+        )
+        content_container.add_widget(name_field)
+        dialog.add_widget(content_container)
+        
+        button_container = MDDialogButtonContainer(
+            orientation='horizontal',
+            spacing=dp(10),
+            size_hint_y=None,
+            height=dp(50)
+        )
+        
+        cancel_button = MDButton(
+            style="text",
+            on_release=lambda x: dialog.dismiss()
+        )
+        cancel_button.add_widget(MDButtonText(text="Annuler"))
+        
+        create_button = MDButton(
+            style="text",
+            on_release=lambda x: self.add_task(name_field.text, dialog)
+        )
+        create_button.add_widget(MDButtonText(text="Ajouter"))
+        
+        button_container.add_widget(cancel_button)
+        button_container.add_widget(create_button)
+        dialog.add_widget(button_container)
+        
+        dialog.open()
     
-    def add_task(self, task_name):
+    def show_edit_task_dialog(self, task_data):
+        """Show dialog to edit a task"""
+        dialog = MDDialog(
+            radius=20,
+            size_hint=(.8, None)
+        )
+        
+        dialog.add_widget(MDDialogHeadlineText(
+            text="Modifier la tâche",
+            theme_font_size="Custom",
+            font_size="24sp"
+        ))
+        
+        content_container = MDDialogContentContainer(
+            orientation='vertical',
+            spacing=dp(20),
+            padding=dp(20)
+        )
+        
+        name_field = MDTextField(
+            hint_text="Nom de la tâche",
+            mode="outlined",
+            text=task_data.get('name', ''),
+            size_hint_x=1
+        )
+        content_container.add_widget(name_field)
+        dialog.add_widget(content_container)
+        
+        button_container = MDDialogButtonContainer(
+            orientation='horizontal',
+            spacing=dp(10),
+            size_hint_y=None,
+            height=dp(50)
+        )
+        
+        cancel_button = MDButton(
+            style="text",
+            on_release=lambda x: dialog.dismiss()
+        )
+        cancel_button.add_widget(MDButtonText(text="Annuler"))
+        
+        save_button = MDButton(
+            style="text",
+            on_release=lambda x: self.edit_task(task_data['id'], name_field.text, dialog)
+        )
+        save_button.add_widget(MDButtonText(text="Enregistrer"))
+        
+        button_container.add_widget(cancel_button)
+        button_container.add_widget(save_button)
+        dialog.add_widget(button_container)
+        
+        dialog.open()
+    
+    def show_delete_task_dialog(self, task_data):
+        """Show confirmation dialog to delete a task"""
+        dialog = MDDialog(
+            radius=20,
+            size_hint=(.8, None)
+        )
+        
+        dialog.add_widget(MDDialogHeadlineText(
+            text="Supprimer la tâche",
+            theme_font_size="Custom",
+            font_size="24sp"
+        ))
+        
+        content_container = MDDialogContentContainer(
+            orientation='vertical',
+            spacing=dp(20),
+            padding=dp(20)
+        )
+        
+        content_container.add_widget(MDLabel(
+            text=f"Voulez-vous vraiment supprimer la tâche '{task_data.get('name', '')}'?",
+            theme_text_color="Secondary"
+        ))
+        dialog.add_widget(content_container)
+        
+        button_container = MDDialogButtonContainer(
+            orientation='horizontal',
+            spacing=dp(10),
+            size_hint_y=None,
+            height=dp(50)
+        )
+        
+        cancel_button = MDButton(
+            style="text",
+            on_release=lambda x: dialog.dismiss()
+        )
+        cancel_button.add_widget(MDButtonText(text="Annuler"))
+        
+        delete_button = MDButton(
+            style="text",
+            on_release=lambda x: self.delete_task(task_data['id'], dialog)
+        )
+        delete_button.add_widget(MDButtonText(text="Supprimer"))
+        
+        button_container.add_widget(cancel_button)
+        button_container.add_widget(delete_button)
+        dialog.add_widget(button_container)
+        
+        dialog.open()
+    
+    def add_task(self, task_name, dialog):
         """Add a new task to the current role"""
         if task_name.strip():
             # TODO: Implement adding task to Firebase
-            self.task_dialog.dismiss()
+            dialog.dismiss()
             self.load_tasks()
     
-    def edit_task(self, task_data):
+    def edit_task(self, task_id, new_name, dialog):
         """Edit an existing task"""
-        # TODO: Implement task editing
-        pass
+        if new_name.strip():
+            # TODO: Implement task editing in Firebase
+            dialog.dismiss()
+            self.load_tasks()
     
-    def delete_task(self, task_data):
+    def delete_task(self, task_id, dialog):
         """Delete a task"""
-        # TODO: Implement task deletion
-        pass
+        # TODO: Implement task deletion in Firebase
+        dialog.dismiss()
+        self.load_tasks()
     
     def go_back(self):
         """Return to the previous screen"""
