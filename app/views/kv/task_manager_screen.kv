@@ -1,0 +1,32 @@
+#:kivy 2.3.1
+#:import dp kivy.metrics.dp
+
+<TaskManagerScreen>:
+    tasks_grid: tasks_grid
+    
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        
+        MDTopAppBar:
+            title: "Gestionnaire des tâches"
+            elevation: 2
+            left_action_items: [['menu', lambda x: root.parent.parent.parent.toggle_nav_drawer()]]
+            right_action_items: [['plus', lambda x: root.show_add_task_dialog()]]
+
+        MDBoxLayout:
+            orientation: 'vertical'
+            padding: dp(10)
+            spacing: dp(10)
+
+            MDScrollView:
+                do_scroll_x: False
+                do_scroll_y: True
+                
+                MDGridLayout:
+                    id: tasks_grid
+                    cols: 1
+                    spacing: dp(10)
+                    padding: dp(10)
+                    size_hint_y: None
+                    height: self.minimum_height

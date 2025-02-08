@@ -25,6 +25,7 @@ class RoleCard(MDCard):
         
         self.orientation = 'vertical'
         self.size_hint_y = None
+        self.size_hint_x = 0.95  # Laisse 5% d'espace sur la droite
         self.height = dp(100)  # Réduire la hauteur de la carte
         self.padding = dp(8)  # Réduire le padding
         self.spacing = dp(4)  # Réduire l'espacement
@@ -166,7 +167,12 @@ class RolesManagerScreen(MDScreen):
         # Mettre la grille dans un ScrollView
         scroll = MDScrollView(
             do_scroll_x=False,
-            size_hint=(1, 0.9)  # Laisser 10% pour l'en-tête
+            do_scroll_y=True,
+            size_hint=(1, 0.9),  # Laisser 10% pour l'en-tête
+            bar_width=dp(25),
+            bar_color=[0.2, 0.2, 0.9, 1],  # Bleu
+            bar_inactive_color=[0.2, 0.2, 0.9, 0.5],  # Bleu plus transparent
+            bar_pos_y='right'
         )
         scroll.add_widget(self.roles_grid)
         
@@ -187,6 +193,7 @@ class RolesManagerScreen(MDScreen):
         """Charge et affiche la liste des rôles"""
         # Effacer les widgets existants
         self.roles_grid.clear_widgets()
+        self.roles_grid.height = 0  # Réinitialiser la hauteur
         
         # Récupérer la liste des rôles
         roles = self.roles_manager_service.get_all_roles()
@@ -197,22 +204,29 @@ class RolesManagerScreen(MDScreen):
             key=lambda x: x.get('name', '').lower()  # Tri insensible à la casse
         )
         
+        # Ajouter chaque rôle
         for role_data in sorted_roles:
-            print(f"Chargement du rôle : ID={role_data.get('id')}, Nom={role_data.get('name', 'NON DÉFINI')}")
-            # Vérifie que le rôle a au moins un nom
-            if not role_data.get('name'):
-                print(f"Rôle ignoré car sans nom : {role_data.get('id')}")
-                continue
-                
-            card = RoleCard(
-                role_data,
+            # Créer une carte pour le rôle
+            role_card = RoleCard(
+                role_data=role_data,
                 on_edit=self.edit_role,
                 on_delete=self.delete_role,
-                on_manage_tasks=self.manage_tasks,
-                size_hint_x=1
+                on_manage_tasks=self.manage_tasks
             )
-            self.roles_grid.add_widget(card)
-
+            self.roles_grid.add_widget(role_card)
+            # Mettre à jour la hauteur après chaque ajout
+            self.roles_grid.height += role_card.height + dp(10)  # +10 pour l'espacement
+        
+        # S'assurer que la hauteur minimale est respectée
+        self.roles_grid.height = max(self.roles_grid.height, self.roles_grid.minimum_height)
+        Clock.schedule_once(lambda dt: self.update_scroll_size(), 0.1)
+    
+    def update_scroll_size(self):
+        """Met à jour la taille du scroll view"""
+        if hasattr(self, 'roles_grid'):
+            self.roles_grid.height = self.roles_grid.minimum_height
+            self.roles_grid.do_layout()
+    
     def show_add_role_dialog(self):
         """Affiche un dialogue pour saisir le nom du nouveau rôle"""
         dialog = MDDialog(

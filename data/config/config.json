@@ -45,17 +45,6 @@
                 "permissions": ["all", "system.config"],
                 "tasks": [
                     {
-                        "title": "Accès rapide aux tâches",
-                        "icon": "clipboard-list",
-                        "module": "system",
-                        "description": "Accéder rapidement au gestionnaire de tâches",
-                        "style": {
-                            "theme_text_color": "Custom",
-                            "text_color": [1, 0, 0, 1],
-                            "icon_color": [1, 0, 0, 1]
-                        }
-                    },
-                    {
                         "title": "Gérer les tâches",
                         "icon": "clipboard-list",
                         "module": "system",

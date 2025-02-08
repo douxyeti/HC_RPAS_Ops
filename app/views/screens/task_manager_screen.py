@@ -126,15 +126,25 @@ class TaskManagerScreen(MDScreen):
         
         # Créer la grille pour les cartes de tâches
         self.tasks_grid = MDBoxLayout(
+            id='tasks_grid',
             orientation='vertical',
             spacing=dp(10),
-            padding=dp(10),
-            adaptive_height=True
+            padding=[dp(10), dp(10), dp(25), dp(10)],  # [gauche, haut, droite, bas]
+            adaptive_height=True,
+            size_hint_y=None,
+            height=self.minimum_height if hasattr(self, 'minimum_height') else 0
         )
         
         # Mettre la grille dans un ScrollView
         scroll = MDScrollView(
             do_scroll_x=False,
+            do_scroll_y=True,
+            bar_width=dp(25),
+            bar_color=[0.2, 0.2, 0.9, 1],  # Bleu
+            bar_inactive_color=[0.2, 0.2, 0.9, 0.5],  # Bleu plus transparent
+            bar_pos_y='right',
+            scroll_type=['bars'],
+            scroll_wheel_distance=dp(-40),
             size_hint=(1, 1)
         )
         scroll.add_widget(self.tasks_grid)
@@ -158,6 +168,7 @@ class TaskManagerScreen(MDScreen):
         """Charge et affiche la liste des tâches"""
         # Effacer les tâches existantes
         self.tasks_grid.clear_widgets()
+        self.tasks_grid.height = 0  # Réinitialiser la hauteur
         
         # Si on a un rôle sélectionné, charger ses tâches
         if self.current_role_id:
@@ -173,6 +184,12 @@ class TaskManagerScreen(MDScreen):
                 on_delete=self.delete_task
             )
             self.tasks_grid.add_widget(task_card)
+            # Mettre à jour la hauteur après chaque ajout
+            self.tasks_grid.height += task_card.height + dp(10)  # +10 pour l'espacement
+        
+        # S'assurer que la hauteur minimale est respectée
+        if hasattr(self.tasks_grid, 'minimum_height'):
+            self.tasks_grid.height = max(self.tasks_grid.height, self.tasks_grid.minimum_height)
 
     def show_add_task_dialog(self):
         """Affiche le dialogue pour ajouter une nouvelle tâche."""

@@ -17,48 +17,29 @@
         padding: dp(10)
         md_bg_color: [1, 1, 1, 1]  # Fond blanc
 
-        # En-tête avec titre et boutons
-        MDBoxLayout:
-            orientation: 'horizontal'
-            size_hint_y: None
-            height: dp(56)
-            spacing: dp(10)
-            padding: [dp(10), 0]
-            md_bg_color: [0.2, 0.2, 0.9, 1]
-
-            # Bouton retour
-            MDIconButton:
-                icon: "arrow-left"
-                theme_text_color: "Custom"
-                text_color: [1, 1, 1, 1]
-                on_release: app.root.current = 'dashboard'
-                pos_hint: {"center_y": 0.5}
-
-            # Titre
-            MDLabel:
-                text: "Gestion des Rôles"
-                bold: True
-                font_size: "24sp"
-                theme_text_color: "Custom"
-                text_color: [1, 1, 1, 1]
-                size_hint_x: 0.9
-                valign: "center"
-                height: dp(56)
-
-            # Bouton ajouter
-            MDIconButton:
-                icon: "plus"
-                theme_text_color: "Custom"
-                text_color: [1, 1, 1, 1]
-                on_release: root.add_role()
-                pos_hint: {"center_y": 0.5}
-
         # Zone scrollable avec la grille
-        MDScrollView:
-            MDGridLayout:
-                id: roles_grid
-                cols: 1
-                spacing: dp(10)
-                padding: dp(10)
-                size_hint_y: None
-                height: self.minimum_height
+        MDBoxLayout:
+            size_hint_y: None
+            height: dp(600)  # Hauteur fixe pour le conteneur
+
+            MDScrollView:
+                do_scroll_x: False
+                do_scroll_y: True
+                bar_width: dp(25)
+                bar_color: 0.2, 0.2, 0.9, 1  # Bleu
+                bar_inactive_color: 0.2, 0.2, 0.9, 0.5  # Bleu plus transparent
+                bar_pos_y: 'right'
+                scroll_type: ['bars']
+                scroll_wheel_distance: dp(-40)
+                size_hint: 1, 1
+                effect_cls: 'ScrollEffect'  # Utiliser l'effet de défilement standard
+
+                MDGridLayout:
+                    id: roles_grid
+                    cols: 1
+                    spacing: dp(10)
+                    padding: [dp(10), dp(10), dp(25), dp(10)]  # [gauche, haut, droite, bas]
+                    size_hint_y: None
+                    adaptive_height: True
+                    height: self.minimum_height
+                    width: root.width - dp(20)  # Largeur de la fenêtre moins marge
