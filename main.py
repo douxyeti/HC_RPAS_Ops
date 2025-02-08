@@ -16,6 +16,7 @@ from app.views.screens.dashboard_screen import DashboardScreen
 from app.views.screens.specialized_dashboard_screen import SpecializedDashboardScreen
 from app.views.screens.roles_manager_screen import RolesManagerScreen
 from app.views.screens.role_edit_screen import RoleEditScreen
+from app.views.screens.task_manager_screen import TaskManagerScreen
 
 class MainScreenManager(MDScreenManager):
     def __init__(self, **kwargs):
@@ -28,6 +29,7 @@ class MainScreenManager(MDScreenManager):
         self.add_widget(SpecializedDashboardScreen(name="specialized_dashboard"))
         self.add_widget(RolesManagerScreen(name="roles_manager"))
         self.add_widget(RoleEditScreen(name="role_edit"))
+        self.add_widget(TaskManagerScreen(name="task_manager"))
 
 class HighCloudRPASApp(MDApp):
     def __init__(self, **kwargs):
@@ -74,7 +76,10 @@ class HighCloudRPASApp(MDApp):
             
             # Charge les rôles depuis Firebase
             roles_data = self.roles_manager_service.get_all_roles()
-            self.available_roles = [role.get('name') for role in roles_data.values()]
+            self.available_roles = []
+            for role in roles_data:
+                if role.get('name'):
+                    self.available_roles.append(role.get('name'))
             self.available_roles.sort()  # Trie les rôles par ordre alphabétique
             
             print("Services initialisés avec succès")

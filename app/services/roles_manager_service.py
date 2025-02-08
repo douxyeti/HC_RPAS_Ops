@@ -192,3 +192,88 @@ class RolesManagerService:
         except Exception as e:
             print(f"Erreur lors de la suppression de la tâche : {e}")
             return False
+
+    def get_all_tasks(self):
+        """Récupère toutes les tâches de tous les rôles"""
+        tasks = []
+        try:
+            roles = self.get_all_roles()
+            for role in roles:
+                role_tasks = role.get('tasks', [])
+                for task in role_tasks:
+                    if task not in tasks:  # Éviter les doublons
+                        tasks.append(task)
+            return tasks
+        except Exception as e:
+            print(f"Erreur lors de la récupération des tâches : {e}")
+            return []
+
+    def get_tasks_for_role(self, role_id):
+        """Récupère les tâches pour un rôle spécifique"""
+        role = self.get_role(role_id)
+        return role.get('tasks', []) if role else []
+
+    def add_task_to_role(self, role_id, task_data):
+        """Ajoute une tâche à un rôle spécifique"""
+        role = self.get_role(role_id)
+        if role:
+            tasks = role.get('tasks', [])
+            task_data['id'] = str(len(tasks))  # ID simple basé sur l'index
+            tasks.append(task_data)
+            role['tasks'] = tasks
+            self.update_role(role_id, role)
+            return True
+        return False
+
+    def update_task_in_role(self, role_id, task_id, task_data):
+        """Met à jour une tâche dans un rôle spécifique"""
+        role = self.get_role(role_id)
+        if role:
+            tasks = role.get('tasks', [])
+            for i, task in enumerate(tasks):
+                if str(task.get('id', '')) == str(task_id):
+                    task_data['id'] = task_id  # Préserver l'ID
+                    tasks[i] = task_data
+                    role['tasks'] = tasks
+                    self.update_role(role_id, role)
+                    return True
+        return False
+
+    def remove_task_from_role(self, role_id, task_id):
+        """Supprime une tâche d'un rôle spécifique"""
+        role = self.get_role(role_id)
+        if role:
+            tasks = role.get('tasks', [])
+            tasks = [t for t in tasks if str(t.get('id', '')) != str(task_id)]
+            role['tasks'] = tasks
+            self.update_role(role_id, role)
+            return True
+        return False
+
+    def create_task(self, task_data):
+        """Crée une nouvelle tâche globale (non associée à un rôle)"""
+        # Pour l'instant, stockons les tâches globales dans un rôle spécial
+        role_id = 'global_tasks'
+        role = self.get_role(role_id)
+        if not role:
+            role = {
+                'id': role_id,
+                'name': 'Tâches Globales',
+                'tasks': []
+            }
+        tasks = role.get('tasks', [])
+        task_data['id'] = str(len(tasks))
+        tasks.append(task_data)
+        role['tasks'] = tasks
+        self.update_role(role_id, role)
+        return True
+
+    def update_task(self, task_id, task_data):
+        """Met à jour une tâche globale"""
+        role_id = 'global_tasks'
+        return self.update_task_in_role(role_id, task_id, task_data)
+
+    def delete_task(self, task_id):
+        """Supprime une tâche globale"""
+        role_id = 'global_tasks'
+        return self.remove_task_from_role(role_id, task_id)

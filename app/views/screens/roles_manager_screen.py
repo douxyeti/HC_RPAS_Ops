@@ -4,10 +4,16 @@ from kivymd.uix.button import MDIconButton, MDButton, MDButtonText
 from kivymd.uix.card import MDCard
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.label import MDLabel
-from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.scrollview import MDScrollView
-from kivymd.uix.dialog import MDDialog, MDDialogHeadlineText, MDDialogContentContainer, MDDialogButtonContainer
+from kivymd.uix.dialog import (
+    MDDialog,
+    MDDialogHeadlineText,
+    MDDialogContentContainer,
+    MDDialogButtonContainer,
+)
 from kivymd.uix.textfield import MDTextField
+from kivymd.uix.scrollview import MDScrollView
+from kivymd.uix.gridlayout import MDGridLayout
+
 from app.services.roles_manager_service import RolesManagerService
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
@@ -19,9 +25,9 @@ class RoleCard(MDCard):
         
         self.orientation = 'vertical'
         self.size_hint_y = None
-        self.height = dp(120)
-        self.padding = dp(16)
-        self.spacing = dp(8)
+        self.height = dp(100)  # Réduire la hauteur de la carte
+        self.padding = dp(8)  # Réduire le padding
+        self.spacing = dp(4)  # Réduire l'espacement
         self.elevation = 1
         
         # Layout pour le titre et les boutons
@@ -90,7 +96,7 @@ class RolesManagerScreen(MDScreen):
         header = MDBoxLayout(
             orientation='horizontal',
             size_hint_y=None,
-            height=dp(56),
+            height=dp(48),  # Réduire la hauteur de l'en-tête
             spacing=dp(10),
             padding=[dp(10), 0],
             md_bg_color=[0.2, 0.2, 0.9, 1]  # Bleu foncé
@@ -140,24 +146,35 @@ class RolesManagerScreen(MDScreen):
         )
         header.add_widget(add_btn)
         
-        # Ajouter l'en-tête à l'écran
-        self.add_widget(header)
+        # Créer un layout principal pour contenir l'en-tête et le contenu
+        main_layout = MDBoxLayout(
+            orientation='vertical',
+            spacing=dp(5),  # Réduire l'espacement
+            size_hint=(1, 1)  # Utiliser tout l'espace disponible
+        )
+        
+        # Ajouter l'en-tête au layout principal
+        main_layout.add_widget(header)
         
         # Créer la grille pour les cartes de rôles
         self.roles_grid = MDBoxLayout(
             orientation='vertical',
-            spacing=dp(10),
-            padding=dp(10),
+            spacing=dp(5),  # Réduire l'espacement
             adaptive_height=True
         )
         
         # Mettre la grille dans un ScrollView
         scroll = MDScrollView(
             do_scroll_x=False,
-            size_hint=(1, 1)
+            size_hint=(1, 0.9)  # Laisser 10% pour l'en-tête
         )
         scroll.add_widget(self.roles_grid)
-        self.add_widget(scroll)
+        
+        # Ajouter le ScrollView au layout principal
+        main_layout.add_widget(scroll)
+        
+        # Ajouter le layout principal à l'écran
+        self.add_widget(main_layout)
         
         # Charger les rôles
         self.load_roles()
@@ -168,21 +185,23 @@ class RolesManagerScreen(MDScreen):
         
     def load_roles(self):
         """Charge et affiche la liste des rôles"""
-        roles_grid = self.ids.roles_grid
-        roles_grid.clear_widgets()
+        # Effacer les widgets existants
+        self.roles_grid.clear_widgets()
+        
+        # Récupérer la liste des rôles
         roles = self.roles_manager_service.get_all_roles()
         
-        # Convertir le dictionnaire en liste et trier par nom
+        # Trier les rôles par nom
         sorted_roles = sorted(
-            [{'id': role_id, **role_data} for role_id, role_data in roles.items()],
+            roles,
             key=lambda x: x.get('name', '').lower()  # Tri insensible à la casse
         )
         
         for role_data in sorted_roles:
-            print(f"Chargement du rôle : ID={role_data['id']}, Nom={role_data.get('name', 'NON DÉFINI')}")
+            print(f"Chargement du rôle : ID={role_data.get('id')}, Nom={role_data.get('name', 'NON DÉFINI')}")
             # Vérifie que le rôle a au moins un nom
             if not role_data.get('name'):
-                print(f"Rôle ignoré car sans nom : {role_data['id']}")
+                print(f"Rôle ignoré car sans nom : {role_data.get('id')}")
                 continue
                 
             card = RoleCard(
@@ -192,47 +211,61 @@ class RolesManagerScreen(MDScreen):
                 on_manage_tasks=self.manage_tasks,
                 size_hint_x=1
             )
-            roles_grid.add_widget(card)
-            
+            self.roles_grid.add_widget(card)
+
     def show_add_role_dialog(self):
         """Affiche un dialogue pour saisir le nom du nouveau rôle"""
         dialog = MDDialog(
             radius=20,
-            title="Ajouter un nouveau rôle",
-            type="custom",
-            content_cls=MDBoxLayout(
-                orientation="vertical",
-                spacing=dp(10),
-                padding=dp(10),
-                size_hint_y=None,
-                height=dp(100),
-                children=[
-                    MDTextField(
-                        hint_text="Nom du rôle",
-                        mode="outlined",
-                        size_hint_y=None,
-                        height=dp(48)
-                    )
-                ]
-            ),
-            buttons=[
-                MDButton(
-                    style="text",
-                    on_release=lambda x: dialog.dismiss(),
-                    children=[MDButtonText(text="ANNULER")]
-                ),
-                MDButton(
-                    style="text",
-                    on_release=lambda x: self.create_role(dialog),
-                    children=[MDButtonText(text="CRÉER")]
-                )
-            ]
+            size_hint=(.8, None)
         )
+
+        dialog.add_widget(MDDialogHeadlineText(
+            text="Ajouter un nouveau rôle",
+        ))
+
+        content_container = MDDialogContentContainer(
+            orientation='vertical',
+            spacing=dp(20),
+            padding=dp(20)
+        )
+
+        self.text_field = MDTextField(
+            hint_text="Nom du rôle",
+            mode="outlined",
+            size_hint_y=None,
+            height=dp(48)
+        )
+        content_container.add_widget(self.text_field)
+        dialog.add_widget(content_container)
+
+        button_container = MDDialogButtonContainer(
+            orientation='horizontal',
+            spacing=dp(10),
+            size_hint_y=None,
+            height=dp(50)
+        )
+
+        cancel_button = MDButton(
+            style="text",
+            on_release=lambda x: dialog.dismiss()
+        )
+        cancel_button.add_widget(MDButtonText(text="Annuler"))
+        button_container.add_widget(cancel_button)
+
+        create_button = MDButton(
+            style="text",
+            on_release=lambda x: self.create_role(dialog)
+        )
+        create_button.add_widget(MDButtonText(text="Créer"))
+        button_container.add_widget(create_button)
+
+        dialog.add_widget(button_container)
         dialog.open()
 
     def create_role(self, dialog):
         """Crée un nouveau rôle avec le nom saisi"""
-        role_name = dialog.content_cls.children[0].text
+        role_name = self.text_field.text
         if role_name.strip():
             # Générer un ID unique pour le rôle
             role_id = role_name.lower().replace(" ", "_")
@@ -289,17 +322,19 @@ class RolesManagerScreen(MDScreen):
 
     def delete_role(self, role_data):
         """Supprime un rôle après confirmation"""
-        dialog = MDDialog(
-            radius=20,
+        self.dialog = MDDialog(
+            radius=[20, 20, 20, 20],
             size_hint=(.8, None)
         )
         
-        dialog.add_widget(MDDialogHeadlineText(
+        # Titre
+        self.dialog.add_widget(MDDialogHeadlineText(
             text="Confirmer la suppression",
             theme_font_size="Custom",
             font_size="24sp"
         ))
         
+        # Contenu
         content_container = MDDialogContentContainer(
             orientation='vertical',
             spacing=dp(20),
@@ -307,12 +342,13 @@ class RolesManagerScreen(MDScreen):
         )
         
         content_container.add_widget(MDLabel(
-            text=f"Voulez-vous vraiment supprimer le rôle {role_data.get('name', '')} ?",
-            theme_font_size="Custom",
-            font_size="16sp"
+            text=f"Voulez-vous vraiment supprimer le rôle '{role_data.get('name')}' ?",
+            theme_text_color="Secondary"
         ))
-        dialog.add_widget(content_container)
         
+        self.dialog.add_widget(content_container)
+        
+        # Boutons
         button_container = MDDialogButtonContainer(
             orientation='horizontal',
             spacing=dp(10),
@@ -320,30 +356,31 @@ class RolesManagerScreen(MDScreen):
             height=dp(50)
         )
         
+        # Bouton Annuler
         cancel_button = MDButton(
             style="text",
-            on_release=lambda x: dialog.dismiss()
+            on_release=lambda x: self.dialog.dismiss()
         )
         cancel_button.add_widget(MDButtonText(text="Annuler"))
+        button_container.add_widget(cancel_button)
         
+        # Bouton Supprimer
         delete_button = MDButton(
             style="text",
-            on_release=lambda x: self.confirm_delete_role(role_data.get('id', ''), dialog)
+            on_release=lambda x: self.confirm_delete_role(role_data)
         )
         delete_button.add_widget(MDButtonText(text="Supprimer"))
-        
-        button_container.add_widget(cancel_button)
         button_container.add_widget(delete_button)
-        dialog.add_widget(button_container)
         
-        dialog.open()
+        self.dialog.add_widget(button_container)
+        self.dialog.open()
 
-    def confirm_delete_role(self, role_id, dialog):
+    def confirm_delete_role(self, role_data):
         """Confirme et effectue la suppression du rôle"""
-        if role_id:
-            self.roles_manager_service.delete_role(role_id)
+        if role_data.get('id'):
+            self.roles_manager_service.delete_role(role_data.get('id'))
             self.load_roles()
-        dialog.dismiss()
+        self.dialog.dismiss()
 
     def go_to_tasks(self):
         """Rediriger vers l'écran de gestion des tâches"""

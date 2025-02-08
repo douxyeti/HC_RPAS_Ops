@@ -134,69 +134,46 @@ class FirebaseService:
     def get_collection(self, collection_name):
         """Récupère tous les documents d'une collection"""
         try:
-            docs = self.db.collection(collection_name).stream()
-            return {doc.id: doc.to_dict() for doc in docs}
+            docs = self.db.collection(collection_name).get()
+            return [doc.to_dict() for doc in docs]
         except Exception as e:
-            print(f"Erreur lors de la récupération de la collection {collection_name}: {e}")
-            return {}
-            
-    def get_document(self, collection_name, doc_id):
+            print(f"Erreur lors de la récupération de la collection: {str(e)}")
+            return []
+
+    def get_document(self, collection_name, document_id):
         """Récupère un document spécifique"""
         try:
-            doc = self.db.collection(collection_name).document(doc_id).get()
+            doc = self.db.collection(collection_name).document(document_id).get()
             if doc.exists:
-                data = doc.to_dict()
-                data['id'] = doc.id
-                return data
+                return doc.to_dict()
             return None
         except Exception as e:
-            print(f"Erreur lors de la récupération du document {doc_id}: {e}")
+            print(f"Erreur lors de la récupération du document: {str(e)}")
             return None
-            
-    def add_document(self, collection_name, data):
-        """Ajoute un nouveau document à une collection"""
+
+    def add_document_with_id(self, collection_name, document_id, data):
+        """Ajoute un document avec un ID spécifique"""
         try:
-            doc_ref = self.db.collection(collection_name).add(data)
-            return doc_ref[1].id
-        except Exception as e:
-            print(f"Erreur lors de l'ajout du document: {e}")
-            return None
-            
-    def add_document_with_id(self, collection, doc_id, data):
-        """Ajoute un nouveau document avec un ID spécifique dans une collection
-        
-        Args:
-            collection: Nom de la collection
-            doc_id: ID du document à créer
-            data: Données du document
-            
-        Returns:
-            bool: True si le document a été créé avec succès, False sinon
-        """
-        try:
-            # Crée une référence au document avec l'ID spécifié
-            doc_ref = self.db.collection(collection).document(doc_id)
-            # Ajoute les données au document
-            doc_ref.set(data)
+            self.db.collection(collection_name).document(document_id).set(data)
             return True
         except Exception as e:
-            print(f"Erreur lors de l'ajout du document : {e}")
+            print(f"Erreur lors de l'ajout du document: {str(e)}")
             return False
-            
-    def update_document(self, collection_name, doc_id, data):
-        """Met à jour un document existant"""
+
+    def update_document(self, collection_name, document_id, data):
+        """Met à jour un document spécifique"""
         try:
-            self.db.collection(collection_name).document(doc_id).update(data)
+            self.db.collection(collection_name).document(document_id).update(data)
             return True
         except Exception as e:
-            print(f"Erreur lors de la mise à jour du document {doc_id}: {e}")
+            print(f"Erreur lors de la mise à jour du document: {str(e)}")
             return False
-            
-    def delete_document(self, collection_name, doc_id):
-        """Supprime un document"""
+
+    def delete_document(self, collection_name, document_id):
+        """Supprime un document spécifique"""
         try:
-            self.db.collection(collection_name).document(doc_id).delete()
+            self.db.collection(collection_name).document(document_id).delete()
             return True
         except Exception as e:
-            print(f"Erreur lors de la suppression du document {doc_id}: {e}")
+            print(f"Erreur lors de la suppression du document: {str(e)}")
             return False

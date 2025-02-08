@@ -291,11 +291,11 @@ class AdminDashboardScreen(MDScreen):
         # Si c'est la tâche de gestion des tâches
         if task.get('title') == 'Gérer les tâches':
             # Rediriger vers la page de gestion des tâches sans rôle spécifique
-            task_screen = self.manager.get_screen('task_manager')
+            task_screen = self.manager.get_screen('roles_manager')
             task_screen.current_role_id = ''  # Pas de rôle spécifique
             task_screen.current_role_name = ''
             self.manager.transition.direction = 'left'
-            self.manager.current = 'task_manager'
+            self.manager.current = 'roles_manager'
             return
             
         # Pour les autres tâches, rediriger vers le module correspondant

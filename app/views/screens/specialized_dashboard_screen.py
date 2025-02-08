@@ -346,7 +346,7 @@ class SpecializedDashboardScreen(MDScreen):
         # Si c'est l'accès rapide aux tâches, rediriger vers le gestionnaire de tâches
         if task.get('title') == "Accès rapide aux tâches":
             self.manager.transition.direction = 'left'
-            self.manager.current = 'task_manager'
+            self.manager.current = 'roles_manager'
             return
             
         # Pour les autres tâches, rediriger vers le module approprié
