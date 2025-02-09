@@ -106,6 +106,7 @@ class HighCloudRPASApp(MDApp):
             'app/views/kv/dashboard_screen.kv',
             'app/views/kv/roles_manager_screen.kv',
             'app/views/kv/role_edit_screen.kv',  # Ajout du fichier KV pour l'édition des rôles
+            'app/views/kv/task_manager_screen.kv',  # Fichier KV pour la gestion des tâches
         ]
         for kv_file in kv_files:
             Builder.load_file(kv_file)

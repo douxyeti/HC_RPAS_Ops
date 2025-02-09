@@ -9,26 +9,71 @@
 
 <RolesManagerScreen>:
     name: 'roles_manager'
+    roles_container: roles_container
     
     MDBoxLayout:
         orientation: 'vertical'
         spacing: dp(16)
         padding: dp(16)
         
-        MDTopAppBar:
-            title: "Gestionnaire des rôles"
-            left_action_items: [["arrow-left", lambda x: root.go_back()]]
-            elevation: 2
+        # En-tête avec barre bleue
+        MDBoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(56)
+            spacing: dp(10)
+            padding: [dp(10), 0]
             md_bg_color: [0.2, 0.2, 0.9, 1]  # Bleu foncé
+            
+            MDIconButton:
+                icon: "arrow-left"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                on_release: root.go_back()
+                pos_hint: {"center_y": 0.5}
+            
+            MDLabel:
+                text: "Gestion des Rôles"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                theme_font_size: "Custom"
+                font_size: "24sp"
+                size_hint_x: 0.4
+                halign: "center"
+            
+            MDIconButton:
+                icon: "filter"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                on_release: root.show_filter_menu(self)
+                pos_hint: {"center_y": 0.5}
+                size_hint_x: 0.2
+            
+            MDIconButton:
+                icon: "sort"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                on_release: root.show_sort_menu(self)
+                pos_hint: {"center_y": 0.5}
+                size_hint_x: 0.2
+            
+            MDIconButton:
+                icon: "plus"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                on_release: root.show_add_role_dialog()
+                pos_hint: {"center_y": 0.5}
+                size_hint_x: 0.2
         
+        # Zone de défilement avec les cartes
         MDScrollView:
-            id: roles_scroll_view
-            size_hint: 1, 0.9  # Laisser 10% pour l'en-tête
+            size_hint: 1, 0.9  # Réserve 10% pour l'en-tête
             scroll_type: ['bars']
             bar_width: "20dp"
             bar_color: [0.2, 0.2, 0.9, 1]  # Bleu
             bar_inactive_color: [0.2, 0.2, 0.9, 0.5]  # Bleu plus transparent
             do_scroll_x: False
+            
             MDBoxLayout:
                 id: roles_container
                 orientation: 'vertical'

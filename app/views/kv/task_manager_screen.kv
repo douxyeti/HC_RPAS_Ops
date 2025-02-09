@@ -1,32 +1,61 @@
 #:kivy 2.3.1
 #:import dp kivy.metrics.dp
+#:import MDTopAppBar kivymd.uix.appbar.MDTopAppBar
 
 <TaskManagerScreen>:
-    tasks_grid: tasks_grid
+    tasks_container: tasks_container
     
     MDBoxLayout:
         orientation: 'vertical'
-        padding: dp(10)
+        spacing: dp(16)
+        padding: dp(16)
         
-        MDTopAppBar:
-            title: "Gestionnaire des tâches"
-            elevation: 2
-            left_action_items: [['menu', lambda x: root.parent.parent.parent.toggle_nav_drawer()]]
-            right_action_items: [['plus', lambda x: root.show_add_task_dialog()]]
-
+        # En-tête avec barre bleue
         MDBoxLayout:
-            orientation: 'vertical'
-            padding: dp(10)
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(56)
             spacing: dp(10)
-
-            MDScrollView:
-                do_scroll_x: False
-                do_scroll_y: True
-                
-                MDGridLayout:
-                    id: tasks_grid
-                    cols: 1
-                    spacing: dp(10)
-                    padding: dp(10)
-                    size_hint_y: None
-                    height: self.minimum_height
+            padding: [dp(10), 0]
+            md_bg_color: [0.2, 0.2, 0.9, 1]  # Bleu foncé - conservé
+            
+            MDIconButton:
+                icon: "arrow-left"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                on_release: root.go_back()
+                pos_hint: {"center_y": 0.5}
+            
+            MDLabel:
+                text: "Gestion des Tâches"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                theme_font_size: "Custom"
+                font_size: "24sp"
+                size_hint_x: 0.7
+                halign: "center"
+            
+            MDIconButton:
+                icon: "plus"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                on_release: root.show_add_task_dialog()
+                pos_hint: {"center_y": 0.5}
+                size_hint_x: 0.3
+        
+        # Zone de défilement avec les cartes
+        MDScrollView:
+            size_hint: 1, 0.9  # Réserve 10% pour l'en-tête
+            scroll_type: ['bars']
+            bar_width: "20dp"
+            bar_color: [0.2, 0.2, 0.9, 1]  # Bleu - conservé
+            bar_inactive_color: [0.2, 0.2, 0.9, 0.5]  # Bleu transparent - conservé
+            do_scroll_x: False
+            
+            MDBoxLayout:
+                id: tasks_container
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: "8dp"
+                padding: ["8dp", "8dp", "28dp", "8dp"]
