@@ -52,20 +52,44 @@ class RolesManagerService:
     def update_role(self, role_id, role_data):
         """Met à jour un rôle existant"""
         try:
+            print(f"[DEBUG] RolesManagerService.update_role - Début mise à jour pour role_id: {role_id}")
+            print(f"[DEBUG] RolesManagerService.update_role - Données reçues: {role_data}")
+            
+            if not role_id:
+                print("[DEBUG] RolesManagerService.update_role - Erreur: ID manquant")
+                return False
+                
             old_role = self.get_role(role_id)
+            if not old_role:
+                print("[DEBUG] RolesManagerService.update_role - Erreur: Rôle non trouvé")
+                return False
+                
+            print(f"[DEBUG] RolesManagerService.update_role - Ancien rôle: {old_role}")
+            
+            # Conserver l'ID et les champs existants si non fournis
+            role_data['id'] = role_id
+            if 'tasks' not in role_data and 'tasks' in old_role:
+                role_data['tasks'] = old_role['tasks']
+            if 'permissions' not in role_data and 'permissions' in old_role:
+                role_data['permissions'] = old_role['permissions']
+            
             if self.db.update_document(self.collection, role_id, role_data):
                 # Met à jour la liste des rôles disponibles dans l'application
                 from kivymd.app import MDApp
                 app = MDApp.get_running_app()
                 if hasattr(app, 'available_roles') and old_role:
+                    print(f"[DEBUG] RolesManagerService.update_role - available_roles avant: {app.available_roles}")
                     if old_role.get('name') in app.available_roles:
                         app.available_roles.remove(old_role.get('name'))
                     app.available_roles.append(role_data['name'])
                     app.available_roles.sort()
+                    print(f"[DEBUG] RolesManagerService.update_role - available_roles après: {app.available_roles}")
+                print("[DEBUG] RolesManagerService.update_role - Mise à jour réussie")
                 return True
+            print("[DEBUG] RolesManagerService.update_role - Échec de la mise à jour dans Firebase")
             return False
         except Exception as e:
-            print(f"Erreur lors de la mise à jour du rôle : {e}")
+            print(f"[DEBUG] RolesManagerService.update_role - Erreur: {e}")
             return False
             
     def delete_role(self, role_id):

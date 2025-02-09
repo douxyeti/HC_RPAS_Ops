@@ -32,38 +32,45 @@
                 on_release: root.go_back()
                 pos_hint: {"center_y": 0.5}
             
+            Widget:
+                size_hint_x: 0.3
+            
             MDLabel:
                 text: "Gestion des Rôles"
                 theme_text_color: "Custom"
                 text_color: [1, 1, 1, 1]
                 theme_font_size: "Custom"
                 font_size: "24sp"
-                size_hint_x: 0.4
                 halign: "center"
-            
-            MDIconButton:
-                icon: "filter"
-                theme_text_color: "Custom"
-                text_color: [1, 1, 1, 1]
-                on_release: root.show_filter_menu(self)
                 pos_hint: {"center_y": 0.5}
-                size_hint_x: 0.2
             
-            MDIconButton:
-                icon: "sort"
-                theme_text_color: "Custom"
-                text_color: [1, 1, 1, 1]
-                on_release: root.show_sort_menu(self)
-                pos_hint: {"center_y": 0.5}
-                size_hint_x: 0.2
+            Widget:
+                size_hint_x: 0.3
             
-            MDIconButton:
-                icon: "plus"
-                theme_text_color: "Custom"
-                text_color: [1, 1, 1, 1]
-                on_release: root.show_add_role_dialog()
+            MDBoxLayout:
+                orientation: 'horizontal'
+                size_hint_x: None
+                width: self.minimum_width
+                spacing: dp(4)
                 pos_hint: {"center_y": 0.5}
-                size_hint_x: 0.2
+                
+                MDIconButton:
+                    icon: "filter"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_filter_menu(self)
+                
+                MDIconButton:
+                    icon: "sort"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_sort_menu(self)
+                
+                MDIconButton:
+                    icon: "plus"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_add_role_dialog()
         
         # Zone de défilement avec les cartes
         MDScrollView:
@@ -80,4 +87,5 @@
                 size_hint_y: None
                 height: self.minimum_height
                 spacing: "8dp"
-                padding: ["8dp", "8dp", "28dp", "8dp"]
+                padding: [0, "8dp", 0, "8dp"]  # Padding vertical uniquement
+                pos_hint: {"center_x": 0.5}  # Centrer le conteneur
