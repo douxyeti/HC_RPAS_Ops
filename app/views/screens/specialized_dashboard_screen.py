@@ -18,7 +18,7 @@ class IconListItem(MDListItem):
 
 class TaskCard(MDCard):
     """Carte pour afficher une tâche du commandant"""
-    def __init__(self, title, description, status, icon="checkbox-marked-circle", **kwargs):
+    def __init__(self, title, description, status=None, icon="checkbox-marked-circle", **kwargs):
         super().__init__(**kwargs)
         self.orientation = "vertical"
         self.padding = 15
@@ -85,11 +85,18 @@ class TaskCard(MDCard):
             theme_text_color="Primary"  # Couleur de texte primaire
         )
 
-        status_label = MDLabel(
-            text=f"Statut: {status}",
-            font_size="14sp",
-            theme_text_color="Primary"  # Couleur de texte primaire
-        )
+        if status:
+            status_label = MDLabel(
+                text=f"Statut: {status}",
+                font_size="14sp",
+                theme_text_color="Primary"  # Couleur de texte primaire
+            )
+        else:
+            status_label = MDLabel(
+                text="",
+                font_size="14sp",
+                theme_text_color="Primary"  # Couleur de texte primaire
+            )
 
         status_box.add_widget(status_icon)
         status_box.add_widget(status_label)

@@ -1,198 +1,138 @@
 from kivy.metrics import dp
+from kivy.properties import StringProperty, ObjectProperty, ListProperty
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.button import MDIconButton, MDButton, MDButtonText
 from kivymd.uix.card import MDCard
+from kivymd.uix.dialog import MDDialog
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.label import MDLabel
-from kivymd.uix.dialog import MDDialog, MDDialogHeadlineText, MDDialogContentContainer, MDDialogButtonContainer
-from kivymd.uix.textfield import MDTextField
-from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.button import MDButton
 
-from app.controllers.task_controller import TaskController
+from app.models.task import Task, TaskModel
+from app.services.firebase_service import FirebaseService
+from app.views.screens.specialized_dashboard_screen import TaskCard  # Importer le composant TaskCard
 
-class TaskCard(MDCard):
-    def __init__(self, task_data, on_edit, on_delete, **kwargs):
-        super().__init__(**kwargs)
-        print(f"Création de la carte pour la tâche : {task_data}")  # Debug
-        
-        self.orientation = 'vertical'
-        self.size_hint_y = None
-        self.height = dp(120)  # Conserver la hauteur originale
-        self.padding = dp(16)  # Conserver le padding original
-        self.spacing = dp(8)  # Conserver l'espacement original
-        self.elevation = 1
-        
-        # Layout pour le titre et les boutons
-        header = MDBoxLayout(orientation='horizontal', adaptive_height=True)
-        
-        # Titre avec vérification
-        title_text = task_data.get('title', '')
-        print(f"Titre de la tâche : {title_text}")  # Debug
-        
-        title = MDLabel(
-            text=title_text,
-            theme_font_size="Custom",
-            font_size="20sp",
-            adaptive_height=True
-        )
-        header.add_widget(title)
-        
-        # Boutons d'action
-        actions = MDBoxLayout(
-            orientation='horizontal',
-            adaptive_width=True,
-            spacing=dp(8)
-        )
-        
-        edit_btn = MDIconButton(
-            icon='pencil',
-            on_release=lambda x: on_edit(task_data)
-        )
-        actions.add_widget(edit_btn)
-        
-        delete_btn = MDIconButton(
-            icon='delete',
-            on_release=lambda x: on_delete(task_data)
-        )
-        actions.add_widget(delete_btn)
-        header.add_widget(actions)
-        
-        # Description avec vérification
-        desc_text = task_data.get('description', 'Aucune description')
-        print(f"Description de la tâche : {desc_text}")  # Debug
-        
-        description = MDLabel(
-            text=desc_text,
-            adaptive_height=True
-        )
-        
-        self.add_widget(header)
-        self.add_widget(description)
-
-class TaskManagerScreen(MDScreen):
+class TaskEditDialog(MDDialog):
+    dialog_title = StringProperty("Nouvelle tâche")
+    task_title = StringProperty("")
+    task_description = StringProperty("")
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.name = 'task_manager'
-        self.task_controller = TaskController()
-        self.current_role_id = ''
-        self.current_role_name = ''
+        self.register_event_type('on_save')
+        self.register_event_type('on_cancel')
+    
+    def on_save(self, *args):
+        pass
         
-        # Initialiser le dialogue
-        self.task_dialog = None
-        self.title_field = None
-        self.description_field = None
+    def on_cancel(self, *args):
+        pass
+        
+    def get_task_data(self):
+        return {
+            'title': self.ids.title_field.text,
+            'description': self.ids.description_field.text
+        }
+
+class TaskManagerScreen(MDScreen):
+    current_role_id = StringProperty('')  # Changé de None à une chaîne vide
+    current_role_name = StringProperty('')
+    tasks = ListProperty([])
+    tasks_container = ObjectProperty(None)
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.task_model = TaskModel(FirebaseService())
+        
+    def set_current_role(self, role_id, role_name):
+        """Définit le rôle actuel"""
+        print(f"[DEBUG] TaskManagerScreen.set_current_role - role_id reçu: {role_id}, role_name: {role_name}")
+        # Si role_id est None, utiliser une chaîne vide
+        self.current_role_id = role_id if role_id is not None else ''
+        self.current_role_name = role_name
+        print(f"[DEBUG] TaskManagerScreen.set_current_role - current_role_id défini à: {self.current_role_id}")
+        if self.current_role_id:
+            self.load_tasks()
         
     def on_enter(self):
         """Appelé quand l'écran devient actif"""
-        self.load_tasks()
-
-    def load_tasks(self):
-        """Charge et affiche la liste des tâches"""
-        # Effacer les tâches existantes
-        self.tasks_container.clear_widgets()
-        
-        # Obtenir les tâches via le contrôleur
-        tasks = self.task_controller.get_tasks(self.current_role_id)
+        print(f"[DEBUG] TaskManagerScreen.on_enter - current_role_id: {self.current_role_id}")
+        if self.current_role_id:
+            self.load_tasks()
             
+    def load_tasks(self):
+        """Charge la liste des tâches pour le rôle actuel"""
+        if self.current_role_id:
+            print(f"[DEBUG] TaskManagerScreen.load_tasks - Chargement des tâches pour le rôle {self.current_role_id}")
+            tasks = self.task_model.get_tasks(self.current_role_id)
+            print(f"[DEBUG] TaskManagerScreen.load_tasks - Tâches reçues du modèle : {tasks}")
+            
+            # Convertir les objets Task en dictionnaires
+            self.tasks = [task.to_dict() for task in tasks]
+            print(f"[DEBUG] TaskManagerScreen.load_tasks - Tâches converties en dictionnaires : {self.tasks}")
+            
+            self.display_tasks(self.tasks)
+            
+    def display_tasks(self, tasks):
+        """Affiche les tâches dans l'interface"""
+        print(f"[DEBUG] TaskManagerScreen.display_tasks - Début de l'affichage")
+        print(f"[DEBUG] TaskManagerScreen.display_tasks - Nombre de tâches : {len(tasks)}")
+        
+        # Récupérer le container
+        container = self.ids.tasks_container
+        print(f"[DEBUG] TaskManagerScreen.display_tasks - Container: {container}")
+        
+        # Vider le container
+        container.clear_widgets()
+        
         # Créer une carte pour chaque tâche
         for task in tasks:
-            card = TaskCard(
-                task_data=task,
-                on_edit=self.edit_task,
-                on_delete=self.delete_task
-            )
-            self.tasks_container.add_widget(card)
-
-    def show_add_task_dialog(self):
-        """Affiche le dialogue d'ajout de tâche"""
-        if not self.task_dialog:
-            self.title_field = MDTextField(
-                hint_text="Titre de la tâche",
-                helper_text="Entrez le titre de la tâche",
-                helper_text_mode="on_error",
-            )
-            self.description_field = MDTextField(
-                hint_text="Description de la tâche",
-                helper_text="Entrez la description de la tâche",
-                helper_text_mode="on_error",
-                multiline=True
+            print(f"[DEBUG] TaskManagerScreen.display_tasks - Création de carte pour la tâche : {task}")
+            task_card = TaskCard(
+                title=task['title'],
+                description=task['description'],
+                icon=task.get('icon', 'checkbox-marked-circle')
             )
             
-            content = MDDialogContentContainer(
-                orientation='vertical',
-                spacing=dp(10),
-                padding=dp(10),
-                size_hint_y=None,
-                height=dp(200)
-            )
-            content.add_widget(self.title_field)
-            content.add_widget(self.description_field)
-            
-            self.task_dialog = MDDialog(
-                headline_text=MDDialogHeadlineText(text="Ajouter une tâche"),
-                content_container=content,
-                buttons_container=MDDialogButtonContainer(
-                    orientation='horizontal',
-                    spacing=dp(10),
-                    padding=dp(10),
-                    size_hint_y=None,
-                    height=dp(50)
-                )
-            )
-            
-            self.task_dialog.buttons_container.add_widget(
-                MDButton(
-                    MDButtonText(text="Annuler"),
-                    style="text",
-                    on_release=lambda x: self.task_dialog.dismiss()
-                )
-            )
-            self.task_dialog.buttons_container.add_widget(
-                MDButton(
-                    MDButtonText(text="Ajouter"),
-                    style="filled",
-                    on_release=self.add_task
-                )
-            )
-        
-        self.task_dialog.open()
-
-    def add_task(self, *args):
-        """Ajoute une nouvelle tâche"""
-        if self.title_field.text and self.description_field.text:
-            task_data = {
-                'title': self.title_field.text,
-                'description': self.description_field.text,
-                'role_id': self.current_role_id
-            }
-            
-            # Utiliser le contrôleur pour ajouter la tâche
-            self.task_controller.add_task(task_data)
-            
-            # Réinitialiser les champs
-            self.title_field.text = ""
-            self.description_field.text = ""
-            
-            # Fermer le dialogue et recharger les tâches
-            self.task_dialog.dismiss()
-            self.load_tasks()
-        else:
-            if not self.title_field.text:
-                self.title_field.error = True
-            if not self.description_field.text:
-                self.description_field.error = True
-
-    def edit_task(self, task_data):
-        """Édite une tâche existante"""
-        # Implémenter l'édition de tâche ici
-        pass
-
-    def delete_task(self, task_data):
-        """Supprime une tâche"""
-        # Utiliser le contrôleur pour supprimer la tâche
-        self.task_controller.delete_task(task_data['id'])
-        self.load_tasks()
-
-    def go_back(self):
+            container.add_widget(task_card)
+                
+    def go_back(self, *args):
         """Retourne à l'écran précédent"""
         self.manager.current = 'roles_manager'
+        
+    def show_add_task_dialog(self):
+        """Affiche le dialogue pour ajouter une nouvelle tâche"""
+        dialog = TaskEditDialog(
+            title="Nouvelle tâche",
+            type="custom",
+            content_cls=MDBoxLayout(
+                orientation="vertical",
+                spacing="12dp",
+                padding="12dp",
+                size_hint_y=None,
+                height="120dp"
+            ),
+            buttons=[
+                MDButton(
+                    text="ANNULER",
+                    on_release=lambda x: dialog.dismiss()
+                ),
+                MDButton(
+                    text="ENREGISTRER",
+                    on_release=lambda x: self.save_task(dialog)
+                ),
+            ],
+        )
+        dialog.open()
+        
+    def save_task(self, dialog):
+        """Sauvegarde une nouvelle tâche"""
+        task_data = dialog.get_task_data()
+        if task_data['title'] and task_data['description']:
+            new_task = Task(
+                title=task_data['title'],
+                description=task_data['description'],
+                module='operations',  # Par défaut
+                icon='checkbox-marked-circle'  # Par défaut
+            )
+            self.task_model.add_task(self.current_role_id, new_task)
+            self.load_tasks()  # Recharger la liste des tâches
+            dialog.dismiss()

@@ -579,8 +579,7 @@ class RolesManagerScreen(MDScreen):
     def manage_tasks(self, role_data):
         """Gère les tâches pour un rôle spécifique"""
         task_screen = self.manager.get_screen('task_manager')
-        task_screen.current_role_id = role_data.get('id')
-        task_screen.current_role_name = role_data.get('name')
+        task_screen.set_current_role(role_data.get('id'), role_data.get('name'))
         self.manager.current = 'task_manager'
 
     def go_back(self):
