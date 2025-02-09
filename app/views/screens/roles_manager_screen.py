@@ -13,10 +13,11 @@ from kivymd.uix.dialog import (
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.gridlayout import MDGridLayout
-
-from app.services.roles_manager_service import RolesManagerService
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
+from kivy.uix.recycleview import RecycleView
+
+from app.services.roles_manager_service import RolesManagerService
 
 class RoleCard(MDCard):
     def __init__(self, role_data, on_edit, on_delete, on_manage_tasks, **kwargs):
@@ -88,10 +89,19 @@ class RoleCard(MDCard):
         self.add_widget(description)
 
 class RolesManagerScreen(MDScreen):
+    """Écran de gestion des rôles"""
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.name = 'roles_manager'
         self.roles_manager_service = RolesManagerService()
+        
+        # Créer le layout principal
+        main_layout = MDBoxLayout(
+            orientation='vertical',
+            spacing=dp(5),  # Réduire l'espacement
+            size_hint=(1, 1)  # Utiliser tout l'espace disponible
+        )
         
         # Créer l'en-tête avec le bouton de gestion des tâches
         header = MDBoxLayout(
@@ -107,7 +117,7 @@ class RolesManagerScreen(MDScreen):
         back_btn = MDIconButton(
             icon="arrow-left",
             theme_text_color="Custom",
-            text_color=[1, 1, 1, 1],
+            text_color=[1, 1, 1, 1],  # Blanc
             on_release=lambda x: self.go_back(),
             pos_hint={"center_y": 0.5}
         )
@@ -129,14 +139,14 @@ class RolesManagerScreen(MDScreen):
         report_btn = MDIconButton(
             icon="file-document-outline",
             theme_text_color="Custom",
-            text_color=[1, 0, 0, 1],  # Rouge comme le bouton de gestion des tâches
+            text_color=[1, 0, 0, 1],  # Rouge
             on_release=lambda x: self.go_to_tasks(),
             pos_hint={"center_y": 0.5},
             size_hint_x=0.15
         )
         header.add_widget(report_btn)
         
-        # Bouton d'ajout de rôle
+        # Bouton d'ajout
         add_btn = MDIconButton(
             icon="plus",
             theme_text_color="Custom",
@@ -147,37 +157,11 @@ class RolesManagerScreen(MDScreen):
         )
         header.add_widget(add_btn)
         
-        # Créer un layout principal pour contenir l'en-tête et le contenu
-        main_layout = MDBoxLayout(
-            orientation='vertical',
-            spacing=dp(5),  # Réduire l'espacement
-            size_hint=(1, 1)  # Utiliser tout l'espace disponible
-        )
-        
         # Ajouter l'en-tête au layout principal
         main_layout.add_widget(header)
         
-        # Créer la grille pour les cartes de rôles
-        self.roles_grid = MDBoxLayout(
-            orientation='vertical',
-            spacing=dp(5),  # Réduire l'espacement
-            adaptive_height=True
-        )
-        
-        # Mettre la grille dans un ScrollView
-        scroll = MDScrollView(
-            do_scroll_x=False,
-            do_scroll_y=True,
-            size_hint=(1, 0.9),  # Laisser 10% pour l'en-tête
-            bar_width=dp(25),
-            bar_color=[0.2, 0.2, 0.9, 1],  # Bleu
-            bar_inactive_color=[0.2, 0.2, 0.9, 0.5],  # Bleu plus transparent
-            bar_pos_y='right'
-        )
-        scroll.add_widget(self.roles_grid)
-        
-        # Ajouter le ScrollView au layout principal
-        main_layout.add_widget(scroll)
+        # Le MDBoxLayout pour les cartes est déjà défini dans le fichier KV
+        # avec l'ID 'roles_container'
         
         # Ajouter le layout principal à l'écran
         self.add_widget(main_layout)
@@ -192,8 +176,7 @@ class RolesManagerScreen(MDScreen):
     def load_roles(self):
         """Charge et affiche la liste des rôles"""
         # Effacer les widgets existants
-        self.roles_grid.clear_widgets()
-        self.roles_grid.height = 0  # Réinitialiser la hauteur
+        self.ids.roles_container.clear_widgets()
         
         # Récupérer la liste des rôles
         roles = self.roles_manager_service.get_all_roles()
@@ -213,20 +196,8 @@ class RolesManagerScreen(MDScreen):
                 on_delete=self.delete_role,
                 on_manage_tasks=self.manage_tasks
             )
-            self.roles_grid.add_widget(role_card)
-            # Mettre à jour la hauteur après chaque ajout
-            self.roles_grid.height += role_card.height + dp(10)  # +10 pour l'espacement
+            self.ids.roles_container.add_widget(role_card)
         
-        # S'assurer que la hauteur minimale est respectée
-        self.roles_grid.height = max(self.roles_grid.height, self.roles_grid.minimum_height)
-        Clock.schedule_once(lambda dt: self.update_scroll_size(), 0.1)
-    
-    def update_scroll_size(self):
-        """Met à jour la taille du scroll view"""
-        if hasattr(self, 'roles_grid'):
-            self.roles_grid.height = self.roles_grid.minimum_height
-            self.roles_grid.do_layout()
-    
     def show_add_role_dialog(self):
         """Affiche un dialogue pour saisir le nom du nouveau rôle"""
         dialog = MDDialog(
@@ -405,3 +376,8 @@ class RolesManagerScreen(MDScreen):
         """Retourner à l'écran précédent"""
         self.manager.transition.direction = 'right'
         self.manager.current = 'dashboard'
+
+class RolesRecycleView(RecycleView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.data = []
