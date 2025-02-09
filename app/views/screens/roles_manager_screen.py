@@ -287,30 +287,100 @@ class RolesManagerScreen(MDScreen):
     def edit_role(self, role_data):
         """Édite un rôle existant"""
         print(f"[DEBUG] RolesManagerScreen.edit_role - Édition du rôle: {role_data}")
-        self.current_role = role_data
-        if not self.role_form:
-            self.show_add_role_dialog()
+        if not role_data or 'id' not in role_data:
+            print("[DEBUG] RolesManagerScreen.edit_role - Erreur: données du rôle invalides")
+            return
+            
+        self.current_role = role_data.copy()  # Make a copy to avoid modifying the original
+        self.show_edit_role_dialog()
+
+    def show_edit_role_dialog(self):
+        """Affiche le formulaire pour éditer un rôle"""
+        print("[DEBUG] RolesManagerScreen.show_edit_role_dialog - Début")
         
-        # Mettre à jour le titre du formulaire
-        for child in self.role_form.children:
-            if isinstance(child, MDLabel):
-                child.text = "Modifier le rôle"
-                child.theme_font_size = "Custom"
-                child.font_size = "24sp"
-                break
-                
-        self.name_field.text = role_data.get('name', '')
-        self.description_field.text = role_data.get('description', '')
+        if not self.current_role:
+            print("[DEBUG] RolesManagerScreen.show_edit_role_dialog - Erreur: pas de rôle sélectionné")
+            return
         
-        # Changer le texte du bouton
-        for child in self.role_form.children:
-            if isinstance(child, MDBoxLayout) and child.children:
-                for button in child.children:
-                    if isinstance(button, MDButton) and button.children:
-                        for child_button in button.children:
-                            if isinstance(child_button, MDButtonText) and child_button.text == "Ajouter":
-                                child_button.text = "Modifier"
-                                button.on_release = self.update_role
+        # Créer le formulaire
+        self.role_form = MDCard(
+            orientation='vertical',
+            size_hint=(None, None),
+            size=(400, 400),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5},
+            padding=dp(15),
+            spacing=dp(10),
+            elevation=4  # Add shadow for better visibility
+        )
+        
+        # Titre du formulaire
+        form_title = MDLabel(
+            text=f"Modifier le rôle: {self.current_role.get('name', '')}",
+            theme_font_size="Custom",
+            font_size="24sp",
+            adaptive_height=True,
+            halign="center"
+        )
+        
+        # Champ pour le nom du rôle
+        self.name_field = MDTextField(
+            hint_text="Nom du rôle",
+            text=self.current_role.get('name', ''),
+            helper_text="Le nom du rôle est requis",
+            helper_text_mode="on_error",
+            required=True,
+            mode="outlined"  # Correction : "rectangle" -> "outlined"
+        )
+        
+        # Champ pour la description
+        self.description_field = MDTextField(
+            hint_text="Description",
+            text=self.current_role.get('description', ''),
+            multiline=True,
+            max_height=100,
+            mode="outlined"  # Correction : "rectangle" -> "outlined"
+        )
+        
+        # Conteneur pour les boutons
+        buttons_box = MDBoxLayout(
+            orientation='horizontal',
+            spacing=dp(10),
+            adaptive_height=True,
+            height=50,
+            pos_hint={'center_x': 0.5}
+        )
+        
+        cancel_button = MDButton(
+            style="outlined",
+            on_release=self.remove_form
+        )
+        cancel_button.add_widget(MDButtonText(
+            text="Annuler",
+            theme_font_size="Custom",
+            font_size="14sp"
+        ))
+        
+        save_button = MDButton(
+            style="filled",
+            on_release=self.update_role
+        )
+        save_button.add_widget(MDButtonText(
+            text="Enregistrer",  # Changed from "Modifier" to "Enregistrer"
+            theme_font_size="Custom",
+            font_size="14sp"
+        ))
+        
+        buttons_box.add_widget(cancel_button)
+        buttons_box.add_widget(save_button)
+        
+        # Ajouter tous les widgets au formulaire
+        self.role_form.add_widget(form_title)
+        self.role_form.add_widget(self.name_field)
+        self.role_form.add_widget(self.description_field)
+        self.role_form.add_widget(buttons_box)
+        
+        # Ajouter le formulaire à l'écran
+        self.add_widget(self.role_form)
 
     def update_role(self, *args):
         """Met à jour un rôle existant"""
@@ -321,46 +391,49 @@ class RolesManagerScreen(MDScreen):
             self.name_field.helper_text = "Erreur: impossible de trouver l'ID du rôle"
             return
             
-        if self.name_field.text:
-            # Vérifier si un autre rôle avec le même nom existe déjà
-            existing_roles = self.roles_manager_service.get_all_roles()
-            if any(role.get('name') == self.name_field.text 
-                  and role.get('id') != self.current_role['id'] 
-                  for role in existing_roles):
-                print("[DEBUG] RolesManagerScreen.update_role - Un autre rôle avec ce nom existe déjà")
-                self.name_field.error = True
-                self.name_field.helper_text = "Un autre rôle avec ce nom existe déjà"
-                return
-                
-            # Utiliser "Aucune description" si le champ est vide
-            description = self.description_field.text.strip() or "Aucune description"
-            
-            # Créer les données du rôle
-            role_data = {
-                'name': self.name_field.text,
-                'description': description
-            }
-            print(f"[DEBUG] RolesManagerScreen.update_role - Données à mettre à jour: {role_data}")
-            
-            # Mettre à jour le rôle
-            if self.roles_manager_service.update_role(self.current_role['id'], role_data):
-                print("[DEBUG] RolesManagerScreen.update_role - Mise à jour réussie")
-                # Réinitialiser les champs
-                self.name_field.text = ""
-                self.description_field.text = ""
-                self.current_role = None
-                
-                # Fermer le formulaire et recharger les rôles
-                self.remove_form()
-                self.load_roles()
-            else:
-                print("[DEBUG] RolesManagerScreen.update_role - Échec de la mise à jour")
-                self.name_field.error = True
-                self.name_field.helper_text = "Erreur lors de la mise à jour du rôle"
-        else:
+        if not self.name_field.text.strip():
             print("[DEBUG] RolesManagerScreen.update_role - Erreur: nom manquant")
             self.name_field.error = True
             self.name_field.helper_text = "Le nom du rôle est requis"
+            return
+
+        # Vérifier si un autre rôle avec le même nom existe déjà
+        existing_roles = self.roles_manager_service.get_all_roles()
+        if any(role.get('name') == self.name_field.text.strip() 
+              and role.get('id') != self.current_role['id'] 
+              for role in existing_roles):
+            print("[DEBUG] RolesManagerScreen.update_role - Un autre rôle avec ce nom existe déjà")
+            self.name_field.error = True
+            self.name_field.helper_text = "Un autre rôle avec ce nom existe déjà"
+            return
+            
+        # Utiliser "Aucune description" si le champ est vide
+        description = self.description_field.text.strip() or "Aucune description"
+        
+        # Créer les données du rôle en préservant les tâches et permissions existantes
+        role_data = {
+            'name': self.name_field.text.strip(),
+            'description': description,
+            'tasks': self.current_role.get('tasks', []),
+            'permissions': self.current_role.get('permissions', [])
+        }
+        print(f"[DEBUG] RolesManagerScreen.update_role - Données à mettre à jour: {role_data}")
+        
+        # Mettre à jour le rôle
+        if self.roles_manager_service.update_role(self.current_role['id'], role_data):
+            print("[DEBUG] RolesManagerScreen.update_role - Mise à jour réussie")
+            # Réinitialiser les champs
+            self.name_field.text = ""
+            self.description_field.text = ""
+            self.current_role = None
+            
+            # Fermer le formulaire et recharger les rôles
+            self.remove_form()
+            self.load_roles()
+        else:
+            print("[DEBUG] RolesManagerScreen.update_role - Échec de la mise à jour")
+            self.name_field.error = True
+            self.name_field.helper_text = "Erreur lors de la mise à jour du rôle"
 
     def add_role(self, *args):
         """Ajoute un nouveau rôle"""
@@ -377,8 +450,10 @@ class RolesManagerScreen(MDScreen):
             # Utiliser "Aucune description" si le champ est vide
             description = self.description_field.text.strip() or "Aucune description"
             
-            # Créer les données du rôle
+            # Créer les données du rôle avec un ID unique
+            import time
             role_data = {
+                'id': str(int(time.time() * 1000)),
                 'name': self.name_field.text,
                 'description': description,
                 'tasks': []  # Liste vide par défaut
@@ -386,7 +461,7 @@ class RolesManagerScreen(MDScreen):
             print(f"[DEBUG] RolesManagerScreen.add_role - Données du rôle: {role_data}")
             
             # Ajouter le rôle
-            if self.roles_manager_service.add_role(role_data):
+            if self.roles_manager_service.create_role(role_data):
                 print("[DEBUG] RolesManagerScreen.add_role - Ajout réussi")
                 # Réinitialiser les champs
                 self.name_field.text = ""
