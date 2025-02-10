@@ -182,44 +182,130 @@ class TaskManagerScreen(MDScreen):
         self.manager.current = 'roles_manager'
         
     def show_add_task_dialog(self):
-        """Affiche le dialogue pour ajouter une nouvelle tâche"""
-        dialog = TaskEditDialog(
-            title="Nouvelle tâche",
-            type="custom",
-            content_cls=MDBoxLayout(
-                orientation="vertical",
-                spacing="12dp",
-                padding="12dp",
-                size_hint_y=None,
-                height="120dp"
-            ),
-            buttons=[
-                MDButton(
-                    text="ANNULER",
-                    on_release=lambda x: dialog.dismiss()
-                ),
-                MDButton(
-                    text="ENREGISTRER",
-                    on_release=lambda x: self.save_task(dialog)
-                ),
-            ],
-        )
-        dialog.open()
+        """Affiche le formulaire pour ajouter une tâche"""
+        print("[DEBUG] TaskManagerScreen.show_add_task_dialog - Début")
         
-    def save_task(self, dialog):
-        """Sauvegarde une nouvelle tâche"""
-        task_data = dialog.get_task_data()
-        if task_data['title'] and task_data['description']:
-            new_task = Task(
-                title=task_data['title'],
-                description=task_data['description'],
-                module='operations',  
-                icon='checkbox-marked-circle'  
+        # Créer ou réutiliser le formulaire
+        if not hasattr(self, 'task_form'):
+            self.task_form = MDCard(
+                orientation='vertical',
+                size_hint=(None, None),
+                size=(400, 450),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                padding=20,
+                spacing=10
             )
-            self.task_model.add_task(self.current_role_id, new_task)
-            self.load_tasks()  
-            dialog.dismiss()
+        else:
+            # Si le formulaire existe déjà, le nettoyer
+            self.task_form.clear_widgets()
+        
+        # Titre du formulaire
+        form_title = MDLabel(
+            text="Ajouter une tâche",
+            theme_font_size="Custom",
+            font_size="24sp",
+            halign="center",
+            size_hint_y=None,
+            height=dp(36)
+        )
+        
+        # Champs de saisie
+        self.title_field = MDTextField(
+            hint_text="Titre de la tâche",
+            helper_text="Le titre de la tâche est requis",
+            helper_text_mode="on_error",
+            required=True
+        )
+        
+        self.description_field = MDTextField(
+            hint_text="Description",
+            multiline=True,
+            helper_text="La description est optionnelle"
+        )
+        
+        # Boutons
+        buttons_box = MDBoxLayout(
+            orientation='horizontal',
+            spacing=10,
+            size_hint_y=None,
+            height=50,
+            pos_hint={'center_x': 0.5}
+        )
+        
+        cancel_button = MDButton(
+            style="outlined",
+            on_release=self.remove_form
+        )
+        cancel_button.add_widget(MDButtonText(
+            text="Annuler",
+            theme_font_size="Custom",
+            font_size="14sp"
+        ))
+        
+        save_button = MDButton(
+            style="filled",
+            on_release=self.add_task
+        )
+        save_button.add_widget(MDButtonText(
+            text="Ajouter",
+            theme_font_size="Custom",
+            font_size="14sp"
+        ))
+        
+        buttons_box.add_widget(cancel_button)
+        buttons_box.add_widget(save_button)
+        
+        # Ajouter tous les widgets au formulaire
+        self.task_form.add_widget(form_title)
+        self.task_form.add_widget(self.title_field)
+        self.task_form.add_widget(self.description_field)
+        self.task_form.add_widget(buttons_box)
+        
+        # Ajouter le formulaire à l'écran
+        self.add_widget(self.task_form)
+
+    def remove_form(self, *args):
+        """Retire le formulaire de l'écran"""
+        if hasattr(self, 'task_form'):
+            self.remove_widget(self.task_form)
+            delattr(self, 'task_form')
+            self.title_field = None
+            self.description_field = None
+
+    def add_task(self, *args):
+        """Ajoute une nouvelle tâche"""
+        print("[DEBUG] TaskManagerScreen.add_task - Début de l'ajout")
+        if self.title_field.text:
+            # Utiliser "Aucune description" si le champ est vide
+            description = self.description_field.text.strip() or "Aucune description"
             
+            # Créer les données de la tâche
+            task_data = {
+                'title': self.title_field.text.strip(),
+                'description': description,
+                'module': 'operations',
+                'icon': 'clipboard-check'
+            }
+            
+            # Ajouter la tâche
+            if self.task_model.add_task(self.current_role_id, task_data):
+                print("[DEBUG] TaskManagerScreen.add_task - Ajout réussi")
+                # Réinitialiser les champs
+                self.title_field.text = ""
+                self.description_field.text = ""
+                
+                # Fermer le formulaire et recharger les tâches
+                self.remove_form()
+                self.load_tasks()
+            else:
+                print("[DEBUG] TaskManagerScreen.add_task - Échec de l'ajout")
+                self.title_field.error = True
+                self.title_field.helper_text = "Erreur lors de l'ajout de la tâche"
+        else:
+            print("[DEBUG] TaskManagerScreen.add_task - Erreur: titre manquant")
+            self.title_field.error = True
+            self.title_field.helper_text = "Le titre de la tâche est requis"
+
     def show_edit_task_dialog(self, title, description):
         """Affiche le formulaire d'édition d'une tâche"""
         if not hasattr(self, 'edit_task_card'):

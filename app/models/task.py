@@ -1,5 +1,7 @@
 from typing import Dict, List, Optional
 from datetime import datetime
+import time
+import random
 
 class Task:
     def __init__(self, title: str, description: str, module: str = 'operations', icon: str = 'checkbox-marked'):
@@ -44,20 +46,40 @@ class TaskModel:
         print(f"[DEBUG] TaskModel.get_tasks - {len(tasks)} tâches trouvées")
         return tasks
 
-    def add_task(self, role_id: str, task: Task) -> bool:
-        """Ajoute une nouvelle tâche pour un rôle"""
-        role_doc = self.firebase_service.get_document(self.collection, role_id)
-        if not role_doc:
-            return False
+    def add_task(self, role_id, task_data):
+        """Ajoute une nouvelle tâche au rôle spécifié"""
+        print(f"[DEBUG] TaskModel.add_task - Ajout d'une tâche pour le rôle {role_id}")
+        try:
+            # Récupérer le document du rôle
+            role_doc = self.firebase_service.get_document(self.collection, role_id)
 
-        tasks = role_doc.get('tasks', [])
-        tasks.append(task.to_dict())
-        
-        return self.firebase_service.update_document(
-            self.collection,
-            role_id,
-            {'tasks': tasks}
-        )
+            if not role_doc:
+                print(f"[DEBUG] TaskModel.add_task - Rôle {role_id} non trouvé")
+                return False
+
+            # Récupérer les données du rôle
+            role_data = role_doc
+            tasks = role_data.get('tasks', [])
+
+            # Générer un ID unique pour la tâche
+            task_id = f"{task_data['title'].lower().replace(' ', '_')}_{task_data['module']}_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
+            task_data['id'] = task_id
+
+            # Ajouter la nouvelle tâche à la liste
+            tasks.append(task_data)
+
+            # Mettre à jour le document
+            self.firebase_service.update_document(
+                self.collection,
+                role_id,
+                {'tasks': tasks}
+            )
+            print(f"[DEBUG] TaskModel.add_task - Tâche ajoutée avec succès")
+            return True
+
+        except Exception as e:
+            print(f"[DEBUG] TaskModel.add_task - Erreur : {str(e)}")
+            return False
 
     def update_task(self, role_id: str, task_index: int, task: Task) -> bool:
         """Met à jour une tâche existante"""
