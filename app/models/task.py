@@ -92,3 +92,26 @@ class TaskModel:
             role_id,
             {'tasks': tasks}
         )
+
+    def update_task(self, role_id, old_title, updated_task):
+        """Met à jour une tâche existante"""
+        role_ref = self.firebase_service.db.collection('roles').document(role_id)
+        role_data = role_ref.get().to_dict()
+        
+        if role_data and 'tasks' in role_data:
+            tasks = role_data['tasks']
+            for i, task in enumerate(tasks):
+                if task['title'] == old_title:
+                    tasks[i] = updated_task.to_dict()
+                    role_ref.update({'tasks': tasks})
+                    break
+                    
+    def delete_task(self, role_id, title):
+        """Supprime une tâche"""
+        role_ref = self.firebase_service.db.collection('roles').document(role_id)
+        role_data = role_ref.get().to_dict()
+        
+        if role_data and 'tasks' in role_data:
+            tasks = role_data['tasks']
+            tasks = [task for task in tasks if task['title'] != title]
+            role_ref.update({'tasks': tasks})

@@ -4,11 +4,94 @@ from kivymd.uix.screen import MDScreen
 from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDButton
+from kivymd.uix.button import MDButton, MDIconButton
+from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDButtonText
+from kivymd.uix.textfield import MDTextField
 
 from app.models.task import Task, TaskModel
 from app.services.firebase_service import FirebaseService
-from app.views.screens.specialized_dashboard_screen import TaskCard  # Importer le composant TaskCard
+
+class TaskCard(MDCard):
+    title = StringProperty("")
+    description = StringProperty("")
+    icon = StringProperty("checkbox-marked-circle")
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.orientation = "vertical"
+        self.size_hint_y = None
+        self.height = dp(120)
+        self.padding = dp(16)
+        self.spacing = dp(8)
+        self.radius = dp(10)
+        self.elevation = 2
+        self.md_bg_color = [0.9, 0.9, 1, 1]  # Même fond bleu très clair que RoleCard
+        
+        # Header with title and buttons
+        header = MDBoxLayout(
+            orientation="horizontal",
+            size_hint_y=None,
+            height=dp(40),
+            spacing=dp(8)
+        )
+        
+        # Title - même configuration que RoleCard
+        title_label = MDLabel(
+            text=self.title,
+            theme_font_size="Custom",
+            font_size="20sp",
+            adaptive_height=True,
+            size_hint_x=0.7
+        )
+        
+        # Buttons container
+        buttons_box = MDBoxLayout(
+            orientation="horizontal",
+            size_hint_x=0.3,
+            spacing=dp(4)
+        )
+        
+        # Edit button
+        edit_button = MDIconButton(
+            icon="pencil",
+            theme_text_color="Custom",
+            text_color=[0.2, 0.2, 0.9, 1],
+            on_release=lambda x: self.edit_task()
+        )
+        
+        # Delete button
+        delete_button = MDIconButton(
+            icon="delete",
+            theme_text_color="Custom",
+            text_color=[0.9, 0.2, 0.2, 1],
+            on_release=lambda x: self.delete_task()
+        )
+        
+        buttons_box.add_widget(edit_button)
+        buttons_box.add_widget(delete_button)
+        
+        header.add_widget(title_label)
+        header.add_widget(buttons_box)
+        
+        # Description - même configuration que RoleCard
+        description_label = MDLabel(
+            text=self.description,
+            adaptive_height=True
+        )
+        
+        self.add_widget(header)
+        self.add_widget(description_label)
+        
+    def edit_task(self):
+        """Déclenche l'édition de la tâche"""
+        if hasattr(self.parent.parent.parent.parent, 'show_edit_task_dialog'):
+            self.parent.parent.parent.parent.show_edit_task_dialog(self.title, self.description)
+            
+    def delete_task(self):
+        """Déclenche la suppression de la tâche"""
+        if hasattr(self.parent.parent.parent.parent, 'show_delete_task_dialog'):
+            self.parent.parent.parent.parent.show_delete_task_dialog(self.title)
 
 class TaskEditDialog(MDDialog):
     dialog_title = StringProperty("Nouvelle tâche")
@@ -33,7 +116,7 @@ class TaskEditDialog(MDDialog):
         }
 
 class TaskManagerScreen(MDScreen):
-    current_role_id = StringProperty('')  # Changé de None à une chaîne vide
+    current_role_id = StringProperty('')  
     current_role_name = StringProperty('')
     tasks = ListProperty([])
     tasks_container = ObjectProperty(None)
@@ -130,9 +213,193 @@ class TaskManagerScreen(MDScreen):
             new_task = Task(
                 title=task_data['title'],
                 description=task_data['description'],
-                module='operations',  # Par défaut
-                icon='checkbox-marked-circle'  # Par défaut
+                module='operations',  
+                icon='checkbox-marked-circle'  
             )
             self.task_model.add_task(self.current_role_id, new_task)
-            self.load_tasks()  # Recharger la liste des tâches
+            self.load_tasks()  
             dialog.dismiss()
+            
+    def show_edit_task_dialog(self, title, description):
+        """Affiche le formulaire d'édition d'une tâche"""
+        if not hasattr(self, 'edit_task_card'):
+            # Créer la carte d'édition
+            edit_card = MDCard(
+                orientation='vertical',
+                size_hint=(None, None),
+                size=(400, 300),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                padding=dp(15),
+                spacing=dp(10)
+            )
+            
+            # Titre du formulaire
+            title_label = MDLabel(
+                text="Modifier la tâche",
+                theme_font_size="Custom",
+                font_size="20sp",
+                adaptive_height=True
+            )
+            edit_card.add_widget(title_label)
+            
+            # Champ titre
+            self.title_field = MDTextField(
+                text=title,
+                hint_text="Titre de la tâche",
+                helper_text="Ce champ est requis",
+                helper_text_mode="on_error",
+                required=True
+            )
+            edit_card.add_widget(self.title_field)
+            
+            # Champ description
+            self.description_field = MDTextField(
+                text=description,
+                hint_text="Description de la tâche",
+                multiline=True,
+                max_height="100dp"
+            )
+            edit_card.add_widget(self.description_field)
+            
+            # Conteneur pour les boutons
+            buttons_container = MDBoxLayout(
+                orientation='horizontal',
+                adaptive_height=True,
+                spacing=dp(10),
+                pos_hint={'right': 1}
+            )
+            
+            # Bouton Annuler
+            cancel_button = MDButton(
+                style="outlined",
+                on_release=lambda x: self.remove_edit_form()
+            )
+            cancel_button.add_widget(MDButtonText(
+                text="Annuler",
+                theme_font_size="Custom",
+                font_size="14sp"
+            ))
+            
+            # Bouton Sauvegarder
+            save_button = MDButton(
+                style="filled",
+                on_release=lambda x: self.update_task(title)
+            )
+            save_button.add_widget(MDButtonText(
+                text="Sauvegarder",
+                theme_font_size="Custom",
+                font_size="14sp"
+            ))
+            
+            buttons_container.add_widget(cancel_button)
+            buttons_container.add_widget(save_button)
+            edit_card.add_widget(buttons_container)
+            
+            self.edit_task_card = edit_card
+            self.add_widget(edit_card)
+
+    def remove_edit_form(self, *args):
+        """Retire le formulaire d'édition"""
+        if hasattr(self, 'edit_task_card'):
+            self.remove_widget(self.edit_task_card)
+            delattr(self, 'edit_task_card')
+            self.title_field = None
+            self.description_field = None
+
+    def update_task(self, old_title):
+        """Met à jour une tâche existante"""
+        if not self.title_field.text:
+            self.title_field.error = True
+            return
+            
+        task_data = {
+            'title': self.title_field.text.strip(),
+            'description': self.description_field.text.strip() or "Aucune description"
+        }
+        
+        if self.task_model.update_task(self.current_role_id, old_title, task_data):
+            self.load_tasks()
+            self.remove_edit_form()
+        else:
+            self.title_field.error = True
+            self.title_field.helper_text = "Erreur lors de la mise à jour de la tâche"
+            
+    def show_delete_task_dialog(self, title):
+        """Affiche la boîte de dialogue de confirmation de suppression"""
+        if not hasattr(self, 'confirm_delete_card'):
+            # Créer la carte de confirmation
+            confirm_card = MDCard(
+                orientation='vertical',
+                size_hint=(None, None),
+                size=(400, 200),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                padding=dp(15),
+                spacing=dp(10)
+            )
+            
+            # Titre
+            title_label = MDLabel(
+                text=f"Supprimer la tâche '{title}' ?",
+                theme_font_size="Custom",
+                font_size="20sp",
+                adaptive_height=True
+            )
+            confirm_card.add_widget(title_label)
+            
+            # Message d'avertissement
+            warning = MDLabel(
+                text="Cette action est irréversible. Êtes-vous sûr de vouloir supprimer cette tâche ?",
+                theme_font_size="Custom",
+                font_size="14sp",
+                adaptive_height=True
+            )
+            confirm_card.add_widget(warning)
+            
+            # Conteneur pour les boutons
+            buttons_container = MDBoxLayout(
+                orientation='horizontal',
+                adaptive_height=True,
+                spacing=dp(10),
+                pos_hint={'right': 1}
+            )
+            
+            # Bouton Annuler
+            cancel_button = MDButton(
+                style="outlined",
+                on_release=lambda x: self.remove_delete_confirmation()
+            )
+            cancel_button.add_widget(MDButtonText(
+                text="Annuler",
+                theme_font_size="Custom",
+                font_size="14sp"
+            ))
+            
+            # Bouton Confirmer
+            confirm_button = MDButton(
+                style="filled",
+                on_release=lambda x: self.delete_task_confirm(title)
+            )
+            confirm_button.add_widget(MDButtonText(
+                text="Confirmer",
+                theme_font_size="Custom",
+                font_size="14sp"
+            ))
+            
+            buttons_container.add_widget(cancel_button)
+            buttons_container.add_widget(confirm_button)
+            confirm_card.add_widget(buttons_container)
+            
+            self.confirm_delete_card = confirm_card
+            self.add_widget(confirm_card)
+
+    def remove_delete_confirmation(self, *args):
+        """Retire la carte de confirmation de suppression"""
+        if hasattr(self, 'confirm_delete_card'):
+            self.remove_widget(self.confirm_delete_card)
+            delattr(self, 'confirm_delete_card')
+
+    def delete_task_confirm(self, title):
+        """Supprime une tâche après confirmation"""
+        self.task_model.delete_task(self.current_role_id, title)
+        self.load_tasks()  
+        self.remove_delete_confirmation()
