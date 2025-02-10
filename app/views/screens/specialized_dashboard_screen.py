@@ -10,6 +10,8 @@ from kivymd.uix.list import MDListItem, MDListItemLeadingIcon
 from kivymd.app import MDApp
 from kivy.metrics import dp
 from kivy.clock import Clock
+from kivy.properties import ObjectProperty
+from app.controllers.dashboard_controller import DashboardController
 
 class IconListItem(MDListItem):
     """Item personnalisé pour le menu déroulant avec icône"""
@@ -111,8 +113,11 @@ class TaskCard(MDCard):
 
 class SpecializedDashboardScreen(MDScreen):
     """Écran du tableau de bord spécialisé dynamique selon le rôle"""
+    controller = ObjectProperty()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.controller = DashboardController(model=MDApp.get_running_app().model)
         self.current_role = None
         self.layout = MDBoxLayout(
             orientation='vertical',
@@ -263,82 +268,62 @@ class SpecializedDashboardScreen(MDScreen):
         self.layout.add_widget(scroll)
         self.add_widget(self.layout)
 
-    def update_for_role(self, role_name):
-        """Met à jour le tableau de bord pour un rôle spécifique"""
-        self.current_role = role_name
-        self.title_label.text = f"Tableau de bord {role_name}"
-        self.task_label.text = "Sélectionner une tâche"
+    def update_for_role(self, role_id):
+        """Met à jour l'interface pour le rôle sélectionné"""
+        print(f"Updating interface for role: {role_id}")
+        self.current_role = role_id
         
-        # Vider la grille existante
+        # Mettre à jour le titre avec le nom du rôle
+        self.title_label.text = f"Tableau de bord {role_id}"
+        
+        # Effacer les cartes existantes
         self.grid.clear_widgets()
         
-        # Charger et ajouter les nouvelles cartes
-        self.add_task_cards()
+        # Charger les tâches pour ce rôle
+        tasks = self.controller.load_role_tasks(self.current_role)
+        print(f"Loaded {len(tasks)} tasks for display")
         
-    def add_task_cards(self):
-        """Ajoute les cartes de tâches spécifiques au rôle"""
-        if not self.current_role:
-            return
-            
-        # Obtenir les tâches pour le rôle actuel
-        tasks = self.get_tasks_for_role()
-        
-        for task in tasks:
-            self.grid.add_widget(
-                TaskCard(
-                    title=task["title"],
-                    description=task.get("description", ""),
-                    status="À faire",
-                    icon=task["icon"]
+        if tasks:
+            # Créer une carte pour chaque tâche
+            for task in tasks:
+                print(f"Creating card for task: {task.title}")
+                self.grid.add_widget(
+                    TaskCard(
+                        title=task.title,
+                        description=task.description,
+                        status=task.status,
+                        icon=task.icon if hasattr(task, 'icon') else 'checkbox-marked'
+                    )
                 )
-            )
-
-    def get_tasks_for_role(self):
-        """Retourne les tâches spécifiques au rôle actuel depuis la configuration"""
-        if not self.current_role:
-            return []
-            
-        app = MDApp.get_running_app()
-        if not app.config_service:
-            return []
-            
-        config = app.config_service.get_config()
-        if not config:
-            return []
-            
-        # Chercher le rôle dans la configuration
-        roles = config.get('interface', {}).get('roles', {})
-        for role_id, role_info in roles.items():
-            if role_info.get('name') == self.current_role:
-                return role_info.get('tasks', [])
-                
-        return []
+        else:
+            print("No tasks to display")
 
     def show_task_menu(self, button):
         """Affiche le menu déroulant des tâches"""
-        if not self.current_role:
-            return
-            
-        tasks = self.get_tasks_for_role()
+        print("Opening task menu")
+        tasks = self.controller.load_role_tasks(self.current_role)
+        print(f"Loaded {len(tasks)} tasks for menu")
+        
         # Trier les tâches par ordre alphabétique
-        sorted_tasks = sorted(tasks, key=lambda x: x["title"])
+        sorted_tasks = sorted(tasks, key=lambda x: x.title)
         
         menu_items = [
             {
                 "viewclass": "MDDropdownTextItem",
-                "text": task["title"],
+                "text": task.title,
                 "on_release": lambda x=task: self.select_task(x)
             } for task in sorted_tasks
         ]
+        
+        print(f"Created {len(menu_items)} menu items")
 
         self.menu = MDDropdownMenu(
             caller=button,
             items=menu_items,
-            position="bottom",
-            width=dp(600),
-            max_height=dp(400),
-            radius=[24, 24, 24, 24],
-            elevation=4
+            width_mult=4,
+            max_height=dp(250),
+            radius=[8, 8, 8, 8],
+            background_color=[0.9, 0.9, 1, 1]
         )
         self.menu.open()
 
@@ -348,18 +333,20 @@ class SpecializedDashboardScreen(MDScreen):
         if hasattr(self, 'menu'):
             self.menu.dismiss()
             
-        self.task_label.text = task.get('title', '')
+        self.task_label.text = task.title
         
         # Redirection selon le module
-        module = task.get('module', '')
-        print(f"Tâche sélectionnée : {task.get('title')}")
+        module = task.module
+        print(f"Tâche sélectionnée : {task.title}")
         print(f"Redirection vers le module : {module}")
         
         # Redirection selon le module
-        if module == "system":
-            if task.get('title') == "Gérer les tâches":
-                self.manager.transition.direction = 'left'
-                self.manager.current = 'roles_manager'
+        if module == "admin":
+            if task.title == "Gérer les rôles":
+                print("Redirection vers l'écran de gestion des rôles")
+                app = MDApp.get_running_app()
+                app.screen_manager.transition.direction = 'left'
+                app.screen_manager.current = 'roles_manager'
         # Autres redirections selon les modules...
 
     def show_notifications(self, *args):
