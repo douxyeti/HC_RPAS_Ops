@@ -2,30 +2,66 @@ from typing import Dict, List, Optional
 from datetime import datetime
 import time
 import random
+from kivy.properties import StringProperty, ObjectProperty, ListProperty
+from kivy.event import EventDispatcher
 
-class Task:
-    def __init__(self, title: str, description: str, module: str = 'operations', icon: str = 'checkbox-marked'):
+class Task(EventDispatcher):
+    title = StringProperty('')
+    description = StringProperty('')
+    module = StringProperty('operations')
+    icon = StringProperty('checkbox-marked')
+    status = StringProperty('En attente')  # Propriété ajoutée
+
+    def __init__(self, title: str, description: str, module: str = 'operations', icon: str = 'checkbox-marked', status: str = 'En attente'):
+        super().__init__()
         self.title = title
         self.description = description
         self.module = module
         self.icon = icon
+        self.status = status  # Initialisation correcte
 
     def to_dict(self) -> Dict:
         return {
             'title': self.title,
             'description': self.description,
             'module': self.module,
-            'icon': self.icon
+            'icon': self.icon,
+            'status': self.status  # Ajout de la propriété status
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'Task':
+    def from_dict(cls, data: Dict):
+        """Crée une instance de Task à partir d'un dictionnaire"""
+        if not data:
+            raise ValueError("Les données de la tâche sont vides")
+            
+        # Valeurs par défaut pour les champs obligatoires
+        title = data.get('title', '')
+        if not title:
+            raise ValueError("Le titre de la tâche est obligatoire")
+            
+        description = data.get('description', '')
+        module = data.get('module', 'operations')
+        icon = data.get('icon', 'checkbox-marked')
+        status = data.get('status', 'En attente')
+        
         return cls(
-            title=data.get('title', ''),
-            description=data.get('description', ''),
-            module=data.get('module', 'operations'),
-            icon=data.get('icon', 'checkbox-marked')
+            title=title,
+            description=description,
+            module=module,
+            icon=icon,
+            status=status
         )
+
+class Role(EventDispatcher):
+    id = StringProperty()
+    name = StringProperty()
+    permissions = ListProperty([])
+
+    def __init__(self, id, name, **kwargs):
+        super().__init__(**kwargs)
+        self.id = id
+        self.name = name
 
 class TaskModel:
     def __init__(self, firebase_service):
@@ -35,16 +71,37 @@ class TaskModel:
     def get_tasks(self, role_id: str) -> List[Task]:
         """Récupère toutes les tâches pour un rôle donné"""
         print(f"[DEBUG] TaskModel.get_tasks - Recherche des tâches pour le rôle : {role_id}")
-        role_doc = self.firebase_service.get_document(self.collection, role_id)
-        print(f"[DEBUG] TaskModel.get_tasks - Document récupéré : {role_doc}")
-        
-        if not role_doc or 'tasks' not in role_doc:
-            print(f"[DEBUG] TaskModel.get_tasks - Aucune tâche trouvée pour le rôle {role_id}")
-            return []
+        try:
+            # Récupérer le document du rôle
+            role_doc = self.firebase_service.get_document(self.collection, role_id)
+            print(f"[DEBUG] TaskModel.get_tasks - Document récupéré : {role_doc}")
             
-        tasks = [Task.from_dict(task) for task in role_doc['tasks']]
-        print(f"[DEBUG] TaskModel.get_tasks - {len(tasks)} tâches trouvées")
-        return tasks
+            if not role_doc:
+                print(f"[DEBUG] TaskModel.get_tasks - Document non trouvé pour le rôle {role_id}")
+                return []
+                
+            # Vérifier si le document a des tâches
+            tasks_data = role_doc.get('tasks', [])
+            if not tasks_data:
+                print(f"[DEBUG] TaskModel.get_tasks - Aucune tâche trouvée pour le rôle {role_id}")
+                return []
+                
+            # Convertir les données en objets Task
+            tasks = []
+            for task_data in tasks_data:
+                try:
+                    task = Task.from_dict(task_data)
+                    tasks.append(task)
+                except Exception as e:
+                    print(f"[ERROR] TaskModel.get_tasks - Erreur lors de la conversion de la tâche : {str(e)}")
+                    continue
+                    
+            print(f"[DEBUG] TaskModel.get_tasks - {len(tasks)} tâches trouvées")
+            return tasks
+            
+        except Exception as e:
+            print(f"[ERROR] TaskModel.get_tasks - Erreur lors de la récupération des tâches : {str(e)}")
+            return []
 
     def add_task(self, role_id, task_data):
         """Ajoute une nouvelle tâche au rôle spécifié"""

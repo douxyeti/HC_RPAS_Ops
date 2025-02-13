@@ -18,6 +18,9 @@ from app.views.screens.roles_manager_screen import RolesManagerScreen
 from app.views.screens.role_edit_screen import RoleEditScreen
 from app.views.screens.task_manager_screen import TaskManagerScreen
 
+# Import du modèle
+from app.models.application_model import ApplicationModel
+
 class MainScreenManager(MDScreenManager):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -41,6 +44,7 @@ class HighCloudRPASApp(MDApp):
         self.roles_manager_service = None
         self.current_role = None
         self.available_roles = []  # Sera chargé depuis Firebase
+        self.model = ApplicationModel()
         
     def build(self):
         # Charge les variables d'environnement
@@ -130,6 +134,14 @@ class HighCloudRPASApp(MDApp):
             dashboard_screen = self.screen_manager.get_screen('dashboard')
             if dashboard_screen:
                 dashboard_screen.title.text = f"Tableau de bord - {role}"
+
+    def load_configuration(self):
+        # Code pour charger la configuration
+        pass
+
+    def init_services(self):
+        # Code pour initialiser les services
+        pass
 
 if __name__ == "__main__":
     HighCloudRPASApp().run()

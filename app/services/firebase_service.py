@@ -142,13 +142,25 @@ class FirebaseService:
 
     def get_document(self, collection_name, document_id):
         """Récupère un document spécifique"""
+        print(f"[DEBUG] FirebaseService.get_document - Récupération du document {document_id} dans la collection {collection_name}")
         try:
-            doc = self.db.collection(collection_name).document(document_id).get()
+            # Récupérer la référence du document
+            doc_ref = self.db.collection(collection_name).document(document_id)
+            print(f"[DEBUG] FirebaseService.get_document - Référence du document obtenue : {doc_ref.path}")
+            
+            # Récupérer le document
+            doc = doc_ref.get()
+            print(f"[DEBUG] FirebaseService.get_document - Document récupéré, existe : {doc.exists}")
+            
             if doc.exists:
-                return doc.to_dict()
-            return None
+                data = doc.to_dict()
+                print(f"[DEBUG] FirebaseService.get_document - Données du document : {data}")
+                return data
+            else:
+                print(f"[DEBUG] FirebaseService.get_document - Le document {document_id} n'existe pas dans la collection {collection_name}")
+                return None
         except Exception as e:
-            print(f"Erreur lors de la récupération du document: {str(e)}")
+            print(f"[ERROR] FirebaseService.get_document - Erreur lors de la récupération du document : {str(e)}")
             return None
 
     def add_document_with_id(self, collection_name, document_id, data):
