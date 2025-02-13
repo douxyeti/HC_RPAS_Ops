@@ -47,12 +47,30 @@
             Widget:
                 size_hint_x: 0.3
             
-            MDIconButton:
-                icon: "plus"
-                theme_text_color: "Custom"
-                text_color: [1, 1, 1, 1]
-                on_release: root.show_add_task_dialog()
+            MDBoxLayout:
+                orientation: 'horizontal'
+                size_hint_x: None
+                width: self.minimum_width
+                spacing: dp(4)
                 pos_hint: {"center_y": 0.5}
+                
+                MDIconButton:
+                    icon: "filter"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_filter_menu(self)
+                
+                MDIconButton:
+                    icon: "sort"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_sort_menu(self)
+                
+                MDIconButton:
+                    icon: "plus"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_add_task_dialog()
         
         # Zone de défilement avec les cartes
         MDScrollView:

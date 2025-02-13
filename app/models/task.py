@@ -194,3 +194,13 @@ class TaskModel:
             tasks = role_data['tasks']
             tasks = [task for task in tasks if task['title'] != title]
             role_ref.update({'tasks': tasks})
+
+    def filter_by_module(self, tasks, module_type):
+        """Filtre une liste de tâches par module"""
+        if module_type == "all":
+            return tasks
+        return [task for task in tasks if task.get('module') == module_type]
+
+    def sort_by_title(self, tasks, ascending=True):
+        """Trie une liste de tâches par titre"""
+        return sorted(tasks, key=lambda x: x.get('title', ''), reverse=not ascending)

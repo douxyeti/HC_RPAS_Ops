@@ -11,7 +11,11 @@
             title: root.current_role_name if root.current_role_name else "Gestion des tâches"
             elevation: 2
             left_action_items: [["arrow-left", lambda x: root.manager.current = 'roles_manager']]
-            right_action_items: [["plus", lambda x: root.show_add_task_dialog()]]
+            right_action_items: [
+                ["filter-variant", lambda x: root.show_filter_menu(x)],
+                ["sort-variant", lambda x: root.show_sort_menu(x)],
+                ["plus", lambda x: root.show_add_task_dialog()]
+            ]
             pos_hint: {"top": 1}
 
         ScrollView:

@@ -8,6 +8,7 @@ from kivymd.uix.button import MDButton, MDIconButton
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDButtonText
 from kivymd.uix.textfield import MDTextField
+from kivymd.uix.menu import MDDropdownMenu
 
 from app.models.task import Task, TaskModel
 from app.services.firebase_service import FirebaseService
@@ -489,3 +490,65 @@ class TaskManagerScreen(MDScreen):
         self.task_model.delete_task(self.current_role_id, title)
         self.load_tasks()  
         self.remove_delete_confirmation()
+
+    def show_menu(self, items, caller=None):
+        """Affiche un menu déroulant"""
+        menu = MDDropdownMenu(
+            caller=caller,
+            items=items,
+            width_mult=4,
+            max_height=dp(250),
+            radius=[8, 8, 8, 8],
+            background_color=[0.9, 0.9, 1, 1]
+        )
+        menu.open()
+
+    def show_filter_menu(self, button):
+        """Affiche le menu de filtrage des tâches"""
+        menu_items = [
+            {
+                "text": "Toutes les tâches",
+                "on_release": lambda x="all": self.filter_tasks(x),
+            },
+            {
+                "text": "Opérations",
+                "on_release": lambda x="operations": self.filter_tasks(x),
+            },
+            {
+                "text": "Formation",
+                "on_release": lambda x="formation": self.filter_tasks(x),
+            },
+            {
+                "text": "Maintenance",
+                "on_release": lambda x="maintenance": self.filter_tasks(x),
+            }
+        ]
+        self.show_menu(menu_items, button)
+
+    def show_sort_menu(self, button):
+        """Affiche le menu de tri des tâches"""
+        menu_items = [
+            {
+                "text": "Par titre (A-Z)",
+                "on_release": lambda x="title_asc": self.sort_tasks(x),
+            },
+            {
+                "text": "Par titre (Z-A)",
+                "on_release": lambda x="title_desc": self.sort_tasks(x),
+            }
+        ]
+        self.show_menu(menu_items, button)
+
+    def filter_tasks(self, filter_type):
+        """Filtre les tâches selon le module"""
+        if filter_type == "all":
+            self.load_tasks()  # Garde le comportement actuel pour "all"
+        else:
+            filtered_tasks = self.task_model.filter_by_module(self.tasks, filter_type)
+            self.display_tasks(filtered_tasks)
+
+    def sort_tasks(self, sort_type):
+        """Trie les tâches selon le critère"""
+        ascending = sort_type == "title_asc"
+        sorted_tasks = self.task_model.sort_by_title(self.tasks, ascending)
+        self.display_tasks(sorted_tasks)
