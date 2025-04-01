@@ -1,0 +1,115 @@
+#:kivy 2.2.1
+
+<TaskManagerScreen>:
+    MDBoxLayout:
+        id: main_layout
+        orientation: 'vertical'
+        spacing: dp(16)
+        padding: dp(16)
+
+        MDTopAppBar:
+            title: root.current_role_name if root.current_role_name else "Gestion des tâches"
+            elevation: 2
+            left_action_items: [["arrow-left", lambda x: root.manager.current = 'roles_manager']]
+            right_action_items: [
+                ["filter-variant", lambda x: root.show_filter_menu(x)],
+                ["sort-variant", lambda x: root.show_sort_menu(x)],
+                ["plus", lambda x: root.show_add_task_dialog()]
+            ]
+            pos_hint: {"top": 1}
+
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            
+            MDBoxLayout:
+                id: task_list
+                orientation: 'vertical'
+                spacing: dp(8)
+                padding: dp(8)
+                adaptive_height: True
+                size_hint_x: 1
+
+<TaskCard>:
+    orientation: 'vertical'
+    size_hint_y: None
+    height: dp(120)
+    padding: dp(16)
+    spacing: dp(8)
+    md_bg_color: app.theme_cls.bg_light
+
+    MDBoxLayout:
+        orientation: 'horizontal'
+        adaptive_height: True
+        spacing: dp(8)
+
+        MDLabel:
+            text: root.task_data.get('title', '')
+            theme_font_size: "H6"
+            adaptive_height: True
+            size_hint_x: 0.8
+
+        MDBoxLayout:
+            orientation: 'horizontal'
+            adaptive_width: True
+            spacing: dp(4)
+
+            MDIconButton:
+                icon: "pencil"
+                on_release: root.on_edit(root.task_data)
+
+            MDIconButton:
+                icon: "delete"
+                on_release: root.on_delete(root.task_data)
+
+    MDLabel:
+        text: root.task_data.get('description', '')
+        theme_text_color: "Secondary"
+        size_hint_y: None
+        height: self.texture_size[1]
+
+<TaskEditCard>:
+    orientation: 'vertical'
+    size_hint: 0.9, None
+    height: dp(280)
+    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+    padding: dp(16)
+    spacing: dp(8)
+    elevation: 4
+    md_bg_color: app.theme_cls.bg_light
+
+    MDLabel:
+        text: "Nouvelle tâche" if not root.task_data else "Modifier la tâche"
+        theme_font_size: "H6"
+        adaptive_height: True
+
+    MDTextField:
+        id: title_field
+        hint_text: "Titre de la tâche"
+        mode: "outlined"
+        text: root.task_data.get('title', '') if root.task_data else ''
+        size_hint_y: None
+        height: dp(48)
+
+    MDTextField:
+        id: description_field
+        hint_text: "Description de la tâche"
+        mode: "outlined"
+        multiline: True
+        text: root.task_data.get('description', '') if root.task_data else ''
+        size_hint_y: None
+        height: dp(96)
+
+    MDBoxLayout:
+        orientation: 'horizontal'
+        adaptive_height: True
+        spacing: dp(8)
+        pos_hint: {'right': 1}
+
+        MDButton:
+            text: "Annuler"
+            on_release: root.on_cancel()
+
+        MDButton:
+            text: "Sauvegarder"
+            on_release: root.on_save({'title': title_field.text, 'description': description_field.text})

@@ -1,0 +1,930 @@
+{
+    "version": "2.0.0",
+    "mqtt": {
+        "broker": "${MQTT_BROKER}",
+        "port": "${MQTT_PORT}",
+        "username": "${MQTT_USERNAME}",
+        "password": "${MQTT_PASSWORD}",
+        "keepalive": "${MQTT_KEEPALIVE}",
+        "topics": {
+            "dashboard": {
+                "general": "hc_rpas/dashboard/general/#",
+                "stats": "hc_rpas/dashboard/stats/#",
+                "alerts": "hc_rpas/dashboard/alerts/#"
+            },
+            "roles": {
+                "tasks": "hc_rpas/roles/{role}/tasks/#",
+                "notifications": "hc_rpas/roles/{role}/notifications/#",
+                "status": "hc_rpas/roles/{role}/status/#"
+            },
+            "modules": {
+                "operations": "hc_rpas/modules/operations/#",
+                "maintenance": "hc_rpas/modules/maintenance/#",
+                "personnel": "hc_rpas/modules/personnel/#"
+            }
+        }
+    },
+    "modules": {
+        "active_modules": [
+            "operations",
+            "personnel",
+            "maintenance",
+            "formation",
+            "documentation"
+        ],
+        "dependencies": {
+            "operations": [
+                "personnel",
+                "maintenance"
+            ],
+            "formation": [
+                "personnel"
+            ],
+            "maintenance": [
+                "personnel"
+            ]
+        }
+    },
+    "interface": {
+        "roles": {
+            "super_admin": {
+                "name": "Super Administrateur",
+                "permissions": [
+                    "all",
+                    "system.config"
+                ],
+                "tasks": [
+                    {
+                        "title": "Configuration système",
+                        "icon": "cog",
+                        "module": "system",
+                        "description": "Gérer la configuration système"
+                    },
+                    {
+                        "title": "Gestion des accès",
+                        "icon": "account-key",
+                        "module": "system",
+                        "description": "Gérer les accès et permissions"
+                    },
+                    {
+                        "title": "Maintenance système",
+                        "icon": "tools",
+                        "module": "system",
+                        "description": "Maintenance et mise à jour du système"
+                    }
+                ]
+            },
+            "admin": {
+                "name": "Administrateur",
+                "permissions": [
+                    "all"
+                ],
+                "tasks": [
+                    {
+                        "title": "Gestion des utilisateurs",
+                        "icon": "account-group",
+                        "module": "personnel",
+                        "description": "Gérer les comptes utilisateurs"
+                    },
+                    {
+                        "title": "Configuration modules",
+                        "icon": "view-grid-plus",
+                        "module": "system",
+                        "description": "Configurer les modules de l'application"
+                    },
+                    {
+                        "title": "Supervision générale",
+                        "icon": "monitor-dashboard",
+                        "module": "system",
+                        "description": "Superviser l'ensemble du système"
+                    }
+                ]
+            },
+            "admin_assistant": {
+                "name": "Adjoint(e) administratif(ve)",
+                "permissions": [
+                    "documentation.view",
+                    "documentation.edit",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Gestion documentaire",
+                        "icon": "file-document-edit",
+                        "module": "documentation",
+                        "description": "Gérer les documents administratifs"
+                    },
+                    {
+                        "title": "Support administratif",
+                        "icon": "account-tie",
+                        "module": "personnel",
+                        "description": "Fournir un support administratif"
+                    },
+                    {
+                        "title": "Archivage",
+                        "icon": "archive",
+                        "module": "documentation",
+                        "description": "Gérer l'archivage des documents"
+                    }
+                ]
+            },
+            "auditor": {
+                "name": "Auditeur",
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view",
+                    "personnel.view",
+                    "documentation.view"
+                ]
+            },
+            "senior_manager": {
+                "name": "Gestionnaire supérieur responsable",
+                "permissions": [
+                    "operations.all",
+                    "personnel.all",
+                    "maintenance.all"
+                ]
+            },
+            "ops_manager": {
+                "name": "Responsable des opérations",
+                "permissions": [
+                    "operations.all",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Gestion des opérations",
+                        "icon": "view-dashboard",
+                        "module": "operations",
+                        "description": "Superviser toutes les opérations en cours"
+                    },
+                    {
+                        "title": "Planification stratégique",
+                        "icon": "calendar-clock",
+                        "module": "operations",
+                        "description": "Planifier les opérations à long terme"
+                    },
+                    {
+                        "title": "Analyse des performances",
+                        "icon": "chart-line",
+                        "module": "operations",
+                        "description": "Analyser les performances opérationnelles"
+                    }
+                ]
+            },
+            "chief_pilot": {
+                "name": "Chef pilote",
+                "permissions": [
+                    "operations.all",
+                    "personnel.view",
+                    "formation.all"
+                ],
+                "tasks": [
+                    {
+                        "title": "Supervision des pilotes",
+                        "icon": "account-supervisor",
+                        "module": "operations",
+                        "description": "Superviser l'équipe de pilotes"
+                    },
+                    {
+                        "title": "Formation",
+                        "icon": "school",
+                        "module": "formation",
+                        "description": "Gérer la formation des pilotes"
+                    },
+                    {
+                        "title": "Évaluation",
+                        "icon": "clipboard-check",
+                        "module": "formation",
+                        "description": "Évaluer les compétences des pilotes"
+                    }
+                ]
+            },
+            "pilot_command": {
+                "name": "Commandant de bord",
+                "permissions": [
+                    "operations.all",
+                    "maintenance.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Planification des vols",
+                        "icon": "airplane-clock",
+                        "module": "operations",
+                        "description": "Planifier et organiser les opérations de vol"
+                    },
+                    {
+                        "title": "Briefing d'équipage",
+                        "icon": "account-group",
+                        "module": "operations",
+                        "description": "Préparer et conduire les briefings d'équipage"
+                    },
+                    {
+                        "title": "Vérification pré-vol",
+                        "icon": "clipboard-check",
+                        "module": "operations",
+                        "description": "Effectuer les vérifications pré-vol"
+                    },
+                    {
+                        "title": "Rapport de vol",
+                        "icon": "file-document-edit",
+                        "module": "operations",
+                        "description": "Remplir les rapports de vol"
+                    }
+                ]
+            },
+            "maintenance_manager": {
+                "name": "Gestionnaire des activités de maintenance",
+                "permissions": [
+                    "maintenance.all"
+                ],
+                "tasks": [
+                    {
+                        "title": "Planning maintenance",
+                        "icon": "wrench-clock",
+                        "module": "maintenance",
+                        "description": "Planifier les activités de maintenance"
+                    },
+                    {
+                        "title": "Suivi des équipements",
+                        "icon": "drone",
+                        "module": "maintenance",
+                        "description": "Suivre l'état des équipements"
+                    },
+                    {
+                        "title": "Rapports techniques",
+                        "icon": "file-chart",
+                        "module": "maintenance",
+                        "description": "Gérer les rapports techniques"
+                    }
+                ]
+            },
+            "site_manager": {
+                "name": "Gestionnaire de site",
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Gestion du site",
+                        "icon": "map-marker",
+                        "module": "operations",
+                        "description": "Gérer les opérations sur site"
+                    },
+                    {
+                        "title": "Coordination équipe",
+                        "icon": "account-group",
+                        "module": "operations",
+                        "description": "Coordonner l'équipe sur site"
+                    },
+                    {
+                        "title": "Rapports site",
+                        "icon": "clipboard-text",
+                        "module": "operations",
+                        "description": "Gérer les rapports de site"
+                    }
+                ]
+            },
+            "mission_specialist": {
+                "name": "Spécialiste de mission",
+                "permissions": [
+                    "operations.view",
+                    "operations.edit"
+                ],
+                "tasks": [
+                    {
+                        "title": "Planification mission",
+                        "icon": "compass",
+                        "module": "operations",
+                        "description": "Planifier les missions spécialisées"
+                    },
+                    {
+                        "title": "Support technique",
+                        "icon": "tools",
+                        "module": "operations",
+                        "description": "Fournir un support technique"
+                    },
+                    {
+                        "title": "Analyse mission",
+                        "icon": "chart-box",
+                        "module": "operations",
+                        "description": "Analyser les données de mission"
+                    }
+                ]
+            },
+            "payload_operator": {
+                "name": "Opérateur de charge utile",
+                "permissions": [
+                    "operations.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Gestion payload",
+                        "icon": "package-variant",
+                        "module": "operations",
+                        "description": "Gérer la charge utile"
+                    },
+                    {
+                        "title": "Contrôle capteurs",
+                        "icon": "camera-control",
+                        "module": "operations",
+                        "description": "Contrôler les capteurs"
+                    },
+                    {
+                        "title": "Collecte données",
+                        "icon": "database",
+                        "module": "operations",
+                        "description": "Collecter les données de mission"
+                    }
+                ]
+            },
+            "pilot_controls": {
+                "name": "Pilote aux commandes",
+                "permissions": [
+                    "operations.view",
+                    "operations.edit"
+                ],
+                "tasks": [
+                    {
+                        "title": "Pilotage RPAS",
+                        "icon": "remote",
+                        "module": "operations",
+                        "description": "Piloter le système RPAS"
+                    },
+                    {
+                        "title": "Check-list vol",
+                        "icon": "clipboard-list",
+                        "module": "operations",
+                        "description": "Suivre les check-lists de vol"
+                    },
+                    {
+                        "title": "Journal de bord",
+                        "icon": "notebook",
+                        "module": "operations",
+                        "description": "Tenir le journal de bord"
+                    }
+                ]
+            },
+            "copilot": {
+                "name": "Copilote",
+                "permissions": [
+                    "operations.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Support pilotage",
+                        "icon": "remote",
+                        "module": "operations",
+                        "description": "Assister le pilote principal"
+                    },
+                    {
+                        "title": "Surveillance systèmes",
+                        "icon": "monitor",
+                        "module": "operations",
+                        "description": "Surveiller les systèmes"
+                    },
+                    {
+                        "title": "Communications",
+                        "icon": "radio",
+                        "module": "operations",
+                        "description": "Gérer les communications"
+                    }
+                ]
+            },
+            "pilot": {
+                "name": "Pilote",
+                "permissions": [
+                    "operations.view",
+                    "operations.edit",
+                    "maintenance.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Opérations vol",
+                        "icon": "airplane",
+                        "module": "operations",
+                        "description": "Effectuer les opérations de vol"
+                    },
+                    {
+                        "title": "Inspection RPAS",
+                        "icon": "magnify",
+                        "module": "maintenance",
+                        "description": "Inspecter le système RPAS"
+                    },
+                    {
+                        "title": "Rapports vol",
+                        "icon": "file-document",
+                        "module": "operations",
+                        "description": "Remplir les rapports de vol"
+                    }
+                ]
+            },
+            "ground_station": {
+                "name": "Opérateur de station au sol",
+                "permissions": [
+                    "operations.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Gestion station sol",
+                        "icon": "antenna",
+                        "module": "operations",
+                        "description": "Gérer la station sol"
+                    },
+                    {
+                        "title": "Suivi télémétrie",
+                        "icon": "chart-line",
+                        "module": "operations",
+                        "description": "Suivre les données télémétriques"
+                    },
+                    {
+                        "title": "Communications sol",
+                        "icon": "radio-tower",
+                        "module": "operations",
+                        "description": "Gérer les communications sol"
+                    }
+                ]
+            },
+            "ground_observer": {
+                "name": "Observateur au sol",
+                "permissions": [
+                    "operations.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Surveillance zone",
+                        "icon": "eye",
+                        "module": "operations",
+                        "description": "Surveiller la zone d'opération"
+                    },
+                    {
+                        "title": "Rapport sécurité",
+                        "icon": "shield",
+                        "module": "operations",
+                        "description": "Rapporter les risques sécurité"
+                    },
+                    {
+                        "title": "Communication équipe",
+                        "icon": "message-alert",
+                        "module": "operations",
+                        "description": "Communiquer avec l'équipe"
+                    }
+                ]
+            },
+            "system_maintainer": {
+                "name": "Mainteneur du système",
+                "permissions": [
+                    "maintenance.all"
+                ],
+                "tasks": [
+                    {
+                        "title": "Maintenance RPAS",
+                        "icon": "wrench",
+                        "module": "maintenance",
+                        "description": "Effectuer la maintenance"
+                    },
+                    {
+                        "title": "Diagnostic système",
+                        "icon": "bug",
+                        "module": "maintenance",
+                        "description": "Diagnostiquer les problèmes"
+                    },
+                    {
+                        "title": "Rapports maintenance",
+                        "icon": "file-check",
+                        "module": "maintenance",
+                        "description": "Documenter la maintenance"
+                    }
+                ]
+            },
+            "sgs_manager": {
+                "name": "Responsable SGS",
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Gestion sécurité",
+                        "icon": "shield-check",
+                        "module": "operations",
+                        "description": "Gérer la sécurité"
+                    },
+                    {
+                        "title": "Analyse risques",
+                        "icon": "alert",
+                        "module": "operations",
+                        "description": "Analyser les risques"
+                    },
+                    {
+                        "title": "Rapports sécurité",
+                        "icon": "file-alert",
+                        "module": "documentation",
+                        "description": "Gérer les rapports sécurité"
+                    }
+                ]
+            },
+            "quality_manager": {
+                "name": "Responsable assurance de la qualité",
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Audits qualité",
+                        "icon": "check-circle",
+                        "module": "operations",
+                        "description": "Réaliser les audits qualité"
+                    },
+                    {
+                        "title": "Contrôle processus",
+                        "icon": "cog-check",
+                        "module": "operations",
+                        "description": "Contrôler les processus"
+                    },
+                    {
+                        "title": "Rapports qualité",
+                        "icon": "file-certificate",
+                        "module": "documentation",
+                        "description": "Gérer les rapports qualité"
+                    }
+                ]
+            },
+            "training_manager": {
+                "name": "Gestionnaire de la formation",
+                "permissions": [
+                    "formation.all",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Programme formation",
+                        "icon": "school",
+                        "module": "formation",
+                        "description": "Gérer les programmes"
+                    },
+                    {
+                        "title": "Suivi stagiaires",
+                        "icon": "account-school",
+                        "module": "formation",
+                        "description": "Suivre les stagiaires"
+                    },
+                    {
+                        "title": "Rapports formation",
+                        "icon": "certificate",
+                        "module": "formation",
+                        "description": "Gérer documentation formation"
+                    }
+                ]
+            },
+            "formateur": {
+                "name": "Formateur",
+                "permissions": [
+                    "formation.view",
+                    "formation.edit",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Donner formation",
+                        "icon": "teach",
+                        "module": "formation",
+                        "description": "Dispenser les formations"
+                    },
+                    {
+                        "title": "Évaluer progrès",
+                        "icon": "chart-bar",
+                        "module": "formation",
+                        "description": "Évaluer les progrès"
+                    },
+                    {
+                        "title": "Rapports élèves",
+                        "icon": "account-details",
+                        "module": "formation",
+                        "description": "Rédiger rapports d'élèves"
+                    }
+                ]
+            },
+            "evaluator": {
+                "name": "Évaluateur",
+                "permissions": [
+                    "formation.all",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Évaluation compétences",
+                        "icon": "clipboard-check",
+                        "module": "formation",
+                        "description": "Évaluer les compétences"
+                    },
+                    {
+                        "title": "Tests pratiques",
+                        "icon": "gamepad-variant",
+                        "module": "formation",
+                        "description": "Conduire tests pratiques"
+                    },
+                    {
+                        "title": "Rapports évaluation",
+                        "icon": "file-chart",
+                        "module": "formation",
+                        "description": "Rédiger rapports d'évaluation"
+                    }
+                ]
+            },
+            "examiner": {
+                "name": "Examinateur",
+                "permissions": [
+                    "formation.all",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Examens théoriques",
+                        "icon": "book-open-variant",
+                        "module": "formation",
+                        "description": "Conduire examens théoriques"
+                    },
+                    {
+                        "title": "Examens pratiques",
+                        "icon": "controller",
+                        "module": "formation",
+                        "description": "Conduire examens pratiques"
+                    },
+                    {
+                        "title": "Certification",
+                        "icon": "certificate",
+                        "module": "formation",
+                        "description": "Délivrer les certifications"
+                    }
+                ]
+            },
+            "instructor": {
+                "name": "Instructeur",
+                "permissions": [
+                    "formation.all",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Formation pratique",
+                        "icon": "account-convert",
+                        "module": "formation",
+                        "description": "Donner formation pratique"
+                    },
+                    {
+                        "title": "Supervision vol",
+                        "icon": "eye-check",
+                        "module": "formation",
+                        "description": "Superviser les vols"
+                    },
+                    {
+                        "title": "Évaluation progrès",
+                        "icon": "trending-up",
+                        "module": "formation",
+                        "description": "Évaluer la progression"
+                    }
+                ]
+            },
+            "inspector": {
+                "name": "Inspecteur",
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view",
+                    "personnel.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Inspection conformité",
+                        "icon": "checkbox-marked",
+                        "module": "operations",
+                        "description": "Vérifier la conformité"
+                    },
+                    {
+                        "title": "Audit documentation",
+                        "icon": "file-search",
+                        "module": "documentation",
+                        "description": "Auditer la documentation"
+                    },
+                    {
+                        "title": "Rapports inspection",
+                        "icon": "clipboard-check",
+                        "module": "documentation",
+                        "description": "Rédiger rapports d'inspection"
+                    }
+                ]
+            },
+            "maintenance_technician": {
+                "name": "Technicien Maintenance",
+                "permissions": [
+                    "maintenance.view",
+                    "maintenance.edit",
+                    "operations.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Maintenance préventive",
+                        "icon": "wrench-clock",
+                        "module": "maintenance",
+                        "description": "Effectuer maintenance préventive"
+                    },
+                    {
+                        "title": "Réparations",
+                        "icon": "tools",
+                        "module": "maintenance",
+                        "description": "Effectuer les réparations"
+                    },
+                    {
+                        "title": "Rapports techniques",
+                        "icon": "file-cog",
+                        "module": "maintenance",
+                        "description": "Rédiger rapports techniques"
+                    }
+                ]
+            },
+            "safety_officer": {
+                "name": "Agent de sécurité",
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Contrôle sécurité",
+                        "icon": "shield-check",
+                        "module": "operations",
+                        "description": "Contrôler la sécurité"
+                    },
+                    {
+                        "title": "Gestion risques",
+                        "icon": "alert-octagon",
+                        "module": "operations",
+                        "description": "Gérer les risques"
+                    },
+                    {
+                        "title": "Rapports incidents",
+                        "icon": "alert",
+                        "module": "documentation",
+                        "description": "Gérer rapports d'incidents"
+                    }
+                ]
+            },
+            "quality_inspector": {
+                "name": "Inspecteur qualité",
+                "permissions": [
+                    "operations.view",
+                    "maintenance.view"
+                ],
+                "tasks": [
+                    {
+                        "title": "Inspection qualité",
+                        "icon": "magnify-check",
+                        "module": "operations",
+                        "description": "Inspecter la qualité"
+                    },
+                    {
+                        "title": "Vérification normes",
+                        "icon": "check-circle",
+                        "module": "operations",
+                        "description": "Vérifier respect des normes"
+                    },
+                    {
+                        "title": "Rapports qualité",
+                        "icon": "file-check",
+                        "module": "documentation",
+                        "description": "Rédiger rapports qualité"
+                    }
+                ]
+            },
+            "operations_coordinator": {
+                "name": "Coordinateur des opérations",
+                "permissions": [
+                    "operations.view",
+                    "operations.edit"
+                ],
+                "tasks": [
+                    {
+                        "title": "Coordination vols",
+                        "icon": "airplane-clock",
+                        "module": "operations",
+                        "description": "Coordonner les opérations"
+                    },
+                    {
+                        "title": "Gestion ressources",
+                        "icon": "calendar-clock",
+                        "module": "operations",
+                        "description": "Gérer les ressources"
+                    },
+                    {
+                        "title": "Suivi opérations",
+                        "icon": "eye-check",
+                        "module": "operations",
+                        "description": "Suivre les opérations"
+                    }
+                ]
+            },
+            "training_coordinator": {
+                "name": "Coordinateur de formation",
+                "permissions": [
+                    "formation.view",
+                    "formation.edit"
+                ],
+                "tasks": [
+                    {
+                        "title": "Planning formation",
+                        "icon": "calendar-text",
+                        "module": "formation",
+                        "description": "Planifier les formations"
+                    },
+                    {
+                        "title": "Suivi formation",
+                        "icon": "account-clock",
+                        "module": "formation",
+                        "description": "Suivre les formations"
+                    },
+                    {
+                        "title": "Gestion ressources",
+                        "icon": "book-multiple",
+                        "module": "formation",
+                        "description": "Gérer ressources formation"
+                    }
+                ]
+            },
+            "documentation_manager": {
+                "name": "Gestionnaire du cadre documentaire",
+                "permissions": [
+                    "documentation.all"
+                ],
+                "tasks": [
+                    {
+                        "title": "Gestion documents",
+                        "icon": "file-multiple",
+                        "module": "documentation",
+                        "description": "Gérer la documentation"
+                    },
+                    {
+                        "title": "Mise à jour procédures",
+                        "icon": "file-refresh",
+                        "module": "documentation",
+                        "description": "Mettre à jour les procédures"
+                    },
+                    {
+                        "title": "Archivage",
+                        "icon": "archive",
+                        "module": "documentation",
+                        "description": "Gérer l'archivage"
+                    }
+                ]
+            }
+        },
+        "workflows": {
+            "flight_operation": [
+                "pre_flight",
+                "flight",
+                "post_flight"
+            ],
+            "maintenance": [
+                "inspection",
+                "service",
+                "validation"
+            ],
+            "training": [
+                "theory",
+                "practice",
+                "evaluation"
+            ]
+        },
+        "ui": {
+            "theme": "light",
+            "language": "fr",
+            "layouts": {
+                "dashboard": {
+                    "default_widgets": [
+                        "active_flights",
+                        "maintenance_alerts",
+                        "weather"
+                    ]
+                }
+            }
+        }
+    },
+    "paths": {
+        "resources": "resources/",
+        "documents": "docs/",
+        "logs": "data/logs/",
+        "exports": "data/exports/"
+    },
+    "firebase": {
+        "apiKey": "${FIREBASE_API_KEY}",
+        "authDomain": "${FIREBASE_AUTH_DOMAIN}",
+        "databaseURL": "${FIREBASE_DATABASE_URL}",
+        "projectId": "${FIREBASE_PROJECT_ID}",
+        "storageBucket": "${FIREBASE_STORAGE_BUCKET}",
+        "messagingSenderId": "${FIREBASE_MESSAGING_SENDER_ID}",
+        "appId": "${FIREBASE_APP_ID}"
+    }
+}

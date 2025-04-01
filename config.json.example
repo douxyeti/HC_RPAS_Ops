@@ -1,0 +1,156 @@
+{
+    "mqtt": {
+        "broker": "localhost",
+        "port": 1883,
+        "keepalive": 60,
+        "topics": {
+            "dashboard": {
+                "general": "hc_rpas/dashboard/general/#",
+                "stats": "hc_rpas/dashboard/stats/#",
+                "alerts": "hc_rpas/dashboard/alerts/#"
+            },
+            "roles": {
+                "tasks": "hc_rpas/roles/{role}/tasks/#",
+                "notifications": "hc_rpas/roles/{role}/notifications/#",
+                "status": "hc_rpas/roles/{role}/status/#"
+            },
+            "modules": {
+                "operations": "hc_rpas/modules/operations/#",
+                "maintenance": "hc_rpas/modules/maintenance/#",
+                "personnel": "hc_rpas/modules/personnel/#"
+            }
+        }
+    },
+    "interface": {
+        "roles": {
+            "super_admin": {
+                "name": "Super Administrateur",
+                "permissions": ["all", "system.config"]
+            },
+            "admin": {
+                "name": "Administrateur",
+                "permissions": ["all"]
+            },
+            "admin_assistant": {
+                "name": "Adjoint(e) administratif(ve)",
+                "permissions": ["documentation.view", "documentation.edit", "personnel.view"]
+            },
+            "auditor": {
+                "name": "Auditeur",
+                "permissions": ["operations.view", "maintenance.view", "personnel.view", "documentation.view"]
+            },
+            "senior_manager": {
+                "name": "Gestionnaire supérieur responsable",
+                "permissions": ["operations.all", "personnel.all", "maintenance.all"]
+            },
+            "ops_manager": {
+                "name": "Responsable des opérations",
+                "permissions": ["operations.all", "personnel.view"]
+            },
+            "chief_pilot": {
+                "name": "Chef pilote",
+                "permissions": ["operations.all", "personnel.view", "formation.all"]
+            },
+            "pilot_command": {
+                "name": "Commandant de bord",
+                "permissions": ["operations.all", "maintenance.view"]
+            },
+            "site_manager": {
+                "name": "Gestionnaire de site",
+                "permissions": ["operations.view", "maintenance.view"]
+            },
+            "mission_specialist": {
+                "name": "Spécialiste de mission",
+                "permissions": ["operations.view", "operations.edit"]
+            },
+            "payload_operator": {
+                "name": "Opérateur de charge utile",
+                "permissions": ["operations.view"]
+            },
+            "pilot_controls": {
+                "name": "Pilote aux commandes",
+                "permissions": ["operations.view", "operations.edit"]
+            },
+            "copilot": {
+                "name": "Copilote",
+                "permissions": ["operations.view"]
+            },
+            "pilot": {
+                "name": "Pilote",
+                "permissions": ["operations.view", "operations.edit", "maintenance.view"]
+            },
+            "ground_station": {
+                "name": "Opérateur de station au sol",
+                "permissions": ["operations.view"]
+            },
+            "ground_observer": {
+                "name": "Observateur au sol",
+                "permissions": ["operations.view"]
+            },
+            "system_maintainer": {
+                "name": "Mainteneur du système",
+                "permissions": ["maintenance.all"]
+            },
+            "sgs_manager": {
+                "name": "Responsable SGS",
+                "permissions": ["operations.view", "maintenance.view", "personnel.view"]
+            },
+            "quality_manager": {
+                "name": "Responsable assurance de la qualité",
+                "permissions": ["operations.view", "maintenance.view", "personnel.view"]
+            },
+            "training_manager": {
+                "name": "Gestionnaire de la formation",
+                "permissions": ["formation.all", "personnel.view"]
+            },
+            "trainer": {
+                "name": "Formateur",
+                "permissions": ["formation.view", "formation.edit", "personnel.view"]
+            },
+            "evaluator": {
+                "name": "Évaluateur",
+                "permissions": ["formation.view", "formation.edit"]
+            },
+            "examiner": {
+                "name": "Examinateur",
+                "permissions": ["formation.view", "formation.edit"]
+            },
+            "instructor": {
+                "name": "Instructeur",
+                "permissions": ["formation.view", "formation.edit"]
+            },
+            "inspector": {
+                "name": "Inspecteur",
+                "permissions": ["maintenance.view", "maintenance.edit"]
+            },
+            "maintenance_technician": {
+                "name": "Technicien Maintenance",
+                "permissions": ["maintenance.view", "maintenance.edit"]
+            },
+            "safety_officer": {
+                "name": "Agent de sécurité",
+                "permissions": ["operations.view", "maintenance.view"]
+            },
+            "quality_inspector": {
+                "name": "Inspecteur qualité",
+                "permissions": ["operations.view", "maintenance.view"]
+            },
+            "operations_coordinator": {
+                "name": "Coordinateur des opérations",
+                "permissions": ["operations.view", "operations.edit"]
+            },
+            "maintenance_manager": {
+                "name": "Gestionnaire des activités de maintenance",
+                "permissions": ["maintenance.all"]
+            },
+            "training_coordinator": {
+                "name": "Coordinateur de formation",
+                "permissions": ["formation.view", "formation.edit"]
+            },
+            "documentation_manager": {
+                "name": "Gestionnaire du cadre documentaire",
+                "permissions": ["documentation.all"]
+            }
+        }
+    }
+}

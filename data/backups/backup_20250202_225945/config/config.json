@@ -1,0 +1,56 @@
+{
+    "version": "2.0.0",
+    "modules": {
+        "active_modules": [
+            "operations",
+            "personnel",
+            "maintenance",
+            "formation",
+            "documentation"
+        ],
+        "dependencies": {
+            "operations": ["personnel", "maintenance"],
+            "formation": ["personnel"],
+            "maintenance": ["personnel"]
+        }
+    },
+    "interface": {
+        "roles": {
+            "admin": {
+                "name": "Administrateur",
+                "permissions": ["all"]
+            },
+            "pilot": {
+                "name": "Pilote",
+                "permissions": ["operations.view", "operations.edit", "maintenance.view"]
+            },
+            "maintenance": {
+                "name": "Technicien Maintenance",
+                "permissions": ["maintenance.view", "maintenance.edit", "operations.view"]
+            },
+            "training": {
+                "name": "Formateur",
+                "permissions": ["formation.view", "formation.edit", "personnel.view"]
+            }
+        },
+        "workflows": {
+            "flight_operation": ["pre_flight", "flight", "post_flight"],
+            "maintenance": ["inspection", "service", "validation"],
+            "training": ["theory", "practice", "evaluation"]
+        },
+        "ui": {
+            "theme": "light",
+            "language": "fr",
+            "layouts": {
+                "dashboard": {
+                    "default_widgets": ["active_flights", "maintenance_alerts", "weather"]
+                }
+            }
+        }
+    },
+    "paths": {
+        "data": "./data",
+        "logs": "./logs",
+        "temp": "./temp"
+    }
+}
