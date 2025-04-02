@@ -40,6 +40,34 @@ class RolesManagerService:
             print(f"[DEBUG] RolesManagerService.get_role - Rôle non trouvé avec ID normalisé")
         return role
         
+    def get_role_by_name(self, role_name):
+        """Récupère un rôle par son nom
+        
+        Args:
+            role_name: Le nom du rôle à rechercher
+            
+        Returns:
+            Le rôle trouvé ou None si non trouvé
+        """
+        print(f"[DEBUG] RolesManagerService.get_role_by_name - Recherche du rôle: {role_name}")
+        
+        # Récupérer tous les rôles
+        roles = self.get_all_roles()
+        
+        # Normaliser le nom recherché
+        normalized_name = self.normalize_string(role_name)
+        print(f"[DEBUG] RolesManagerService.get_role_by_name - Nom normalisé: {normalized_name}")
+        
+        # Chercher le rôle correspondant
+        for role in roles:
+            role_normalized_name = self.normalize_string(role.get('name', ''))
+            if role_normalized_name == normalized_name:
+                print(f"[DEBUG] RolesManagerService.get_role_by_name - Rôle trouvé avec {len(role.get('tasks', []))} tâches")
+                return role
+                
+        print(f"[DEBUG] RolesManagerService.get_role_by_name - Rôle non trouvé")
+        return None
+        
     def create_role(self, role_data):
         """Crée un nouveau rôle
         

@@ -11,7 +11,9 @@ from kivymd.app import MDApp
 from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.properties import ObjectProperty
+
 from app.controllers.dashboard_controller import DashboardController
+from app.controllers.task_controller import TaskController
 
 class IconListItem(MDListItem):
     """Item personnalisé pour le menu déroulant avec icône"""
@@ -118,6 +120,7 @@ class SpecializedDashboardScreen(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.controller = DashboardController(model=MDApp.get_running_app().model)
+        self.task_controller = TaskController()  # Ajout du contrôleur de tâches
         self.current_role = None
         self.layout = MDBoxLayout(
             orientation='vertical',
@@ -268,38 +271,47 @@ class SpecializedDashboardScreen(MDScreen):
         self.layout.add_widget(scroll)
         self.add_widget(self.layout)
 
-    def update_for_role(self, role_id):
+    def update_for_role(self, role_name):
         """Met à jour l'interface pour le rôle sélectionné"""
-        print(f"Updating interface for role: {role_id}")
-        self.current_role = role_id
+        print(f"Updating interface for role: {role_name}")
+        self.current_role = role_name
         
-        # Mettre à jour le titre avec le nom du rôle
-        self.title_label.text = f"Tableau de bord {role_id}"
+        # Mettre à jour le titre
+        self.title_label.text = f"Tableau de bord - {role_name}"
         
         # Réinitialiser le texte du menu des tâches
         self.task_label.text = "Choisissez votre tâche..."
         
-        # Effacer les cartes existantes
+        # Effacer la grille existante
         self.grid.clear_widgets()
         
-        # Charger les tâches pour ce rôle
-        tasks = self.controller.load_role_tasks(self.current_role)
-        print(f"Loaded {len(tasks)} tasks for display")
+        # Charger les tâches via le contrôleur
+        print(f"Loading tasks for role: {role_name}")
+        tasks = self.task_controller.get_tasks(role_name)
         
         if tasks:
+            print(f"Loaded {len(tasks)} tasks for {role_name}")
+            print(f"Loaded {len(tasks)} tasks for display")
+            
             # Créer une carte pour chaque tâche
             for task in tasks:
                 print(f"Creating card for task: {task.title}")
-                self.grid.add_widget(
-                    TaskCard(
-                        title=task.title,
-                        description=task.description,
-                        status=task.status,
-                        icon=task.icon if hasattr(task, 'icon') else 'checkbox-marked'
-                    )
+                card = TaskCard(
+                    title=task.title,
+                    description=task.description,
+                    icon=task.icon
                 )
+                self.grid.add_widget(card)
         else:
-            print("No tasks to display")
+            # Afficher un message si aucune tâche n'est trouvée
+            label = MDLabel(
+                text="Aucune tâche disponible pour ce rôle",
+                halign="center",
+                valign="middle",
+                size_hint_y=None,
+                height=dp(200)
+            )
+            self.grid.add_widget(label)
 
     def show_task_menu(self, button):
         """Affiche le menu déroulant des tâches"""
@@ -307,7 +319,7 @@ class SpecializedDashboardScreen(MDScreen):
         # Réinitialiser le texte du label
         self.task_label.text = "Choisissez votre tâche..."
         
-        tasks = self.controller.load_role_tasks(self.current_role)
+        tasks = self.task_controller.get_tasks(self.current_role)
         print(f"Loaded {len(tasks)} tasks for menu")
         
         # Trier les tâches par ordre alphabétique
