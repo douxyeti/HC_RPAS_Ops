@@ -14,6 +14,7 @@ from kivy.properties import ObjectProperty
 
 from app.controllers.dashboard_controller import DashboardController
 from app.controllers.task_controller import TaskController
+from app.controllers.role_controller import RoleController
 
 class IconListItem(MDListItem):
     """Item personnalisé pour le menu déroulant avec icône"""
@@ -22,96 +23,49 @@ class IconListItem(MDListItem):
 
 class TaskCard(MDCard):
     """Carte pour afficher une tâche du commandant"""
-    def __init__(self, title, description, status=None, icon="checkbox-marked-circle", **kwargs):
+    def __init__(self, title="", description="", icon="", module="", **kwargs):
         super().__init__(**kwargs)
         self.orientation = "vertical"
-        self.padding = 15
-        self.spacing = 10
-        self.size_hint_y = None
-        self.height = dp(200)
-        self.elevation = 2
-        self.radius = [12, 12, 12, 12]
-        self.md_bg_color = [1, 1, 1, 1]  # Fond blanc
-
-        # En-tête de la carte
-        header = MDBoxLayout(
-            orientation="horizontal",
-            size_hint_y=None,
-            height=dp(40),
-            spacing=10,
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
-        )
-
-        icon = MDIconButton(
-            icon=icon,
-            pos_hint={"center_y": 0.5},
-            theme_text_color="Primary"  # Couleur de texte primaire
-        )
-
+        self.size_hint = (None, None)
+        self.size = ("200dp", "150dp")
+        self.padding = "8dp"
+        self.spacing = "8dp"
+        
+        # Créer le contenu de la carte
+        title_box = MDBoxLayout(orientation="horizontal", adaptive_height=True)
+        
+        # Ajouter l'icône
+        icon_button = MDIconButton(icon=icon)
+        title_box.add_widget(icon_button)
+        
+        # Ajouter le titre
         title_label = MDLabel(
             text=title,
-            bold=True,
-            font_size="16sp",
-            size_hint_y=None,
-            height=dp(40),
-            theme_text_color="Primary"  # Couleur de texte primaire
+            font_style="H6",
+            size_hint_x=None,
+            width="150dp"
         )
-
-        header.add_widget(icon)
-        header.add_widget(title_label)
-
-        # Description
-        description_box = MDBoxLayout(
-            orientation="vertical",
-            spacing=5,
-            padding=[5, 5],
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
-        )
-
+        title_box.add_widget(title_label)
+        
+        # Ajouter la description
         description_label = MDLabel(
             text=description,
-            font_size="14sp",
-            theme_text_color="Primary"  # Couleur de texte primaire
-        )
-
-        # Statut avec icône
-        status_box = MDBoxLayout(
-            orientation="horizontal",
             size_hint_y=None,
-            height=dp(30),
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            height="60dp"
         )
-
-        status_icon = MDIconButton(
-            icon="circle-small",
-            size_hint_x=None,
-            width=dp(30),
-            theme_text_color="Primary"  # Couleur de texte primaire
+        
+        # Ajouter le module
+        module_label = MDLabel(
+            text=f"Module: {module}",
+            theme_text_color="Secondary",
+            size_hint_y=None,
+            height="30dp"
         )
-
-        if status:
-            status_label = MDLabel(
-                text=f"Statut: {status}",
-                font_size="14sp",
-                theme_text_color="Primary"  # Couleur de texte primaire
-            )
-        else:
-            status_label = MDLabel(
-                text="",
-                font_size="14sp",
-                theme_text_color="Primary"  # Couleur de texte primaire
-            )
-
-        status_box.add_widget(status_icon)
-        status_box.add_widget(status_label)
-
-        # Ajouter les widgets à description_box
-        description_box.add_widget(description_label)
-        description_box.add_widget(status_box)
-
-        # Ajouter tous les éléments à la carte
-        self.add_widget(header)
-        self.add_widget(description_box)
+        
+        # Ajouter tous les widgets à la carte
+        self.add_widget(title_box)
+        self.add_widget(description_label)
+        self.add_widget(module_label)
 
 class SpecializedDashboardScreen(MDScreen):
     """Écran du tableau de bord spécialisé dynamique selon le rôle"""
@@ -120,7 +74,8 @@ class SpecializedDashboardScreen(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.controller = DashboardController(model=MDApp.get_running_app().model)
-        self.task_controller = TaskController()  # Ajout du contrôleur de tâches
+        self.task_controller = TaskController()
+        self.role_controller = RoleController()
         self.current_role = None
         self.layout = MDBoxLayout(
             orientation='vertical',
@@ -299,7 +254,8 @@ class SpecializedDashboardScreen(MDScreen):
                 card = TaskCard(
                     title=task.title,
                     description=task.description,
-                    icon=task.icon
+                    icon=task.icon,
+                    module=task.module
                 )
                 self.grid.add_widget(card)
         else:

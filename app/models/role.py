@@ -1,56 +1,61 @@
 class Role:
-    """
-    Modèle représentant un rôle dans l'application.
-    Encapsule les données et le comportement liés aux rôles.
-    """
+    """Modèle représentant un rôle dans l'application"""
     
-    def __init__(self, role_id, name, permissions=None, tasks=None, description=None):
-        """
-        Initialise un nouveau rôle.
+    def __init__(self, id=None, name=None, description=None, permissions=None, tasks=None):
+        """Initialise un nouveau rôle
         
         Args:
-            role_id (str): Identifiant unique du rôle
+            id (str): Identifiant unique du rôle
             name (str): Nom du rôle
+            description (str): Description du rôle
             permissions (list): Liste des permissions associées au rôle
             tasks (list): Liste des tâches associées au rôle
-            description (str, optional): Description du rôle
         """
-        self.id = role_id
+        self.id = id
         self.name = name
+        self.description = description
         self.permissions = permissions or []
         self.tasks = tasks or []
-        self.description = description
-
-    @staticmethod
-    def from_dict(data):
-        """
-        Crée une instance de Role à partir d'un dictionnaire.
+        
+    @classmethod
+    def from_dict(cls, data):
+        """Crée une instance de Role à partir d'un dictionnaire
         
         Args:
-            data (dict): Dictionnaire contenant les données du rôle
+            data (dict): Données du rôle
             
         Returns:
-            Role: Une nouvelle instance de Role
+            Role: Instance de Role
         """
-        return Role(
-            role_id=data.get('id'),
+        return cls(
+            id=data.get('id'),
             name=data.get('name'),
+            description=data.get('description'),
             permissions=data.get('permissions', []),
-            tasks=data.get('tasks', []),
-            description=data.get('description')
+            tasks=data.get('tasks', [])
         )
-
+        
     def to_dict(self):
-        """
-        Convertit l'instance en dictionnaire.
+        """Convertit l'instance en dictionnaire
         
         Returns:
-            dict: Représentation du rôle sous forme de dictionnaire
+            dict: Représentation du rôle en dictionnaire
         """
         return {
             'id': self.id,
             'name': self.name,
+            'description': self.description,
             'permissions': self.permissions,
-            'tasks': self.tasks,
-            'description': self.description
+            'tasks': self.tasks
         }
+        
+    def has_permission(self, permission):
+        """Vérifie si le rôle a une permission spécifique
+        
+        Args:
+            permission (str): Permission à vérifier
+            
+        Returns:
+            bool: True si le rôle a la permission, False sinon
+        """
+        return 'all' in self.permissions or permission in self.permissions

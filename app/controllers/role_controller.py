@@ -1,76 +1,78 @@
-from ..models.role import Role
+from app.services.roles_manager_service import RolesManagerService
+from app.models.role import Role
 
 class RoleController:
-    """
-    Contrôleur gérant la logique des rôles dans l'application.
-    Fait le lien entre les vues et le modèle Role.
-    """
+    """Contrôleur pour la gestion des rôles"""
     
     def __init__(self):
-        """Initialise le contrôleur de rôles."""
-        self.current_role = None
-        self._roles = {}  # Cache des rôles
-
-    def select_role(self, role_name, screen_instance=None):
+        """Initialise le contrôleur avec le service de gestion des rôles"""
+        self.service = RolesManagerService()
+        
+    def get_all_roles(self):
+        """Récupère tous les rôles
+        
+        Returns:
+            list: Liste d'objets Role
         """
-        Sélectionne un rôle et gère la redirection appropriée.
+        roles_data = self.service.get_all_roles()
+        return [Role.from_dict(role_data) for role_data in roles_data]
+        
+    def get_role_by_name(self, role_name):
+        """Récupère un rôle par son nom
         
         Args:
-            role_name (str): Nom du rôle à sélectionner
-            screen_instance: Instance de l'écran actuel (pour accès au screen manager)
+            role_name (str): Nom du rôle à récupérer
             
         Returns:
-            bool: True si la sélection a réussi, False sinon
+            Role: Instance de Role ou None si non trouvé
         """
-        try:
-            print(f"[DEBUG] RoleController.select_role - Rôle sélectionné : {role_name}")
-            self.current_role = role_name
-
-            if not screen_instance or not hasattr(screen_instance, 'manager'):
-                return True
-
-            # Logique de redirection basée sur le rôle
-            if role_name == "Super Administrateur":
-                # Rediriger vers le gestionnaire de tâches pour le Super Admin
-                task_manager = screen_instance.manager.get_screen('task_manager')
-                print(f"[DEBUG] RoleController.select_role - Redirection vers le gestionnaire de tâches")
-                task_manager.set_current_role(None, role_name)
-                screen_instance.manager.current = 'task_manager'
-            else:
-                # Pour les autres rôles, rediriger vers le tableau de bord spécialisé
-                try:
-                    specialized_dashboard = screen_instance.manager.get_screen('specialized_dashboard')
-                    print(f"[DEBUG] RoleController.select_role - Redirection vers le tableau de bord spécialisé pour {role_name}")
-                    specialized_dashboard.update_for_role(role_name)
-                    screen_instance.manager.current = 'specialized_dashboard'
-                except Exception as e:
-                    print(f"[ERROR] RoleController.select_role - Erreur lors de la redirection : {str(e)}")
-                    return False
-
-            return True
-        except Exception as e:
-            print(f"[ERROR] RoleController.select_role - Erreur inattendue : {str(e)}")
-            return False
-
-    def get_available_roles(self, app_instance=None):
-        """
-        Récupère la liste des rôles disponibles.
+        role_data = self.service.get_role_by_name(role_name)
+        return Role.from_dict(role_data) if role_data else None
+        
+    def get_role(self, role_id):
+        """Récupère un rôle par son ID
         
         Args:
-            app_instance: Instance de l'application
+            role_id (str): ID du rôle à récupérer
             
         Returns:
-            list: Liste des rôles disponibles
+            Role: Instance de Role ou None si non trouvé
         """
-        if app_instance and hasattr(app_instance, 'available_roles'):
-            return sorted(app_instance.available_roles)
-        return []
-
-    def get_current_role(self):
-        """
-        Récupère le rôle actuellement sélectionné.
+        role_data = self.service.get_role(role_id)
+        return Role.from_dict(role_data) if role_data else None
         
+    def create_role(self, role_data):
+        """Crée un nouveau rôle
+        
+        Args:
+            role_data (dict): Données du rôle à créer
+            
         Returns:
-            str: Nom du rôle actuel ou None
+            Role: Instance du rôle créé
         """
-        return self.current_role
+        created_data = self.service.create_role(role_data)
+        return Role.from_dict(created_data) if created_data else None
+        
+    def update_role(self, role_id, role_data):
+        """Met à jour un rôle existant
+        
+        Args:
+            role_id (str): ID du rôle à mettre à jour
+            role_data (dict): Nouvelles données du rôle
+            
+        Returns:
+            Role: Instance du rôle mis à jour
+        """
+        updated_data = self.service.update_role(role_id, role_data)
+        return Role.from_dict(updated_data) if updated_data else None
+        
+    def delete_role(self, role_id):
+        """Supprime un rôle
+        
+        Args:
+            role_id (str): ID du rôle à supprimer
+            
+        Returns:
+            bool: True si supprimé avec succès, False sinon
+        """
+        return self.service.delete_role(role_id)
