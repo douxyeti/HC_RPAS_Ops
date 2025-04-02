@@ -183,7 +183,7 @@ class SpecializedDashboardScreen(MDScreen):
         )
 
         self.task_label = MDLabel(
-            text="Sélectionner une tâche",
+            text="Choisissez votre tâche...",
             size_hint=(None, None),
             size=(dp(160), dp(56)),
             halign="center",
@@ -276,6 +276,9 @@ class SpecializedDashboardScreen(MDScreen):
         # Mettre à jour le titre avec le nom du rôle
         self.title_label.text = f"Tableau de bord {role_id}"
         
+        # Réinitialiser le texte du menu des tâches
+        self.task_label.text = "Choisissez votre tâche..."
+        
         # Effacer les cartes existantes
         self.grid.clear_widgets()
         
@@ -301,6 +304,9 @@ class SpecializedDashboardScreen(MDScreen):
     def show_task_menu(self, button):
         """Affiche le menu déroulant des tâches"""
         print("Opening task menu")
+        # Réinitialiser le texte du label
+        self.task_label.text = "Choisissez votre tâche..."
+        
         tasks = self.controller.load_role_tasks(self.current_role)
         print(f"Loaded {len(tasks)} tasks for menu")
         
