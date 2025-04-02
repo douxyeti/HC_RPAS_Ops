@@ -128,7 +128,7 @@ class ConfigService:
         """
         return {
             'name': self.get_env('APP_NAME', 'HighCloud RPAS'),
-            'version': self.get_env('APP_VERSION', '2.0.0'),
+            'version': self.get_env('APP_VERSION', '1.0.1'),
             'debug': self.get_env('DEBUG_MODE', 'False').lower() == 'true',
             'sync_interval': int(self.get_env('SYNC_INTERVAL', '300')),
             'max_retry_attempts': int(self.get_env('MAX_RETRY_ATTEMPTS', '3')),

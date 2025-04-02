@@ -4,6 +4,7 @@ import time
 import random
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
 from kivy.event import EventDispatcher
+from app.services.roles_manager_service import RolesManagerService
 
 class Task(EventDispatcher):
     title = StringProperty('')
@@ -67,13 +68,30 @@ class TaskModel:
     def __init__(self, firebase_service):
         self.firebase_service = firebase_service
         self.collection = 'roles'
+        self.roles_service = RolesManagerService()
 
     def get_tasks(self, role_id: str) -> List[Task]:
         """Récupère toutes les tâches pour un rôle donné"""
-        print(f"[DEBUG] TaskModel.get_tasks - Recherche des tâches pour le rôle : {role_id}")
+        print(f"[DEBUG] TaskModel.get_tasks - Recherche des tâches pour role_id: '{role_id}'")
         try:
-            # Récupérer le document du rôle
+            # Cas spécial pour le Super Administrateur
+            if role_id == 'super_admin':
+                print("[DEBUG] TaskModel.get_tasks - Chargement des tâches du Super Administrateur")
+                return [
+                    Task("Gérer les rôles", "Gérer les rôles et leurs permissions", "admin", "account-cog"),
+                    Task("Configuration système", "Configurer les paramètres du système", "admin", "cog"),
+                    Task("Audit des opérations", "Auditer les opérations du système", "admin", "clipboard-check")
+                ]
+
+            # Pour les autres rôles, essayer d'abord avec l'ID exact
             role_doc = self.firebase_service.get_document(self.collection, role_id)
+            
+            # Si non trouvé, essayer avec l'ID normalisé
+            if not role_doc:
+                normalized_id = self.roles_service.normalize_string(role_id)
+                print(f"[DEBUG] TaskModel.get_tasks - Essai avec l'ID normalisé: {normalized_id}")
+                role_doc = self.firebase_service.get_document(self.collection, normalized_id)
+            
             print(f"[DEBUG] TaskModel.get_tasks - Document récupéré : {role_doc}")
             
             if not role_doc:

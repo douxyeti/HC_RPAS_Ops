@@ -110,22 +110,21 @@ class RolesManagerScreen(MDScreen):
         print("[DEBUG] RolesManagerScreen.display_roles - Début de l'affichage")
         print(f"[DEBUG] RolesManagerScreen.display_roles - Nombre de rôles à afficher: {len(roles)}")
         
-        # Effacer les rôles existants
+        # Efface les widgets existants
         print("[DEBUG] RolesManagerScreen.display_roles - Effacement des widgets existants")
         self.ids.roles_container.clear_widgets()
         
-        # Trier les rôles par ordre alphabétique
-        sorted_roles = sorted(roles, key=lambda x: x.get('name', ''))
+        # Trie les rôles par ID pour un affichage cohérent
+        sorted_roles = sorted(roles, key=lambda x: x.get('id', ''))
         print(f"[DEBUG] RolesManagerScreen.display_roles - IDs des rôles triés: {[role.get('id', 'NO_ID') for role in sorted_roles]}")
         
-        # Afficher les rôles triés
         for role_data in sorted_roles:
             print(f"[DEBUG] RolesManagerScreen.display_roles - Création de carte pour le rôle: {role_data.get('id', 'NO_ID')}")
             role_card = RoleCard(
-                role_data,
-                on_edit=self.edit_role,
-                on_delete=self.delete_role,
-                on_manage_tasks=self.manage_tasks
+                role_data=role_data,
+                on_edit=lambda x: self.edit_role(x),
+                on_delete=lambda x: self.delete_role(x),
+                on_manage_tasks=lambda x: self.manage_tasks(x)
             )
             self.ids.roles_container.add_widget(role_card)
 
@@ -578,6 +577,16 @@ class RolesManagerScreen(MDScreen):
 
     def manage_tasks(self, role_data):
         """Gère les tâches pour un rôle spécifique"""
+        print(f"[DEBUG] RolesManagerScreen.manage_tasks - Début gestion des tâches pour le rôle: {role_data.get('id', 'NO_ID')}")
+        print(f"[DEBUG] RolesManagerScreen.manage_tasks - Données du rôle: {role_data}")
+        
+        # Vérifie si le rôle existe
+        role = self.roles_manager_service.get_role(role_data['id'])
+        if not role:
+            print(f"[DEBUG] RolesManagerScreen.manage_tasks - Rôle non trouvé: {role_data['id']}")
+            return
+            
+        print(f"[DEBUG] RolesManagerScreen.manage_tasks - Tâches du rôle: {role.get('tasks', [])}")
         task_screen = self.manager.get_screen('task_manager')
         task_screen.set_current_role(role_data.get('id'), role_data.get('name'))
         self.manager.current = 'task_manager'

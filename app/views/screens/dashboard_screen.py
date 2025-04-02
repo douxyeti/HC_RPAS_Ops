@@ -366,12 +366,14 @@ class DashboardScreen(MDScreen):
         if hasattr(self, 'menu'):
             self.menu.dismiss()
         self.role_label.text = role_name
-        print(f"Rôle sélectionné : {role_name}")
+        print(f"[DEBUG] DashboardScreen.select_role - Rôle sélectionné : {role_name}")
 
-        # Rediriger vers le tableau de bord spécialisé
-        specialized_dashboard = self.manager.get_screen('specialized_dashboard')
-        specialized_dashboard.update_for_role(role_name)
-        self.manager.current = 'specialized_dashboard'
+        # Rediriger vers le gestionnaire de tâches
+        task_manager = self.manager.get_screen('task_manager')
+        print(f"[DEBUG] DashboardScreen.select_role - Redirection vers le gestionnaire de tâches")
+        task_manager.set_current_role(None, role_name)
+        print(f"[DEBUG] DashboardScreen.select_role - Rôle configuré dans le gestionnaire de tâches")
+        self.manager.current = 'task_manager'
 
     def logout(self, *args):
         """Déconnexion de l'utilisateur"""

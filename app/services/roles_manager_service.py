@@ -1,4 +1,6 @@
 from app.services.firebase_service import FirebaseService
+import unicodedata
+import re
 
 class RolesManagerService:
     """Service pour la gestion des rôles et leurs tâches"""
@@ -9,11 +11,34 @@ class RolesManagerService:
         
     def get_all_roles(self):
         """Récupère tous les rôles"""
-        return self.db.get_collection(self.collection)
+        print("[DEBUG] RolesManagerService.get_all_roles - Début de la récupération")
+        roles = self.db.get_collection(self.collection)
+        print(f"[DEBUG] RolesManagerService.get_all_roles - Rôles bruts reçus de Firebase:")
+        for role in roles:
+            print(f"[DEBUG] RolesManagerService.get_all_roles - ID: '{role.get('id')}', Nom: '{role.get('name')}'")
+        print(f"[DEBUG] RolesManagerService.get_all_roles - {len(roles)} rôles récupérés")
+        for role in roles:
+            print(f"[DEBUG] RolesManagerService.get_all_roles - Rôle: {role.get('id', 'NO_ID')}, Tâches: {len(role.get('tasks', []))}")
+        return roles
         
     def get_role(self, role_id):
         """Récupère un rôle par son ID"""
-        return self.db.get_document(self.collection, role_id)
+        print(f"[DEBUG] RolesManagerService.get_role - Récupération du rôle {role_id}")
+        # Essaie d'abord avec l'ID exact
+        role = self.db.get_document(self.collection, role_id)
+        if role:
+            print(f"[DEBUG] RolesManagerService.get_role - Rôle trouvé avec {len(role.get('tasks', []))} tâches")
+            return role
+            
+        # Si non trouvé, essaie avec l'ID normalisé
+        normalized_id = self.normalize_string(role_id)
+        print(f"[DEBUG] RolesManagerService.get_role - Essai avec l'ID normalisé: {normalized_id}")
+        role = self.db.get_document(self.collection, normalized_id)
+        if role:
+            print(f"[DEBUG] RolesManagerService.get_role - Rôle trouvé avec ID normalisé, {len(role.get('tasks', []))} tâches")
+        else:
+            print(f"[DEBUG] RolesManagerService.get_role - Rôle non trouvé avec ID normalisé")
+        return role
         
     def create_role(self, role_data):
         """Crée un nouveau rôle
@@ -301,3 +326,28 @@ class RolesManagerService:
         """Supprime une tâche globale"""
         role_id = 'global_tasks'
         return self.remove_task_from_role(role_id, task_id)
+
+    def normalize_string(self, text):
+        """Normalise une chaîne de caractères pour l'utiliser comme ID
+        
+        - Remplace les caractères accentués par leur équivalent non accentué
+        - Remplace les espaces par des underscores
+        - Supprime les caractères spéciaux
+        - Met tout en minuscules
+        """
+        print(f"[DEBUG] RolesManagerService.normalize_string - Texte original: '{text}'")
+        # Remplace les caractères accentués
+        text_unaccented = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8')
+        print(f"[DEBUG] RolesManagerService.normalize_string - Après suppression accents: '{text_unaccented}'")
+        # Met en minuscules
+        text_lower = text_unaccented.lower()
+        print(f"[DEBUG] RolesManagerService.normalize_string - Après minuscules: '{text_lower}'")
+        # Remplace les espaces par des underscores et supprime les caractères spéciaux
+        text_clean = re.sub(r'[^a-z0-9_]', '_', text_lower)
+        print(f"[DEBUG] RolesManagerService.normalize_string - Après nettoyage: '{text_clean}'")
+        # Remplace les underscores multiples par un seul
+        text_single_underscore = re.sub(r'_+', '_', text_clean)
+        # Supprime les underscores au début et à la fin
+        text_final = text_single_underscore.strip('_')
+        print(f"[DEBUG] RolesManagerService.normalize_string - Résultat final: '{text_final}'")
+        return text_final

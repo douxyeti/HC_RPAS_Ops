@@ -4,7 +4,7 @@ from kivymd.uix.screen import MDScreen
 from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDButton, MDIconButton
+from kivymd.uix.button import MDButton, MDIconButton, MDButtonText
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDButtonText
 from kivymd.uix.textfield import MDTextField
@@ -12,6 +12,7 @@ from kivymd.uix.menu import MDDropdownMenu
 
 from app.models.task import Task, TaskModel
 from app.services.firebase_service import FirebaseService
+from app.services.roles_manager_service import RolesManagerService
 
 class TaskCard(MDCard):
     title = StringProperty("")
@@ -126,15 +127,45 @@ class TaskManagerScreen(MDScreen):
         super().__init__(**kwargs)
         self.task_model = TaskModel(FirebaseService())
         
-    def set_current_role(self, role_id, role_name):
-        """Définit le rôle actuel"""
-        print(f"[DEBUG] TaskManagerScreen.set_current_role - role_id reçu: {role_id}, role_name: {role_name}")
-        # Si role_id est None, utiliser une chaîne vide
-        self.current_role_id = role_id if role_id is not None else ''
-        self.current_role_name = role_name
-        print(f"[DEBUG] TaskManagerScreen.set_current_role - current_role_id défini à: {self.current_role_id}")
-        if self.current_role_id:
-            self.load_tasks()
+    def set_current_role(self, role_id, role_name=None):
+        """Définit le rôle actuel et charge ses tâches"""
+        print(f"[DEBUG] TaskManagerScreen.set_current_role - Entrée avec role_id: '{role_id}', role_name: '{role_name}'")
+        
+        roles_service = RolesManagerService()
+        
+        # Si on a un role_id, essayer de trouver le rôle directement
+        if role_id:
+            print(f"[DEBUG] TaskManagerScreen.set_current_role - Recherche par ID: '{role_id}'")
+            role = roles_service.get_role(role_id)
+            if role:
+                print(f"[DEBUG] TaskManagerScreen.set_current_role - Rôle trouvé par ID: {role}")
+                self.current_role_id = role_id
+                self.current_role_name = role.get('name', role_name)
+                self.load_tasks()
+                return
+        
+        # Si on a un role_name, essayer de trouver le rôle par son nom
+        if role_name:
+            normalized_name = roles_service.normalize_string(role_name)
+            print(f"[DEBUG] TaskManagerScreen.set_current_role - Recherche par nom normalisé: '{normalized_name}'")
+            
+            roles = roles_service.get_all_roles()
+            print(f"[DEBUG] TaskManagerScreen.set_current_role - Comparaison avec {len(roles)} rôles:")
+            for role in roles:
+                role_name_db = role.get('name', '')
+                role_name_normalized = roles_service.normalize_string(role_name_db)
+                print(f"[DEBUG] TaskManagerScreen.set_current_role - Comparaison: '{role_name_normalized}' == '{normalized_name}' (original: '{role_name_db}')")
+                if role_name_normalized == normalized_name:
+                    print(f"[DEBUG] TaskManagerScreen.set_current_role - Correspondance trouvée!")
+                    self.current_role_id = role.get('id')
+                    self.current_role_name = role.get('name')
+                    self.load_tasks()
+                    return
+        
+        # Si on arrive ici, le rôle n'a pas été trouvé
+        print(f"Rôle inconnu: {role_name}")
+        self.tasks = []
+        self.display_tasks()
         
     def on_enter(self):
         """Appelé quand l'écran devient actif"""
