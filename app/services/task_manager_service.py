@@ -1,4 +1,5 @@
 from app.services.firebase_service import FirebaseService
+from app.services.config_service import ConfigService
 
 class TaskManagerService:
     """Service pour la gestion des tâches"""
@@ -7,6 +8,7 @@ class TaskManagerService:
         print("[DEBUG] TaskManagerService.__init__ - Initialisation du service")
         self.db = firebase_service
         self.collection = 'roles'
+        self.config_service = ConfigService()
         
     def get_role_by_name(self, role_name):
         """Récupère un rôle par son nom"""
@@ -66,21 +68,55 @@ class TaskManagerService:
         except Exception as e:
             print(f"[ERROR] TaskManagerService.get_role_by_name - Erreur: {str(e)}")
             return None
+
+    def get_fixed_tasks(self, role_name):
+        """Récupère les tâches fixes depuis config.json pour un rôle donné"""
+        print(f"[DEBUG] TaskManagerService.get_fixed_tasks - Recherche des tâches fixes pour {role_name}")
+        try:
+            # Convertir le nom du rôle en format snake_case pour config.json
+            role_key = role_name.lower().replace(' ', '_')
+            config_path = f'interface.roles.{role_key}.tasks'
+            
+            # Récupérer les tâches depuis config.json
+            tasks = self.config_service.get_config(config_path)
+            if tasks:
+                # Marquer ces tâches comme fixes
+                for task in tasks:
+                    task['is_fixed'] = True
+                print(f"[DEBUG] TaskManagerService.get_fixed_tasks - {len(tasks)} tâches fixes trouvées")
+                return tasks
+            return []
+        except Exception as e:
+            print(f"[ERROR] TaskManagerService.get_fixed_tasks - Erreur: {str(e)}")
+            return []
         
     def get_all_tasks(self, role_id):
-        """Récupère toutes les tâches d'un rôle"""
+        """Récupère toutes les tâches d'un rôle (fixes et dynamiques)"""
         print(f"[DEBUG] TaskManagerService.get_all_tasks - Récupération des tâches pour le rôle {role_id}")
         try:
+            all_tasks = []
+            
+            # 1. Récupérer le rôle depuis Firebase
             role = self.db.get_document(self.collection, role_id)
+            if role:
+                # 2. Récupérer les tâches fixes si c'est le Super Administrateur
+                if role.get('name') == 'Super Administrateur':
+                    fixed_tasks = self.get_fixed_tasks('Super Administrateur')
+                    all_tasks.extend(fixed_tasks)
+                    print(f"[DEBUG] TaskManagerService.get_all_tasks - {len(fixed_tasks)} tâches fixes ajoutées")
+                
+                # 3. Ajouter les tâches dynamiques de Firebase
+                if 'tasks' in role:
+                    # Marquer ces tâches comme non fixes
+                    dynamic_tasks = role['tasks']
+                    for task in dynamic_tasks:
+                        task['is_fixed'] = False
+                    all_tasks.extend(dynamic_tasks)
+                    print(f"[DEBUG] TaskManagerService.get_all_tasks - {len(dynamic_tasks)} tâches dynamiques ajoutées")
+                
+            print(f"[DEBUG] TaskManagerService.get_all_tasks - Total: {len(all_tasks)} tâches")
+            return all_tasks
             
-            print(f"[DEBUG] TaskManagerService.get_all_tasks - Document du rôle trouvé: {role}")
-            
-            if role and 'tasks' in role:
-                tasks = role['tasks']
-                print(f"[DEBUG] TaskManagerService.get_all_tasks - {len(tasks)} tâches trouvées")
-                return tasks
-            print("[DEBUG] TaskManagerService.get_all_tasks - Aucune tâche trouvée")
-            return []
         except Exception as e:
             print(f"[ERROR] TaskManagerService.get_all_tasks - Erreur: {str(e)}")
             return []
@@ -127,7 +163,14 @@ class TaskManagerService:
             if not role or 'tasks' not in role or task_index >= len(role['tasks']):
                 return False
                 
-            role['tasks'][task_index] = task_data
+            # Vérifier si c'est une tâche fixe
+            if role.get('name') == 'Super Administrateur':
+                fixed_tasks = self.get_fixed_tasks('Super Administrateur')
+                if task_index < len(fixed_tasks):
+                    print("[ERROR] TaskManagerService.update_task - Impossible de modifier une tâche fixe")
+                    return False
+                    
+            role['tasks'][task_index - len(fixed_tasks)] = task_data
             self.db.update_document(self.collection, role_id, role)
             return True
             
@@ -140,7 +183,19 @@ class TaskManagerService:
         print("[DEBUG] TaskManagerService.delete_task - Suppression d'une tâche")
         try:
             role = self.db.get_document(self.collection, role_id)
-            if not role or 'tasks' not in role or task_index >= len(role['tasks']):
+            if not role or 'tasks' not in role:
+                return False
+                
+            # Vérifier si c'est une tâche fixe pour le Super Administrateur
+            if role.get('name') == 'Super Administrateur':
+                fixed_tasks = self.get_fixed_tasks('Super Administrateur')
+                if task_index < len(fixed_tasks):
+                    print("[ERROR] TaskManagerService.delete_task - Impossible de supprimer une tâche fixe")
+                    return False
+                # Ajuster l'index pour les tâches dynamiques
+                task_index = task_index - len(fixed_tasks)
+                
+            if task_index >= len(role['tasks']):
                 return False
                 
             role['tasks'].pop(task_index)

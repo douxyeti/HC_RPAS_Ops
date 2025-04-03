@@ -62,10 +62,10 @@
                         "description": "Gérer la configuration système"
                     },
                     {
-                        "title": "Gestion des accès",
+                        "title": "Gestion des rôles",
                         "icon": "account-key",
                         "module": "system",
-                        "description": "Gérer les accès et authentifications"
+                        "description": "Gérer les rôles et leurs permissions"
                     },
                     {
                         "title": "Maintenance système",

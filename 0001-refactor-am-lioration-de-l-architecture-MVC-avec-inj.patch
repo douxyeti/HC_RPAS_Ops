@@ -1,0 +1,175 @@
+From 1d61fa30a60f9d78c11448fdbb8da631eb812939 Mon Sep 17 00:00:00 2001
+From: douxyeti <mario@domotiflex.com>
+Date: Thu, 3 Apr 2025 13:58:24 -0400
+Subject: [PATCH] =?UTF-8?q?refactor:=20am=C3=A9lioration=20de=20l'architec?=
+ =?UTF-8?q?ture=20MVC=20avec=20injection=20de=20d=C3=A9pendances?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Modification du TaskManagerService pour accepter firebase_service en paramètre
+- Ajustement du container avec les bonnes dépendances
+- Amélioration de get_roles_and_tasks dans FirebaseService
+- Mise à jour des contrôleurs pour utiliser les services injectés
+---
+ app/controllers/dashboard_controller.py           | 12 +++++-------
+ app/core/container.py                             | 13 ++++---------
+ app/services/firebase_service.py                  | 10 ++++++----
+ app/services/task_manager_service.py              |  4 ++--
+ app/views/screens/specialized_dashboard_screen.py |  3 ++-
+ main.py                                           | 11 +++++++++++
+ 6 files changed, 30 insertions(+), 23 deletions(-)
+
+diff --git a/app/controllers/dashboard_controller.py b/app/controllers/dashboard_controller.py
+index c1a0ffb..b74fa4a 100644
+--- a/app/controllers/dashboard_controller.py
++++ b/app/controllers/dashboard_controller.py
+@@ -1,8 +1,10 @@
+ from app.models.task import Task, Role
+ 
+ class DashboardController:
+-    def __init__(self, model):
++    def __init__(self, model, task_manager, firebase_service):
+         self.model = model
++        self.task_manager = task_manager
++        self.firebase_service = firebase_service
+         self.model.bind(roles=self.on_roles_changed)
+         self.current_role = None
+ 
+@@ -10,12 +12,8 @@ class DashboardController:
+         """Charge les tâches spécifiques au rôle"""
+         print(f"Loading tasks for role: {role}")
+         
+-        # Obtenir le service de gestion des rôles
+-        from kivymd.app import MDApp
+-        roles_manager = MDApp.get_running_app().roles_manager_service
+-        
+-        # Récupérer les tâches depuis Firebase
+-        roles_data = roles_manager.get_all_roles()
++        # Utiliser le service Firebase injecté
++        roles_data = self.firebase_service.get_roles_and_tasks()
+         for role_data in roles_data:
+             if role_data.get('name') == role:
+                 tasks = []
+diff --git a/app/core/container.py b/app/core/container.py
+index 932ba6b..e312525 100644
+--- a/app/core/container.py
++++ b/app/core/container.py
+@@ -3,6 +3,7 @@ from app.services.firebase_service import FirebaseService
+ from app.services.task_manager_service import TaskManagerService
+ from app.controllers.dashboard_controller import DashboardController
+ from app.views.screens.specialized_dashboard_screen import SpecializedDashboardScreen
++from app.services.config_service import ConfigService
+ 
+ class Container(containers.DeclarativeContainer):
+     """Container principal pour l'injection de dépendances."""
+@@ -11,9 +12,10 @@ class Container(containers.DeclarativeContainer):
+     config = providers.Configuration()
+     
+     # Services
++    config_service = providers.Singleton(ConfigService)
++    
+     firebase_service = providers.Singleton(
+-        FirebaseService,
+-        config=config.firebase
++        FirebaseService
+     )
+     
+     task_manager = providers.Singleton(
+@@ -27,10 +29,3 @@ class Container(containers.DeclarativeContainer):
+         task_manager=task_manager,
+         firebase_service=firebase_service
+     )
+-    
+-    # Screens
+-    specialized_dashboard = providers.Factory(
+-        SpecializedDashboardScreen,
+-        dashboard_controller=dashboard_controller,
+-        task_manager=task_manager
+-    )
+diff --git a/app/services/firebase_service.py b/app/services/firebase_service.py
+index 1a4ae46..4fc78d9 100644
+--- a/app/services/firebase_service.py
++++ b/app/services/firebase_service.py
+@@ -101,13 +101,15 @@ class FirebaseService:
+         """Récupère tous les rôles et leurs tâches depuis Firestore"""
+         try:
+             roles_ref = self.db.collection('roles').get()
+-            roles_data = {}
++            roles_list = []
+             for role in roles_ref:
+-                roles_data[role.id] = role.to_dict()
+-            return roles_data
++                role_data = role.to_dict()
++                role_data['id'] = role.id
++                roles_list.append(role_data)
++            return roles_list
+         except Exception as e:
+             print(f"Erreur lors de la récupération des rôles: {str(e)}")
+-            return None
++            return []
+ 
+     def update_role_and_tasks(self, role_id, role_data):
+         """Met à jour ou crée un rôle et ses tâches dans Firestore"""
+diff --git a/app/services/task_manager_service.py b/app/services/task_manager_service.py
+index 2283b78..d027c8c 100644
+--- a/app/services/task_manager_service.py
++++ b/app/services/task_manager_service.py
+@@ -3,9 +3,9 @@ from app.services.firebase_service import FirebaseService
+ class TaskManagerService:
+     """Service pour la gestion des tâches"""
+     
+-    def __init__(self):
++    def __init__(self, firebase_service):
+         print("[DEBUG] TaskManagerService.__init__ - Initialisation du service")
+-        self.db = FirebaseService()
++        self.db = firebase_service
+         self.collection = 'roles'
+         
+     def get_role_by_name(self, role_name):
+diff --git a/app/views/screens/specialized_dashboard_screen.py b/app/views/screens/specialized_dashboard_screen.py
+index b4b7090..e732231 100644
+--- a/app/views/screens/specialized_dashboard_screen.py
++++ b/app/views/screens/specialized_dashboard_screen.py
+@@ -117,7 +117,8 @@ class SpecializedDashboardScreen(MDScreen):
+ 
+     def __init__(self, **kwargs):
+         super().__init__(**kwargs)
+-        self.controller = DashboardController(model=MDApp.get_running_app().model)
++        app = MDApp.get_running_app()
++        self.controller = app.container.dashboard_controller(model=app.model)
+         self.current_role = None
+         self.layout = MDBoxLayout(
+             orientation='vertical',
+diff --git a/main.py b/main.py
+index 0613c4b..eb5c4ba 100644
+--- a/main.py
++++ b/main.py
+@@ -21,6 +21,9 @@ from app.views.screens.task_manager_screen import TaskManagerScreen
+ # Import du modèle
+ from app.models.application_model import ApplicationModel
+ 
++# Import du container
++from app.core.container import Container
++
+ class MainScreenManager(MDScreenManager):
+     def __init__(self, **kwargs):
+         super().__init__(**kwargs)
+@@ -46,6 +49,14 @@ class HighCloudRPASApp(MDApp):
+         self.available_roles = []  # Sera chargé depuis Firebase
+         self.model = ApplicationModel()
+         
++        # Initialiser le container
++        self.container = Container()
++        self.container.config.from_dict({
++            'firebase': {
++                'config_path': os.path.join(os.path.dirname(__file__), 'app', 'config', 'firebase_config.json')
++            }
++        })
++        
+     def build(self):
+         # Charge les variables d'environnement
+         load_dotenv()
+-- 
+2.35.1.windows.2
+

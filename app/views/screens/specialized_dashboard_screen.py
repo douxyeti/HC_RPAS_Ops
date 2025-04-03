@@ -1,7 +1,7 @@
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.button import MDIconButton
+from kivymd.uix.button import MDIconButton, MDButton
 from kivymd.uix.label import MDLabel
 from kivymd.uix.card import MDCard
 from kivymd.uix.scrollview import MDScrollView
@@ -12,6 +12,7 @@ from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.properties import ObjectProperty
 from app.controllers.dashboard_controller import DashboardController
+from kivymd.uix.dialog import MDDialog
 
 class IconListItem(MDListItem):
     """Item personnalisé pour le menu déroulant avec icône"""
@@ -20,7 +21,7 @@ class IconListItem(MDListItem):
 
 class TaskCard(MDCard):
     """Carte pour afficher une tâche du commandant"""
-    def __init__(self, title, description, status=None, icon="checkbox-marked-circle", **kwargs):
+    def __init__(self, title, description, status=None, icon="checkbox-marked-circle", is_fixed=False, **kwargs):
         super().__init__(**kwargs)
         self.orientation = "vertical"
         self.padding = 15
@@ -31,7 +32,7 @@ class TaskCard(MDCard):
         self.radius = [12, 12, 12, 12]
         self.md_bg_color = [1, 1, 1, 1]  # Fond blanc
 
-        # En-tête de la carte
+        # En-tête de la carte avec indicateur de tâche fixe
         header = MDBoxLayout(
             orientation="horizontal",
             size_hint_y=None,
@@ -40,11 +41,31 @@ class TaskCard(MDCard):
             md_bg_color=[1, 1, 1, 1]  # Fond blanc
         )
 
-        icon = MDIconButton(
+        # Conteneur pour les icônes
+        icon_container = MDBoxLayout(
+            orientation="horizontal",
+            size_hint_x=None,
+            width=dp(80),
+            spacing=2
+        )
+
+        main_icon = MDIconButton(
             icon=icon,
             pos_hint={"center_y": 0.5},
             theme_text_color="Primary"  # Couleur de texte primaire
         )
+        icon_container.add_widget(main_icon)
+
+        # Ajouter l'icône de verrouillage pour les tâches fixes
+        if is_fixed:
+            lock_icon = MDIconButton(
+                icon="lock",
+                pos_hint={"center_y": 0.5},
+                theme_text_color="Primary",  # Couleur de texte primaire
+                size_hint=(None, None),
+                size=(dp(20), dp(20))
+            )
+            icon_container.add_widget(lock_icon)
 
         title_label = MDLabel(
             text=title,
@@ -55,7 +76,7 @@ class TaskCard(MDCard):
             theme_text_color="Primary"  # Couleur de texte primaire
         )
 
-        header.add_widget(icon)
+        header.add_widget(icon_container)
         header.add_widget(title_label)
 
         # Description
@@ -283,20 +304,24 @@ class SpecializedDashboardScreen(MDScreen):
         # Effacer les cartes existantes
         self.grid.clear_widgets()
         
-        # Charger les tâches pour ce rôle
-        tasks = self.controller.load_role_tasks(self.current_role)
-        print(f"Loaded {len(tasks)} tasks for display")
+        # Récupérer toutes les tâches (fixes + dynamiques) pour ce rôle
+        app = MDApp.get_running_app()
+        task_manager = app.container.task_manager()
+        tasks = task_manager.get_all_tasks(role_id)
+        print(f"Loading tasks for role: {role_id}")
+        print(f"Loaded {len(tasks)} tasks for {role_id}")
         
         if tasks:
             # Créer une carte pour chaque tâche
             for task in tasks:
-                print(f"Creating card for task: {task.title}")
+                print(f"Creating card for task: {task['title']}")
                 self.grid.add_widget(
                     TaskCard(
-                        title=task.title,
-                        description=task.description,
-                        status=task.status,
-                        icon=task.icon if hasattr(task, 'icon') else 'checkbox-marked'
+                        title=task['title'],
+                        description=task['description'],
+                        status=task.get('status', None),
+                        icon=task.get('icon', 'checkbox-marked'),
+                        is_fixed=task.get('is_fixed', False)
                     )
                 )
         else:
@@ -308,6 +333,7 @@ class SpecializedDashboardScreen(MDScreen):
         # Réinitialiser le texte du label
         self.task_label.text = "Choisissez votre tâche..."
         
+        # Charger les tâches pour ce rôle
         tasks = self.controller.load_role_tasks(self.current_role)
         print(f"Loaded {len(tasks)} tasks for menu")
         
@@ -342,19 +368,23 @@ class SpecializedDashboardScreen(MDScreen):
             
         self.task_label.text = task.title
         
-        # Redirection selon le module
+        # Redirection selon le module et le rôle
         module = task.module
         print(f"Tâche sélectionnée : {task.title}")
         print(f"Redirection vers le module : {module}")
         
-        # Redirection selon le module
-        if module == "admin":
-            if task.title == "Gérer les rôles":
-                print("Redirection vers l'écran de gestion des rôles")
-                app = MDApp.get_running_app()
-                app.screen_manager.transition.direction = 'left'
-                app.screen_manager.current = 'roles_manager'
-        # Autres redirections selon les modules...
+        # Vérifier si c'est le Super Administrateur et la tâche "Gestion des accès"
+        if self.current_role == "Super Administrateur" and task.title == "Gestion des accès":
+            print("Redirection vers l'écran de gestion des rôles")
+            app = MDApp.get_running_app()
+            app.screen_manager.transition.direction = 'left'
+            app.screen_manager.current = 'roles_manager'
+            return
+
+        # Redirection standard selon le module
+        if module:
+            print(f"Redirection vers le module : {module}")
+            # TODO: Implémenter les autres redirections selon les modules
 
     def show_notifications(self, *args):
         """Affiche les notifications"""
@@ -379,3 +409,36 @@ class SpecializedDashboardScreen(MDScreen):
     def go_back(self, *args):
         """Retourne au tableau de bord principal"""
         self.manager.current = 'dashboard'
+
+    def create_task_card(self, task):
+        """Crée une carte de tâche avec les indicateurs appropriés"""
+        return TaskCard(
+            title=task.get('title', ''),
+            description=task.get('description', ''),
+            status=task.get('status'),
+            icon=task.get('icon', 'checkbox-marked-circle'),
+            is_fixed=task.get('is_fixed', False)
+        )
+
+    def on_delete_task(self, task_id):
+        """Gère la suppression d'une tâche"""
+        try:
+            self.controller.delete_task(self.current_role, task_id)
+            self.update_task_list()  # Rafraîchir la liste des tâches
+        except ValueError as e:
+            # Afficher un message d'erreur si tentative de suppression d'une tâche fixe
+            self.show_error_dialog("Action non autorisée", str(e))
+
+    def show_error_dialog(self, title, message):
+        """Affiche une boîte de dialogue d'erreur"""
+        self.dialog = MDDialog(
+            title=title,
+            text=message,
+            buttons=[
+                MDButton(
+                    text="OK",
+                    on_release=lambda x: self.dialog.dismiss()
+                )
+            ]
+        )
+        self.dialog.open()

@@ -337,10 +337,13 @@ class DashboardScreen(MDScreen):
         
     def show_role_menu(self, button):
         """Affiche le menu déroulant des rôles"""
+        print("Opening role menu")
+        
         # Réinitialiser le texte du label
         self.role_label.text = "Choisissez votre rôle"
         
         menu_items = []
+        
         app = self.app
         roles = app.available_roles if hasattr(app, 'available_roles') else []
         
@@ -353,6 +356,8 @@ class DashboardScreen(MDScreen):
                 "text": role,
                 "on_release": lambda x=role: self.select_role(x)
             })
+            
+        print(f"Created {len(menu_items)} menu items")
         
         self.menu = MDDropdownMenu(
             caller=button,
@@ -371,31 +376,22 @@ class DashboardScreen(MDScreen):
         self.role_label.text = role_name
         print(f"[DEBUG] DashboardScreen.select_role - Rôle sélectionné : {role_name}")
 
-        # Logique de redirection basée sur le rôle
-        if role_name == "Super Administrateur":
-            # Rediriger vers le gestionnaire de tâches pour le Super Admin
-            task_manager = self.manager.get_screen('task_manager')
-            print(f"[DEBUG] DashboardScreen.select_role - Redirection vers le gestionnaire de tâches")
-            task_manager.set_current_role(None, role_name)
-            self.manager.current = 'task_manager'
-        else:
-            # Pour les autres rôles, rediriger vers le tableau de bord spécialisé
-            try:
-                specialized_dashboard = self.manager.get_screen('specialized_dashboard')
-                print(f"[DEBUG] DashboardScreen.select_role - Redirection vers le tableau de bord spécialisé pour {role_name}")
-                
-                # Normaliser le nom du rôle pour l'ID
-                role_id = role_name.lower().replace(' ', '_').replace('é', 'e').replace('è', 'e').replace('à', 'a')
-                
-                # Mettre à jour l'interface du tableau de bord spécialisé
-                specialized_dashboard.update_for_role(role_name)
-                
-                # Effectuer la redirection
-                self.manager.current = 'specialized_dashboard'
-            except Exception as e:
-                print(f"[ERROR] DashboardScreen.select_role - Erreur lors de la redirection : {str(e)}")
-                # Afficher un message d'erreur dans la console
-                print("Erreur : Impossible d'accéder au tableau de bord pour ce rôle")
+        try:
+            specialized_dashboard = self.manager.get_screen('specialized_dashboard')
+            print(f"[DEBUG] DashboardScreen.select_role - Redirection vers le tableau de bord spécialisé pour {role_name}")
+            
+            # Normaliser le nom du rôle pour l'ID
+            role_id = role_name.lower().replace(' ', '_').replace('é', 'e').replace('è', 'e').replace('à', 'a')
+            
+            # Mettre à jour l'interface du tableau de bord spécialisé
+            specialized_dashboard.update_for_role(role_name)
+            
+            # Effectuer la redirection
+            self.manager.current = 'specialized_dashboard'
+        except Exception as e:
+            print(f"[ERROR] DashboardScreen.select_role - Erreur lors de la redirection : {str(e)}")
+            # Afficher un message d'erreur dans la console
+            print("Erreur : Impossible d'accéder au tableau de bord pour ce rôle")
     
     def logout(self, *args):
         """Déconnexion de l'utilisateur"""
