@@ -117,7 +117,8 @@ class SpecializedDashboardScreen(MDScreen):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.controller = DashboardController(model=MDApp.get_running_app().model)
+        app = MDApp.get_running_app()
+        self.controller = app.container.dashboard_controller(model=app.model)
         self.current_role = None
         self.layout = MDBoxLayout(
             orientation='vertical',

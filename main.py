@@ -21,6 +21,9 @@ from app.views.screens.task_manager_screen import TaskManagerScreen
 # Import du modèle
 from app.models.application_model import ApplicationModel
 
+# Import du container
+from app.core.container import Container
+
 class MainScreenManager(MDScreenManager):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -45,6 +48,14 @@ class HighCloudRPASApp(MDApp):
         self.current_role = None
         self.available_roles = []  # Sera chargé depuis Firebase
         self.model = ApplicationModel()
+        
+        # Initialiser le container
+        self.container = Container()
+        self.container.config.from_dict({
+            'firebase': {
+                'config_path': os.path.join(os.path.dirname(__file__), 'app', 'config', 'firebase_config.json')
+            }
+        })
         
     def build(self):
         # Charge les variables d'environnement

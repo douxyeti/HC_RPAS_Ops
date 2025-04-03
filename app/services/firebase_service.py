@@ -101,13 +101,15 @@ class FirebaseService:
         """Récupère tous les rôles et leurs tâches depuis Firestore"""
         try:
             roles_ref = self.db.collection('roles').get()
-            roles_data = {}
+            roles_list = []
             for role in roles_ref:
-                roles_data[role.id] = role.to_dict()
-            return roles_data
+                role_data = role.to_dict()
+                role_data['id'] = role.id
+                roles_list.append(role_data)
+            return roles_list
         except Exception as e:
             print(f"Erreur lors de la récupération des rôles: {str(e)}")
-            return None
+            return []
 
     def update_role_and_tasks(self, role_id, role_data):
         """Met à jour ou crée un rôle et ses tâches dans Firestore"""

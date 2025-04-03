@@ -3,9 +3,9 @@ from app.services.firebase_service import FirebaseService
 class TaskManagerService:
     """Service pour la gestion des tâches"""
     
-    def __init__(self):
+    def __init__(self, firebase_service):
         print("[DEBUG] TaskManagerService.__init__ - Initialisation du service")
-        self.db = FirebaseService()
+        self.db = firebase_service
         self.collection = 'roles'
         
     def get_role_by_name(self, role_name):

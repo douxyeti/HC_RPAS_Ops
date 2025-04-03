@@ -1,8 +1,10 @@
 from app.models.task import Task, Role
 
 class DashboardController:
-    def __init__(self, model):
+    def __init__(self, model, task_manager, firebase_service):
         self.model = model
+        self.task_manager = task_manager
+        self.firebase_service = firebase_service
         self.model.bind(roles=self.on_roles_changed)
         self.current_role = None
 
@@ -10,12 +12,8 @@ class DashboardController:
         """Charge les tâches spécifiques au rôle"""
         print(f"Loading tasks for role: {role}")
         
-        # Obtenir le service de gestion des rôles
-        from kivymd.app import MDApp
-        roles_manager = MDApp.get_running_app().roles_manager_service
-        
-        # Récupérer les tâches depuis Firebase
-        roles_data = roles_manager.get_all_roles()
+        # Utiliser le service Firebase injecté
+        roles_data = self.firebase_service.get_roles_and_tasks()
         for role_data in roles_data:
             if role_data.get('name') == role:
                 tasks = []
