@@ -380,11 +380,36 @@ class DashboardScreen(MDScreen):
             specialized_dashboard = self.manager.get_screen('specialized_dashboard')
             print(f"[DEBUG] DashboardScreen.select_role - Redirection vers le tableau de bord spécialisé pour {role_name}")
             
-            # Normaliser le nom du rôle pour l'ID
-            role_id = role_name.lower().replace(' ', '_').replace('é', 'e').replace('è', 'e').replace('à', 'a')
+            # Utiliser la table de correspondance pour obtenir l'ID correct
+            name_to_id = {
+                'Agent de sécurité': 'safety_officer',
+                'Chef pilote': '1739113171349',
+                'Commandant de bord': 'commandant_de_bord_20250209154602797597_7549',
+                'Coordinateur des opérations': 'coordinateur_des_op_rations_20250209154602583657_7089',
+                'Copilote': 'copilote_20250209154601638980_4466',
+                'Examinateur': 'examinateur_20250209154601788307_4150',
+                'Formateur': 'formateur_20250209154601869007_5483',
+                'Gestionnaire des activités de maintenance': 'gestionnaire_des_activit_s_de_maintenance_20250209154602333301_9261',
+                'Gestionnaire du cadre documentaire': 'gestionnaire_du_cadre_documentaire_20250209154601714872_5632',
+                'Inspecteur': 'inspecteur_20250209154602148559_9165',
+                'Instructeur': 'instructeur_20250209154602241623_4510',
+                'Observateur au sol': 'observateur_au_sol_20250209154601953352_1681',
+                'Opérateur de charge utile': 'op_rateur_de_charge_utile_20250209154602653054_5709',
+                'Opérateur de station au sol': 'op_rateur_de_station_au_sol_20250209154602044502_4150',
+                'Pilote': 'pilote_20250209154602727105_6859',
+                'Pilote aux commandes': 'pilot_controls',
+                'Responsable assurance de la qualité': 'quality_manager',
+                'Responsable des opérations': 'ops_manager',
+                'Spécialiste de mission': 'sp_cialiste_de_mission_20250209154602497849_6798',
+                'Super Administrateur': 'super_admin',
+                'Technicien Maintenance': 'technicien_maintenance_20250209154602418833_9484'
+            }
             
-            # Mettre à jour l'interface du tableau de bord spécialisé
-            specialized_dashboard.update_for_role(role_name)
+            # Obtenir l'ID correct pour le rôle
+            role_id = name_to_id.get(role_name, role_name.lower().replace(' ', '_').replace('é', 'e').replace('è', 'e').replace('à', 'a'))
+            
+            # Mettre à jour l'interface du tableau de bord spécialisé avec l'ID correct
+            specialized_dashboard.update_for_role(role_id)
             
             # Effectuer la redirection
             self.manager.current = 'specialized_dashboard'

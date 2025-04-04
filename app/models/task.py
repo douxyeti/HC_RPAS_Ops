@@ -74,16 +74,7 @@ class TaskModel:
         """Récupère toutes les tâches pour un rôle donné"""
         print(f"[DEBUG] TaskModel.get_tasks - Recherche des tâches pour role_id: '{role_id}'")
         try:
-            # Cas spécial pour le Super Administrateur
-            if role_id == 'super_admin':
-                print("[DEBUG] TaskModel.get_tasks - Chargement des tâches du Super Administrateur")
-                return [
-                    Task("Gérer les rôles", "Gérer les rôles et leurs permissions", "admin", "account-cog"),
-                    Task("Configuration système", "Configurer les paramètres du système", "admin", "cog"),
-                    Task("Audit des opérations", "Auditer les opérations du système", "admin", "clipboard-check")
-                ]
-
-            # Pour les autres rôles, essayer d'abord avec l'ID exact
+            # Pour tous les rôles, essayer d'abord avec l'ID exact
             role_doc = self.firebase_service.get_document(self.collection, role_id)
             
             # Si non trouvé, essayer avec l'ID normalisé

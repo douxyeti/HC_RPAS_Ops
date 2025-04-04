@@ -98,14 +98,8 @@ class TaskManagerService:
             
             # 1. Récupérer le rôle depuis Firebase
             role = self.db.get_document(self.collection, role_id)
-            if role:
-                # 2. Récupérer les tâches fixes si c'est le Super Administrateur
-                if role.get('name') == 'Super Administrateur':
-                    fixed_tasks = self.get_fixed_tasks('Super Administrateur')
-                    all_tasks.extend(fixed_tasks)
-                    print(f"[DEBUG] TaskManagerService.get_all_tasks - {len(fixed_tasks)} tâches fixes ajoutées")
-                
-                # 3. Ajouter les tâches dynamiques de Firebase
+            if role:                
+                # Ajouter les tâches dynamiques de Firebase
                 if 'tasks' in role:
                     # Marquer ces tâches comme non fixes
                     dynamic_tasks = role['tasks']

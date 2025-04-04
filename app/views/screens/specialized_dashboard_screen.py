@@ -293,6 +293,7 @@ class SpecializedDashboardScreen(MDScreen):
     def update_for_role(self, role_id):
         """Met à jour l'interface pour le rôle sélectionné"""
         print(f"Updating interface for role: {role_id}")
+        print(f"Type of role_id: {type(role_id)}")  # Debug
         self.current_role = role_id
         
         # Mettre à jour le titre avec le nom du rôle
@@ -372,9 +373,13 @@ class SpecializedDashboardScreen(MDScreen):
         module = task.module
         print(f"Tâche sélectionnée : {task.title}")
         print(f"Redirection vers le module : {module}")
+        print(f"Rôle actuel : {self.current_role}")  # Debug
+        print(f"Type de rôle actuel : {type(self.current_role)}")  # Debug
+        print(f"Condition rôle : {self.current_role == 'super_admin'}")  # Debug
+        print(f"Condition tâche : {task.title == 'Gestion des rôles et tâches'}")  # Debug
         
-        # Vérifier si c'est le Super Administrateur et la tâche "Gestion des accès"
-        if self.current_role == "Super Administrateur" and task.title == "Gestion des accès":
+        # Vérifier si c'est le Super Administrateur et la tâche de gestion des rôles
+        if self.current_role == "super_admin" and task.title == "Gestion des rôles et tâches":
             print("Redirection vers l'écran de gestion des rôles")
             app = MDApp.get_running_app()
             app.screen_manager.transition.direction = 'left'
