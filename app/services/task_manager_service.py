@@ -180,11 +180,12 @@ class TaskManagerService:
             if not role or 'tasks' not in role:
                 return False
                 
-            # Vérifier si c'est une tâche fixe pour le Super Administrateur
-            if role.get('name') == 'Super Administrateur':
+            # Protection spéciale pour le Super Administrateur
+            if role_id == 'super_admin':
                 fixed_tasks = self.get_fixed_tasks('Super Administrateur')
-                if task_index < len(fixed_tasks):
-                    print("[ERROR] TaskManagerService.delete_task - Impossible de supprimer une tâche fixe")
+                # Vérifier si c'est la tâche de gestion des rôles
+                if task_index < len(fixed_tasks) and fixed_tasks[task_index].get('title') == 'Gestion des rôles et tâches':
+                    print("[ERROR] TaskManagerService.delete_task - Impossible de supprimer la tâche de gestion des rôles")
                     return False
                 # Ajuster l'index pour les tâches dynamiques
                 task_index = task_index - len(fixed_tasks)

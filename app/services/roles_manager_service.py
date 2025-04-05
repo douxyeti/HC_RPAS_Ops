@@ -120,6 +120,11 @@ class RolesManagerService:
     def delete_role(self, role_id):
         """Supprime un rôle"""
         try:
+            # Empêche la suppression du rôle Super Admin
+            if role_id == 'super_admin':
+                print("[DEBUG] RolesManagerService.delete_role - Tentative de suppression du rôle Super Admin interdite")
+                return False
+
             role = self.get_role(role_id)
             if self.db.delete_document(self.collection, role_id):
                 # Met à jour la liste des rôles disponibles dans l'application

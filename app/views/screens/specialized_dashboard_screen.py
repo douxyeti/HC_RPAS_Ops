@@ -259,13 +259,13 @@ class SpecializedDashboardScreen(MDScreen):
         )
 
         # Ajouter les widgets aux conteneurs
+        left_container.add_widget(back_button)
         left_container.add_widget(self.title_label)
         center_container.add_widget(task_box)
         right_container.add_widget(notifications_button)
         right_container.add_widget(reports_button)
         right_container.add_widget(settings_button)
         right_container.add_widget(help_button)
-        right_container.add_widget(back_button)
 
         # Ajouter les conteneurs à la barre supérieure
         self.top_bar.add_widget(left_container)
@@ -293,11 +293,16 @@ class SpecializedDashboardScreen(MDScreen):
     def update_for_role(self, role_id):
         """Met à jour l'interface pour le rôle sélectionné"""
         print(f"Updating interface for role: {role_id}")
-        print(f"Type of role_id: {type(role_id)}")  # Debug
+        print(f"Type of role_id: {type(role_id)}")
         self.current_role = role_id
         
+        # Récupérer le nom du rôle depuis le RolesManagerService
+        app = MDApp.get_running_app()
+        role_data = app.firebase_service.get_document('roles', role_id)
+        role_name = role_data.get('name', role_id) if role_data else role_id
+        
         # Mettre à jour le titre avec le nom du rôle
-        self.title_label.text = f"Tableau de bord {role_id}"
+        self.title_label.text = f"Tableau de bord - {role_name}"
         
         # Réinitialiser le texte du menu des tâches
         self.task_label.text = "Choisissez votre tâche..."
@@ -376,10 +381,10 @@ class SpecializedDashboardScreen(MDScreen):
         print(f"Rôle actuel : {self.current_role}")  # Debug
         print(f"Type de rôle actuel : {type(self.current_role)}")  # Debug
         print(f"Condition rôle : {self.current_role == 'super_admin'}")  # Debug
-        print(f"Condition tâche : {task.title == 'Gestion des rôles et tâches'}")  # Debug
+        print(f"Condition tâche : {task.title == 'Gestion des rôles'}")  # Debug
         
         # Vérifier si c'est le Super Administrateur et la tâche de gestion des rôles
-        if self.current_role == "super_admin" and task.title == "Gestion des rôles et tâches":
+        if self.current_role == "super_admin" and task.title == "Gestion des rôles":
             print("Redirection vers l'écran de gestion des rôles")
             app = MDApp.get_running_app()
             app.screen_manager.transition.direction = 'left'

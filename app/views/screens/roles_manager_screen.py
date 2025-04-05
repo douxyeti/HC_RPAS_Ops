@@ -46,26 +46,32 @@ class RoleCard(MDCard):
             spacing=dp(8)
         )
         
-        edit_btn = MDIconButton(
-            icon='pencil',
-            on_release=lambda x: on_edit(role_data)
-        )
-        actions.add_widget(edit_btn)
+        # N'affiche le bouton d'édition que si ce n'est pas le Super Admin
+        if role_data.get('id') != 'super_admin':
+            edit_btn = MDIconButton(
+                icon='pencil',
+                on_release=lambda x: on_edit(role_data)
+            )
+            actions.add_widget(edit_btn)
 
         # Bouton de gestion des tâches
         tasks_btn = MDIconButton(
             icon='clipboard-list',
             on_release=lambda x: on_manage_tasks(role_data),
             theme_icon_color="Custom",
-            icon_color=[1, 0, 0, 1]  # Rouge
+            icon_color=[0, 0, 1, 1]  # Bleu
         )
         actions.add_widget(tasks_btn)
         
-        delete_btn = MDIconButton(
-            icon='delete',
-            on_release=lambda x: on_delete(role_data)
-        )
-        actions.add_widget(delete_btn)
+        # N'affiche le bouton de suppression que si ce n'est pas le Super Admin
+        if role_data.get('id') != 'super_admin':
+            delete_btn = MDIconButton(
+                icon='delete',
+                on_release=lambda x: on_delete(role_data),
+                theme_icon_color="Custom",
+                icon_color=[1, 0, 0, 1]  # Rouge
+            )
+            actions.add_widget(delete_btn)
         header.add_widget(actions)
         
         # Description avec vérification

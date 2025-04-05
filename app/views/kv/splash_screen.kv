@@ -6,29 +6,36 @@
     
     MDBoxLayout:
         orientation: 'vertical'
-        padding: "16dp"
-        spacing: "16dp"
-        pos_hint: {"center_x": .5, "center_y": .5}
         adaptive_height: True
+        spacing: "16dp"
+        padding: ["0dp", "2dp"]
+        pos_hint: {"center_x": .5, "center_y": .6}  # Changé de .8 à .6 pour descendre le layout
         
         Image:
             source: "assets/images/logo.png"
             size_hint: None, None
-            size: "150dp", "150dp"
+            size: "150dp", "75dp"
             pos_hint: {"center_x": .5}
             
         MDLabel:
-            text: "HighCloud RPAS"
+            text: "HighCloud Solutions Télépilotées"
             halign: "center"
-            role: "large"
-            font_style: "Display"
+            theme_font_size: "Custom"
+            font_size: "22sp"
             adaptive_height: True
-            
+
         MDLabel:
-            text: "Operations Manager"
+            text: "HC_RPAS_OPS"
             halign: "center"
-            font_style: "Display"
-            role: "small"
+            theme_font_size: "Custom"
+            font_size: "26sp"
+            adaptive_height: True   
+
+        MDLabel:
+            text: "Gestion des opérations"
+            halign: "center"
+            theme_font_size: "Custom"
+            font_size: "40sp"
             adaptive_height: True
             
         MDLinearProgressIndicator:

@@ -18,6 +18,14 @@ class TaskCard(MDCard):
     title = StringProperty("")
     description = StringProperty("")
     icon = StringProperty("checkbox-marked-circle")
+    current_role = StringProperty("")
+    
+    PROTECTED_TASKS = [
+        'Configuration système',
+        'Gestion des accès',
+        'Maintenance système',
+        'Gestion des rôles'
+    ]
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -54,24 +62,28 @@ class TaskCard(MDCard):
             spacing=dp(4)
         )
         
-        # Edit button
-        edit_button = MDIconButton(
-            icon="pencil",
-            theme_text_color="Custom",
-            text_color=[0.2, 0.2, 0.9, 1],
-            on_release=lambda x: self.edit_task()
-        )
+        # Vérifier si la tâche est protégée
+        is_protected = (self.current_role == 'super_admin' and 
+                       self.title in self.PROTECTED_TASKS)
         
-        # Delete button
-        delete_button = MDIconButton(
-            icon="delete",
-            theme_text_color="Custom",
-            text_color=[0.9, 0.2, 0.2, 1],
-            on_release=lambda x: self.delete_task()
-        )
-        
-        buttons_box.add_widget(edit_button)
-        buttons_box.add_widget(delete_button)
+        if not is_protected:
+            # Edit button
+            edit_button = MDIconButton(
+                icon="pencil",
+                theme_text_color="Custom",
+                text_color=[0.2, 0.2, 0.9, 1],
+                on_release=lambda x: self.edit_task()
+            )
+            buttons_box.add_widget(edit_button)
+
+            # Delete button
+            delete_button = MDIconButton(
+                icon="delete",
+                theme_text_color="Custom",
+                text_color=[0.9, 0.2, 0.2, 1],
+                on_release=lambda x: self.delete_task()
+            )
+            buttons_box.add_widget(delete_button)
         
         header.add_widget(title_label)
         header.add_widget(buttons_box)
@@ -190,24 +202,19 @@ class TaskManagerScreen(MDScreen):
         """Affiche les tâches dans l'interface"""
         print(f"[DEBUG] TaskManagerScreen.display_tasks - Début de l'affichage")
         print(f"[DEBUG] TaskManagerScreen.display_tasks - Nombre de tâches : {len(tasks)}")
+        print(f"[DEBUG] TaskManagerScreen.display_tasks - Container: {self.tasks_container}")
         
-        # Récupérer le container
-        container = self.ids.tasks_container
-        print(f"[DEBUG] TaskManagerScreen.display_tasks - Container: {container}")
-        
-        # Vider le container
-        container.clear_widgets()
-        
-        # Créer une carte pour chaque tâche
-        for task in tasks:
-            print(f"[DEBUG] TaskManagerScreen.display_tasks - Création de carte pour la tâche : {task}")
-            task_card = TaskCard(
-                title=task['title'],
-                description=task['description'],
-                icon=task.get('icon', 'checkbox-marked-circle')
-            )
+        if self.tasks_container:
+            self.tasks_container.clear_widgets()
             
-            container.add_widget(task_card)
+            for task in tasks:
+                print(f"[DEBUG] TaskManagerScreen.display_tasks - Création de carte pour la tâche : {task}")
+                task_card = TaskCard(
+                    title=task.get('title', ''),
+                    description=task.get('description', ''),
+                    current_role=self.current_role_id
+                )
+                self.tasks_container.add_widget(task_card)
                 
     def go_back(self, *args):
         """Retourne à l'écran précédent"""

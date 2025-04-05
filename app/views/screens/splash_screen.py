@@ -1,6 +1,6 @@
 from kivymd.uix.screen import MDScreen
 from kivy.clock import Clock
-from kivy.properties import NumericProperty, BooleanProperty
+from kivy.properties import NumericProperty, BooleanProperty, StringProperty
 
 class SplashScreen(MDScreen):
     progress = NumericProperty(0)
