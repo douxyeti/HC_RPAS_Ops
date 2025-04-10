@@ -1,0 +1,66 @@
+#:kivy 2.3.1
+
+<LoginScreen>:
+    name: 'login'
+    md_bg_color: self.theme_cls.backgroundColor
+    
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: "16dp"
+        spacing: "16dp"
+        
+        MDLabel:
+            text: "Module Contrôle des Vols"
+            halign: "center"
+            role: "large"
+            adaptive_height: True
+            
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: "8dp"
+            adaptive_height: True
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint_x: .8
+            
+            MDTextField:
+                id: email
+                hint_text: "Email"
+                helper_text: "Entrez votre adresse email"
+                helper_text_mode: "on_error"
+                mode: "outlined"
+                validator: "email"
+                required: True
+                
+                MDTextFieldLeadingIcon:
+                    icon: "email"
+                
+            MDTextField:
+                id: password
+                hint_text: "Mot de passe"
+                helper_text: "Entrez votre mot de passe"
+                helper_text_mode: "on_error"
+                mode: "outlined"
+                password: True
+                required: True
+                
+                MDTextFieldLeadingIcon:
+                    icon: "lock"
+                
+            MDButton:
+                style: "elevated"
+                pos_hint: {"center_x": .5}
+                on_press: root.on_login(email.text, password.text)
+                
+                MDButtonText:
+                    text: "Se connecter"
+                    
+            MDButton:
+                style: "text"
+                pos_hint: {"center_x": .5}
+                on_press: root.on_forgot_password(email.text)
+                
+                MDButtonText:
+                    text: "Mot de passe oublié ?"
+                    
+        Widget:
+            # Espace flexible en bas
