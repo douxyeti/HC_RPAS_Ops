@@ -1,6 +1,7 @@
 from kivymd.app import MDApp
 from app.core.container import Container
 from app.core.config import load_config
+from app.views.screens.procedures_manager_screen import ProceduresManagerScreen
 
 class MainApp(MDApp):
     """Application principale."""
@@ -24,6 +25,11 @@ class MainApp(MDApp):
         """Construit l'interface utilisateur principale."""
         # Créer l'écran principal
         dashboard_screen = self.container.specialized_dashboard()
+        
+        # Ajouter l'écran de gestion des procédures
+        procedures_screen = self.container.procedures_manager_screen()
+        dashboard_screen.manager.add_widget(procedures_screen)
+        
         return dashboard_screen
 
 if __name__ == '__main__':

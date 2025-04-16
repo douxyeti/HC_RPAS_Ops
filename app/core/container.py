@@ -1,8 +1,10 @@
 from dependency_injector import containers, providers
 from app.services.firebase_service import FirebaseService
 from app.services.task_manager_service import TaskManagerService
+from app.services.procedures_manager_service import ProceduresManagerService
 from app.controllers.dashboard_controller import DashboardController
 from app.views.screens.specialized_dashboard_screen import SpecializedDashboardScreen
+from app.views.screens.procedures_manager_screen import ProceduresManagerScreen
 from app.services.config_service import ConfigService
 
 class Container(containers.DeclarativeContainer):
@@ -23,9 +25,19 @@ class Container(containers.DeclarativeContainer):
         firebase_service=firebase_service
     )
     
+    procedures_manager = providers.Singleton(
+        ProceduresManagerService
+    )
+    
     # Controllers
     dashboard_controller = providers.Factory(
         DashboardController,
         task_manager=task_manager,
         firebase_service=firebase_service
+    )
+    
+    # Screens
+    procedures_manager_screen = providers.Factory(
+        ProceduresManagerScreen,
+        procedures_manager_service=procedures_manager
     )

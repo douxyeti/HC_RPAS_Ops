@@ -17,6 +17,7 @@ from app.views.screens.specialized_dashboard_screen import SpecializedDashboardS
 from app.views.screens.roles_manager_screen import RolesManagerScreen
 from app.views.screens.role_edit_screen import RoleEditScreen
 from app.views.screens.task_manager_screen import TaskManagerScreen
+from app.views.screens.procedures_manager_screen import ProceduresManagerScreen
 
 # Import du modèle
 from app.models.application_model import ApplicationModel
@@ -108,6 +109,13 @@ class HighCloudRPASApp(MDApp):
         # Crée le gestionnaire d'écrans
         self.screen_manager = MainScreenManager()
         
+        # Ajoute l'écran de gestion des procédures avec son service
+        procedures_manager_screen = ProceduresManagerScreen(
+            name="procedures_manager",
+            procedures_manager_service=self.container.procedures_manager()
+        )
+        self.screen_manager.add_widget(procedures_manager_screen)
+        
         # Définit l'écran initial
         self.screen_manager.current = "splash"
         
@@ -122,6 +130,8 @@ class HighCloudRPASApp(MDApp):
             'app/views/kv/roles_manager_screen.kv',
             'app/views/kv/role_edit_screen.kv',  # Ajout du fichier KV pour l'édition des rôles
             'app/views/kv/task_manager_screen.kv',  # Fichier KV pour la gestion des tâches
+            'app/views/kv/procedures_manager_screen.kv',  # Fichier KV pour la gestion des procédures
+            'app/views/kv/specialized_dashboard_screen.kv'  # Ajout du fichier KV pour l'écran de gestion des procédures
         ]
         for kv_file in kv_files:
             Builder.load_file(kv_file)

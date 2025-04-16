@@ -1,0 +1,142 @@
+#:kivy 2.2.1
+#:import dp kivy.metrics.dp
+#:import MDButton kivymd.uix.button.MDButton
+#:import MDTopAppBar kivymd.uix.appbar.MDTopAppBar
+#:import MDScrollView kivymd.uix.scrollview.MDScrollView
+#:import MDIconButton kivymd.uix.button.MDIconButton
+#:import MDBoxLayout kivymd.uix.boxlayout.MDBoxLayout
+#:import MDLabel kivymd.uix.label.MDLabel
+
+<ProceduresManagerScreen>:
+    MDBoxLayout:
+        orientation: 'vertical'
+        spacing: dp(16)
+        padding: dp(16)
+
+        # Barre supérieure avec titre et boutons
+        MDBoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(56)
+            spacing: dp(10)
+            padding: [dp(10), 0]
+            md_bg_color: [0.2, 0.2, 0.9, 1]  # Bleu foncé
+
+            MDIconButton:
+                icon: "arrow-left"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                on_release: root.go_back()
+                pos_hint: {"center_y": 0.5}
+                
+            Widget:
+                size_hint_x: 0.3
+                
+            MDLabel:
+                text: "Gestion des Procédures"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                theme_font_size: "Custom"
+                font_size: "24sp"
+                halign: "center"
+                pos_hint: {"center_y": 0.5}
+                
+            Widget:
+                size_hint_x: 0.3
+                
+            MDBoxLayout:
+                orientation: 'horizontal'
+                size_hint_x: None
+                width: self.minimum_width
+                spacing: dp(4)
+                pos_hint: {"center_y": 0.5}
+                
+                MDIconButton:
+                    icon: "filter"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_filter_menu(self)
+                
+                MDIconButton:
+                    icon: "sort"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_sort_menu(self)
+                
+                MDIconButton:
+                    icon: "plus"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_add_procedure_dialog()
+
+        # Contenu principal avec ScrollView
+        MDScrollView:
+            size_hint: 1, 0.9  # Réserve 10% pour l'en-tête
+            scroll_type: ['bars']
+            bar_width: "20dp"
+            bar_color: [0.2, 0.2, 0.9, 1]  # Bleu
+            bar_inactive_color: [0.2, 0.2, 0.9, 0.5]  # Bleu plus transparent
+            do_scroll_x: False
+
+            MDBoxLayout:
+                id: procedures_container
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: "8dp"
+                padding: [0, "8dp", 0, "8dp"]  # Padding vertical uniquement
+                pos_hint: {"center_x": 0.5}  # Centrer le conteneur
+
+        # Conteneur pour les étapes (initialement caché)
+        MDBoxLayout:
+            id: steps_view
+            orientation: 'vertical'
+            opacity: 0
+            height: 0
+            size_hint_y: None
+
+            # En-tête des étapes
+            MDBoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: dp(56)
+                spacing: dp(10)
+                padding: [dp(10), 0]
+                md_bg_color: [0.2, 0.2, 0.9, 1]  # Bleu foncé
+
+                MDLabel:
+                    text: "Étapes de la procédure"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    theme_font_size: "Custom"
+                    font_size: "24sp"
+                    halign: "center"
+                    pos_hint: {"center_y": 0.5}
+
+                Widget:
+                    size_hint_x: 0.7
+
+                MDIconButton:
+                    icon: "plus"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    on_release: root.show_add_step_dialog()
+                    pos_hint: {"center_y": 0.5}
+
+            # Liste des étapes
+            MDScrollView:
+                size_hint: 1, 0.9
+                scroll_type: ['bars']
+                bar_width: "20dp"
+                bar_color: [0.2, 0.2, 0.9, 1]  # Bleu
+                bar_inactive_color: [0.2, 0.2, 0.9, 0.5]  # Bleu plus transparent
+                do_scroll_x: False
+
+                MDBoxLayout:
+                    id: steps_container
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: "8dp"
+                    padding: [0, "8dp", 0, "8dp"]  # Padding vertical uniquement
+                    pos_hint: {"center_x": 0.5}  # Centrer le conteneur

@@ -376,20 +376,34 @@ class SpecializedDashboardScreen(MDScreen):
         
         # Redirection selon le module et le rôle
         module = task.module
+        screen = getattr(task, 'screen', None)
         print(f"Tâche sélectionnée : {task.title}")
         print(f"Redirection vers le module : {module}")
-        print(f"Rôle actuel : {self.current_role}")  # Debug
-        print(f"Type de rôle actuel : {type(self.current_role)}")  # Debug
-        print(f"Condition rôle : {self.current_role == 'super_admin'}")  # Debug
-        print(f"Condition tâche : {task.title == 'Gestion des rôles'}")  # Debug
+        print(f"Écran spécifié : {screen}")
+        print(f"Rôle actuel : {self.current_role}")
         
-        # Vérifier si c'est le Super Administrateur et la tâche de gestion des rôles
-        if self.current_role == "super_admin" and task.title == "Gestion des rôles":
-            print("Redirection vers l'écran de gestion des rôles")
+        # Vérifier si un écran spécifique est défini
+        if screen:
+            print(f"Redirection vers l'écran : {screen}")
             app = MDApp.get_running_app()
             app.screen_manager.transition.direction = 'left'
-            app.screen_manager.current = 'roles_manager'
+            app.screen_manager.current = screen
             return
+            
+        # Vérifier si c'est le Super Administrateur et la tâche de gestion des rôles
+        if self.current_role == "super_admin":
+            if task.title == "Gestion des rôles":
+                print("Redirection vers l'écran de gestion des rôles")
+                app = MDApp.get_running_app()
+                app.screen_manager.transition.direction = 'left'
+                app.screen_manager.current = 'roles_manager'
+                return
+            elif task.title == "Gestion des procédures":
+                print("Redirection vers l'écran de gestion des procédures")
+                app = MDApp.get_running_app()
+                app.screen_manager.transition.direction = 'left'
+                app.screen_manager.current = 'procedures_manager'
+                return
 
         # Redirection standard selon le module
         if module:

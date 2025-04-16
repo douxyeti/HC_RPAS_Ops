@@ -12,14 +12,16 @@ class Task(EventDispatcher):
     module = StringProperty('operations')
     icon = StringProperty('checkbox-marked')
     status = StringProperty('En attente')  # Propriété ajoutée
+    screen = StringProperty(None)  # Ajout de l'attribut screen
 
-    def __init__(self, title: str, description: str, module: str = 'operations', icon: str = 'checkbox-marked', status: str = 'En attente'):
+    def __init__(self, title: str, description: str, module: str = 'operations', icon: str = 'checkbox-marked', status: str = 'En attente', screen: str = None):
         super().__init__()
         self.title = title
         self.description = description
         self.module = module
         self.icon = icon
-        self.status = status  # Initialisation correcte
+        self.status = status
+        self.screen = screen
 
     def to_dict(self) -> Dict:
         return {
@@ -27,7 +29,8 @@ class Task(EventDispatcher):
             'description': self.description,
             'module': self.module,
             'icon': self.icon,
-            'status': self.status  # Ajout de la propriété status
+            'status': self.status,
+            'screen': self.screen
         }
 
     @classmethod
@@ -45,13 +48,15 @@ class Task(EventDispatcher):
         module = data.get('module', 'operations')
         icon = data.get('icon', 'checkbox-marked')
         status = data.get('status', 'En attente')
+        screen = data.get('screen', None)
         
         return cls(
             title=title,
             description=description,
             module=module,
             icon=icon,
-            status=status
+            status=status,
+            screen=screen
         )
 
 class Role(EventDispatcher):
