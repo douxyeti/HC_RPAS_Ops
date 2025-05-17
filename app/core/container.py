@@ -25,7 +25,7 @@ class Container(containers.DeclarativeContainer):
         firebase_service=firebase_service
     )
     
-    procedures_manager = providers.Singleton(
+    procedures_manager = providers.Callable(
         ProceduresManagerService
     )
     

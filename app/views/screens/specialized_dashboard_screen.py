@@ -10,7 +10,7 @@ from kivymd.uix.list import MDListItem, MDListItemLeadingIcon
 from kivymd.app import MDApp
 from kivy.metrics import dp
 from kivy.clock import Clock
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 from app.controllers.dashboard_controller import DashboardController
 from kivymd.uix.dialog import MDDialog
 
@@ -20,106 +20,124 @@ class IconListItem(MDListItem):
         super().__init__(**kwargs)
 
 class TaskCard(MDCard):
-    """Carte pour afficher une tâche du commandant"""
+    """Carte pour afficher une tâche du commandant avec optimisations de performance"""
+    # Définition des propriétés pour optimiser le rendu et permettre les mises à jour
+    title_text = StringProperty("")
+    description_text = StringProperty("")
+    status_text = StringProperty("")
+    icon_name = StringProperty("checkbox-marked-circle")
+    is_fixed_task = BooleanProperty(False)
+    
     def __init__(self, title, description, status=None, icon="checkbox-marked-circle", is_fixed=False, **kwargs):
+        # Initialiser les propriétés d'abord
+        self.title_text = title
+        self.description_text = description
+        self.status_text = status if status else ""
+        self.icon_name = icon
+        self.is_fixed_task = is_fixed
+        
+        # Paramètres standard de la carte
+        kwargs.update({
+            'orientation': "vertical",
+            'padding': 15,
+            'spacing': 10,
+            'size_hint_y': None,
+            'height': dp(200),
+            'elevation': 2,
+            'radius': [12, 12, 12, 12],
+            'md_bg_color': [1, 1, 1, 1],  # Fond blanc
+            'ripple_behavior': False  # Désactiver l'effet ripple pour réduire les recalculs
+        })
+        
         super().__init__(**kwargs)
-        self.orientation = "vertical"
-        self.padding = 15
-        self.spacing = 10
-        self.size_hint_y = None
-        self.height = dp(200)
-        self.elevation = 2
-        self.radius = [12, 12, 12, 12]
-        self.md_bg_color = [1, 1, 1, 1]  # Fond blanc
-
+        
+        # Utilisation de Clock.schedule_once pour éviter les blocages de l'interface
+        Clock.schedule_once(self._build_card, 0)
+    
+    def _build_card(self, dt):
+        """Construit la carte avec tous ses éléments de manière optimisée"""
         # En-tête de la carte avec indicateur de tâche fixe
         header = MDBoxLayout(
             orientation="horizontal",
             size_hint_y=None,
             height=dp(40),
             spacing=10,
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            adaptive_height=True  # Important pour optimiser les calculs de taille
         )
 
-        # Conteneur pour les icônes
+        # Conteneur pour les icônes - optimisé avec adaptive_width
         icon_container = MDBoxLayout(
             orientation="horizontal",
             size_hint_x=None,
             width=dp(80),
-            spacing=2
+            spacing=2,
+            adaptive_width=True  # Optimisation
         )
 
         main_icon = MDIconButton(
-            icon=icon,
+            icon=self.icon_name,
             pos_hint={"center_y": 0.5},
             theme_text_color="Primary"  # Couleur de texte primaire
         )
         icon_container.add_widget(main_icon)
 
         # Ajouter l'icône de verrouillage pour les tâches fixes
-        if is_fixed:
+        if self.is_fixed_task:
             lock_icon = MDIconButton(
                 icon="lock",
                 pos_hint={"center_y": 0.5},
-                theme_text_color="Primary",  # Couleur de texte primaire
+                theme_text_color="Primary",
                 size_hint=(None, None),
                 size=(dp(20), dp(20))
             )
             icon_container.add_widget(lock_icon)
 
         title_label = MDLabel(
-            text=title,
+            text=self.title_text,
             bold=True,
             font_size="16sp",
             size_hint_y=None,
             height=dp(40),
-            theme_text_color="Primary"  # Couleur de texte primaire
+            theme_text_color="Primary"
         )
 
         header.add_widget(icon_container)
         header.add_widget(title_label)
 
-        # Description
+        # Description - optimisée avec adaptive_height
         description_box = MDBoxLayout(
             orientation="vertical",
             spacing=5,
             padding=[5, 5],
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            adaptive_height=True  # Optimisation
         )
 
         description_label = MDLabel(
-            text=description,
+            text=self.description_text,
             font_size="14sp",
-            theme_text_color="Primary"  # Couleur de texte primaire
+            theme_text_color="Primary"
         )
 
-        # Statut avec icône
+        # Statut avec icône - optimisé avec adaptive_height
         status_box = MDBoxLayout(
             orientation="horizontal",
             size_hint_y=None,
             height=dp(30),
-            md_bg_color=[1, 1, 1, 1]  # Fond blanc
+            adaptive_height=True  # Optimisation
         )
 
         status_icon = MDIconButton(
             icon="circle-small",
             size_hint_x=None,
             width=dp(30),
-            theme_text_color="Primary"  # Couleur de texte primaire
+            theme_text_color="Primary"
         )
 
-        if status:
-            status_label = MDLabel(
-                text=f"Statut: {status}",
-                font_size="14sp",
-                theme_text_color="Primary"  # Couleur de texte primaire
-            )
-        else:
-            status_label = MDLabel(
-                text="",
-                font_size="14sp",
-                theme_text_color="Primary"  # Couleur de texte primaire
-            )
+        status_label = MDLabel(
+            text=f"Statut: {self.status_text}" if self.status_text else "",
+            font_size="14sp",
+            theme_text_color="Primary"
+        )
 
         status_box.add_widget(status_icon)
         status_box.add_widget(status_label)
