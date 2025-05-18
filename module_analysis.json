@@ -1,0 +1,1773 @@
+{
+  "potential_modules": [
+    {
+      "name": "main",
+      "screens_count": 2,
+      "screens": [
+        {
+          "file": "modules_new\\module_base\\screens\\main_screen.py",
+          "class": "MainScreen",
+          "potential_module": "main"
+        },
+        {
+          "file": "modules_new\\nom_nouveau_module\\screens\\main_screen.py",
+          "class": "MainScreen",
+          "potential_module": "main"
+        }
+      ],
+      "mqtt_topics": []
+    },
+    {
+      "name": "module_base",
+      "screens_count": 0,
+      "screens": [],
+      "mqtt_topics": []
+    },
+    {
+      "name": "nom_nouveau_module",
+      "screens_count": 0,
+      "screens": [],
+      "mqtt_topics": []
+    },
+    {
+      "name": "screens",
+      "screens_count": 39,
+      "screens": [
+        {
+          "file": "views\\screens\\admin_assistant_dashboard_screen.py",
+          "class": "AdminAssistantDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\admin_dashboard_screen.py",
+          "class": "AdminDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\auditor_dashboard_screen.py",
+          "class": "AuditorDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\chief_pilot_dashboard_screen.py",
+          "class": "ChiefPilotDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\copilot_dashboard_screen.py",
+          "class": "CopilotDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\dashboard_screen.py",
+          "class": "DashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\documentation_manager_dashboard_screen.py",
+          "class": "DocumentationManagerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\evaluator_dashboard_screen.py",
+          "class": "EvaluatorDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\examiner_dashboard_screen.py",
+          "class": "ExaminerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\ground_observer_dashboard_screen.py",
+          "class": "GroundObserverDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\inspector_dashboard_screen.py",
+          "class": "InspectorDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\instructor_dashboard_screen.py",
+          "class": "InstructorDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\login_screen.py",
+          "class": "LoginScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\maintenance_activities_manager_dashboard_screen.py",
+          "class": "MaintenanceActivitiesManagerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\maintenance_manager_dashboard_screen.py",
+          "class": "MaintenanceManagerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\maintenance_technician_dashboard_screen.py",
+          "class": "MaintenanceTechnicianDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\mission_specialist_dashboard_screen.py",
+          "class": "MissionSpecialistDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\modules_admin_screen.py",
+          "class": "ModulesAdminScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\operations_coordinator_dashboard_screen.py",
+          "class": "OperationsCoordinatorDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\ops_manager_dashboard_screen.py",
+          "class": "OpsManagerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\payload_operator_dashboard_screen.py",
+          "class": "PayloadOperatorDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\pilot_dashboard_screen.py",
+          "class": "PilotDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\procedures_manager_screen.py",
+          "class": "ProceduresManagerScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\quality_assurance_manager_dashboard_screen.py",
+          "class": "QualityAssuranceManagerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\quality_inspector_dashboard_screen.py",
+          "class": "QualityInspectorDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\roles_manager_screen.py",
+          "class": "RolesManagerScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\role_edit_screen.py",
+          "class": "RoleEditScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\security_agent_dashboard_screen.py",
+          "class": "SecurityAgentDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\senior_manager_dashboard_screen.py",
+          "class": "SeniorManagerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\site_manager_dashboard_screen.py",
+          "class": "SiteManagerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\sms_manager_dashboard_screen.py",
+          "class": "SMSManagerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\specialized_dashboard_screen.py",
+          "class": "SpecializedDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\splash_screen.py",
+          "class": "SplashScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\super_admin_dashboard_screen.py",
+          "class": "SuperAdminDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\system_maintainer_dashboard_screen.py",
+          "class": "SystemMaintainerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\task_manager_screen.py",
+          "class": "TaskManagerScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\trainer_dashboard_screen.py",
+          "class": "TrainerDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\training_coordinator_dashboard_screen.py",
+          "class": "TrainingCoordinatorDashboardScreen",
+          "potential_module": "screens"
+        },
+        {
+          "file": "views\\screens\\training_manager_dashboard_screen.py",
+          "class": "TrainingManagerDashboardScreen",
+          "potential_module": "screens"
+        }
+      ],
+      "mqtt_topics": []
+    },
+    {
+      "name": "settings",
+      "screens_count": 2,
+      "screens": [
+        {
+          "file": "modules_new\\module_base\\screens\\settings_screen.py",
+          "class": "SettingsScreen",
+          "potential_module": "settings"
+        },
+        {
+          "file": "modules_new\\nom_nouveau_module\\screens\\settings_screen.py",
+          "class": "SettingsScreen",
+          "potential_module": "settings"
+        }
+      ],
+      "mqtt_topics": []
+    }
+  ],
+  "import_dependencies": {
+    "main.py": [
+      "kivymd.app",
+      "MDApp",
+      "app.core.container",
+      "Container",
+      "app.core.config",
+      "load_config",
+      "app.views.screens.procedures_manager_screen",
+      "ProceduresManagerScreen"
+    ],
+    "config\\components.py": [
+      "typing",
+      "Dict"
+    ],
+    "controllers\\dashboard_controller.py": [
+      "app.models.task",
+      "Task"
+    ],
+    "controllers\\task_controller.py": [
+      "app.services.roles_manager_service",
+      "RolesManagerService"
+    ],
+    "core\\config.py": [
+      "typing",
+      "Dict",
+      "json",
+      "os"
+    ],
+    "core\\container.py": [
+      "logging",
+      "dependency_injector",
+      "containers",
+      "app.services.firebase_service",
+      "FirebaseService",
+      "app.services.task_manager_service",
+      "TaskManagerService",
+      "app.services.procedures_manager_service",
+      "ProceduresManagerService",
+      "app.controllers.dashboard_controller",
+      "DashboardController",
+      "app.views.screens.specialized_dashboard_screen",
+      "SpecializedDashboardScreen",
+      "app.views.screens.procedures_manager_screen",
+      "ProceduresManagerScreen",
+      "app.services.config_service",
+      "ConfigService",
+      "app.utils.logger",
+      "setup_logger"
+    ],
+    "factories\\dashboard_factory.py": [
+      "typing",
+      "Dict",
+      "..services.config_service",
+      "ConfigService",
+      "..config.components",
+      "COMPONENT_CONFIGS",
+      "importlib"
+    ],
+    "models\\application_model.py": [
+      "kivy.event",
+      "EventDispatcher",
+      "kivy.properties",
+      "ObjectProperty",
+      ".task",
+      "Role"
+    ],
+    "models\\task.py": [
+      "typing",
+      "Dict",
+      "datetime",
+      "datetime",
+      "time",
+      "random",
+      "kivy.properties",
+      "StringProperty",
+      "kivy.event",
+      "EventDispatcher",
+      "app.services.roles_manager_service",
+      "RolesManagerService",
+      "logging"
+    ],
+    "modules_new\\__init__.py": [
+      "os",
+      "json",
+      "logging",
+      "typing",
+      "Dict"
+    ],
+    "modules_new\\module_base\\__init__.py": [
+      "os",
+      "logging",
+      "typing",
+      "Dict",
+      "json"
+    ],
+    "modules_new\\module_base\\screens\\main_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp",
+      "logging"
+    ],
+    "modules_new\\module_base\\screens\\settings_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.textfield",
+      "MDTextField",
+      "kivymd.uix.divider",
+      "MDDivider",
+      "kivy.metrics",
+      "dp",
+      "logging"
+    ],
+    "modules_new\\nom_nouveau_module\\__init__.py": [
+      "os",
+      "logging",
+      "typing",
+      "Dict",
+      "json"
+    ],
+    "modules_new\\nom_nouveau_module\\screens\\main_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp",
+      "logging"
+    ],
+    "modules_new\\nom_nouveau_module\\screens\\settings_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.textfield",
+      "MDTextField",
+      "kivymd.uix.divider",
+      "MDDivider",
+      "kivy.metrics",
+      "dp",
+      "logging"
+    ],
+    "services\\app_service.py": [
+      "firebase_admin",
+      "initialize_app",
+      ".auth_service",
+      "AuthService",
+      ".config_service",
+      "ConfigService",
+      ".roles_tasks_service",
+      "RolesTasksService",
+      "os"
+    ],
+    "services\\config_service.py": [
+      "json",
+      "os",
+      "pathlib",
+      "Path",
+      "typing",
+      "Any",
+      "dotenv",
+      "load_dotenv",
+      ".firebase_service",
+      "FirebaseService",
+      ".firebase_service",
+      "FirebaseService"
+    ],
+    "services\\data_loader.py": [
+      "json"
+    ],
+    "services\\firebase_service.py": [
+      "firebase_admin",
+      "firebase_admin",
+      "credentials",
+      "pyrebase",
+      "time",
+      "threading",
+      "kivy.clock",
+      "Clock",
+      "functools",
+      "partial",
+      ".config_service",
+      "ConfigService"
+    ],
+    "services\\mqtt_service.py": [
+      "paho.mqtt.client",
+      "kivy.clock",
+      "Clock",
+      "kivy.event",
+      "EventDispatcher",
+      "kivy.properties",
+      "StringProperty",
+      "json",
+      "logging",
+      "os"
+    ],
+    "services\\procedures_manager_service.py": [
+      "app.services.firebase_service",
+      "FirebaseService",
+      "unicodedata",
+      "re",
+      "datetime",
+      "datetime"
+    ],
+    "services\\roles_manager_service.py": [
+      "app.services.firebase_service",
+      "FirebaseService",
+      "unicodedata",
+      "re",
+      "kivymd.app",
+      "MDApp",
+      "kivymd.app",
+      "MDApp",
+      "kivymd.app",
+      "MDApp"
+    ],
+    "services\\roles_tasks_service.py": [
+      "datetime",
+      "datetime",
+      "typing",
+      "Dict",
+      "firebase_admin",
+      "db",
+      "kivymd.app",
+      "MDApp"
+    ],
+    "services\\task_manager_service.py": [
+      "app.services.firebase_service",
+      "FirebaseService",
+      "app.services.config_service",
+      "ConfigService"
+    ],
+    "services\\__init__.py": [
+      ".config_service",
+      "ConfigService",
+      ".firebase_service",
+      "FirebaseService",
+      ".roles_manager_service",
+      "RolesManagerService"
+    ],
+    "utils\\logger.py": [
+      "logging",
+      "os",
+      "sys",
+      "pathlib",
+      "Path",
+      "datetime",
+      "datetime"
+    ],
+    "utils\\module_discovery.py": [
+      "typing",
+      "Dict",
+      "importlib",
+      "os",
+      "logging",
+      "pathlib",
+      "Path",
+      "json"
+    ],
+    "utils\\module_manager.py": [
+      "os",
+      "sys",
+      "importlib",
+      "importlib.util",
+      "json",
+      "logging",
+      "inspect",
+      "typing",
+      "Dict",
+      "traceback",
+      "traceback"
+    ],
+    "utils\\module_tools\\analyze_codebase.py": [
+      "os",
+      "re",
+      "json",
+      "typing",
+      "Dict",
+      "logging",
+      "sys",
+      "argparse"
+    ],
+    "utils\\module_tools\\clone_module.py": [
+      "os",
+      "sys",
+      "shutil",
+      "json",
+      "re",
+      "logging",
+      "pathlib",
+      "Path",
+      "typing",
+      "Dict",
+      "argparse"
+    ],
+    "utils\\module_tools\\module_tester.py": [
+      "os",
+      "sys",
+      "importlib.util",
+      "json",
+      "logging",
+      "typing",
+      "Dict",
+      "traceback",
+      "kivy.app",
+      "App",
+      "kivy.uix.boxlayout",
+      "BoxLayout",
+      "kivy.uix.label",
+      "Label",
+      "kivy.uix.screenmanager",
+      "ScreenManager",
+      "kivymd.app",
+      "MDApp",
+      "traceback",
+      "argparse"
+    ],
+    "views\\components\\base_component.py": [
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock",
+      "typing",
+      "Any"
+    ],
+    "views\\components\\maintenance_status.py": [
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp",
+      "kivy.utils",
+      "get_color_from_hex",
+      ".base_component",
+      "BaseComponent"
+    ],
+    "views\\components\\notification_center.py": [
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivy.metrics",
+      "dp",
+      "kivy.utils",
+      "get_color_from_hex",
+      ".base_component",
+      "BaseComponent"
+    ],
+    "views\\components\\operations_status.py": [
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp",
+      "kivy.utils",
+      "get_color_from_hex",
+      ".base_component",
+      "BaseComponent"
+    ],
+    "views\\components\\personnel_status.py": [
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp",
+      "kivy.utils",
+      "get_color_from_hex",
+      ".base_component",
+      "BaseComponent"
+    ],
+    "views\\components\\role_selector.py": [
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivy.metrics",
+      "dp",
+      "app.services.config_service",
+      "ConfigService"
+    ],
+    "views\\components\\__init__.py": [
+      ".base_component",
+      "BaseComponent",
+      ".role_selector",
+      "RoleSelector",
+      ".operations_status",
+      "OperationsStatus",
+      ".maintenance_status",
+      "MaintenanceStatus",
+      ".personnel_status",
+      "PersonnelStatus",
+      ".notification_center",
+      "NotificationCenter"
+    ],
+    "views\\screens\\admin_assistant_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp"
+    ],
+    "views\\screens\\admin_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.list",
+      "kivymd.uix.textfield",
+      "MDTextField",
+      "kivymd.uix.dialog",
+      "MDDialog",
+      "kivymd.uix.selectioncontrol",
+      "MDCheckbox",
+      "kivymd.app",
+      "MDApp"
+    ],
+    "views\\screens\\auditor_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp"
+    ],
+    "views\\screens\\chief_pilot_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\copilot_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock",
+      "kivy.app",
+      "App"
+    ],
+    "views\\screens\\documentation_manager_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp"
+    ],
+    "views\\screens\\evaluator_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\examiner_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\ground_observer_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\inspector_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\instructor_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\login_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.button",
+      "MDButton",
+      "kivymd.uix.textfield",
+      "MDTextField",
+      "kivymd.uix.label",
+      "MDLabel",
+      "app.services.firebase_service",
+      "FirebaseService",
+      "os"
+    ],
+    "views\\screens\\maintenance_activities_manager_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\maintenance_manager_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp"
+    ],
+    "views\\screens\\maintenance_technician_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\mission_specialist_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\modules_admin_screen.py": [
+      "kivy.properties",
+      "StringProperty",
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.snackbar",
+      "MDSnackbar",
+      "kivy.metrics",
+      "dp",
+      "kivy.app",
+      "App",
+      "kivy.clock",
+      "Clock",
+      "app.utils.module_discovery",
+      "ModuleDiscovery",
+      "logging",
+      "traceback",
+      "traceback",
+      "kivy.core.clipboard",
+      "Clipboard",
+      "kivy.core.clipboard",
+      "Clipboard",
+      "traceback"
+    ],
+    "views\\screens\\operations_coordinator_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\ops_manager_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\payload_operator_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\pilot_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\procedures_manager_screen.py": [
+      "kivy.metrics",
+      "dp",
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.textfield",
+      "MDTextField",
+      "kivymd.uix.dialog",
+      "MDDialog",
+      "app.services.procedures_manager_service",
+      "ProceduresManagerService"
+    ],
+    "views\\screens\\quality_assurance_manager_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\quality_inspector_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp"
+    ],
+    "views\\screens\\roles_manager_screen.py": [
+      "kivy.metrics",
+      "dp",
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.textfield",
+      "MDTextField",
+      "kivymd.uix.dialog",
+      "MDDialog",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "app.services.roles_manager_service",
+      "RolesManagerService",
+      "time"
+    ],
+    "views\\screens\\role_edit_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDButton",
+      "kivymd.uix.textfield",
+      "MDTextField",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.appbar",
+      "MDTopAppBar",
+      "kivymd.uix.snackbar.snackbar",
+      "MDSnackbar",
+      "functools",
+      "partial",
+      "app.services.roles_manager_service",
+      "RolesManagerService"
+    ],
+    "views\\screens\\security_agent_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\senior_manager_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp"
+    ],
+    "views\\screens\\site_manager_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\sms_manager_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\specialized_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivymd.app",
+      "MDApp",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock",
+      "kivy.properties",
+      "ObjectProperty",
+      "app.controllers.dashboard_controller",
+      "DashboardController",
+      "kivymd.uix.dialog",
+      "MDDialog"
+    ],
+    "views\\screens\\splash_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivy.clock",
+      "Clock",
+      "kivy.properties",
+      "NumericProperty"
+    ],
+    "views\\screens\\super_admin_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\system_maintainer_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivy.metrics",
+      "dp"
+    ],
+    "views\\screens\\task_manager_screen.py": [
+      "kivy.metrics",
+      "dp",
+      "kivy.properties",
+      "StringProperty",
+      "kivy.uix.widget",
+      "Widget",
+      "kivy.app",
+      "App",
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.dialog",
+      "MDDialog",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.button",
+      "MDButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.button",
+      "MDButtonText",
+      "kivymd.uix.textfield",
+      "MDTextField",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "app.models.task",
+      "Task",
+      "app.services.firebase_service",
+      "FirebaseService",
+      "app.services.roles_manager_service",
+      "RolesManagerService",
+      "app.utils.module_discovery",
+      "ModuleDiscovery",
+      "app.services.firebase_service",
+      "FirebaseService",
+      "traceback",
+      "traceback"
+    ],
+    "views\\screens\\trainer_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\training_coordinator_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ],
+    "views\\screens\\training_manager_dashboard_screen.py": [
+      "kivymd.uix.screen",
+      "MDScreen",
+      "kivymd.uix.boxlayout",
+      "MDBoxLayout",
+      "kivymd.uix.gridlayout",
+      "MDGridLayout",
+      "kivymd.uix.button",
+      "MDIconButton",
+      "kivymd.uix.label",
+      "MDLabel",
+      "kivymd.uix.card",
+      "MDCard",
+      "kivymd.uix.scrollview",
+      "MDScrollView",
+      "kivymd.uix.menu",
+      "MDDropdownMenu",
+      "kivymd.uix.list",
+      "MDListItem",
+      "kivy.metrics",
+      "dp",
+      "kivy.clock",
+      "Clock"
+    ]
+  },
+  "screen_registry": [
+    {
+      "file": "modules_new\\module_base\\screens\\main_screen.py",
+      "class": "MainScreen",
+      "potential_module": "main"
+    },
+    {
+      "file": "modules_new\\module_base\\screens\\settings_screen.py",
+      "class": "SettingsScreen",
+      "potential_module": "settings"
+    },
+    {
+      "file": "modules_new\\nom_nouveau_module\\screens\\main_screen.py",
+      "class": "MainScreen",
+      "potential_module": "main"
+    },
+    {
+      "file": "modules_new\\nom_nouveau_module\\screens\\settings_screen.py",
+      "class": "SettingsScreen",
+      "potential_module": "settings"
+    },
+    {
+      "file": "views\\screens\\admin_assistant_dashboard_screen.py",
+      "class": "AdminAssistantDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\admin_dashboard_screen.py",
+      "class": "AdminDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\auditor_dashboard_screen.py",
+      "class": "AuditorDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\chief_pilot_dashboard_screen.py",
+      "class": "ChiefPilotDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\copilot_dashboard_screen.py",
+      "class": "CopilotDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\dashboard_screen.py",
+      "class": "DashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\documentation_manager_dashboard_screen.py",
+      "class": "DocumentationManagerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\evaluator_dashboard_screen.py",
+      "class": "EvaluatorDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\examiner_dashboard_screen.py",
+      "class": "ExaminerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\ground_observer_dashboard_screen.py",
+      "class": "GroundObserverDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\inspector_dashboard_screen.py",
+      "class": "InspectorDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\instructor_dashboard_screen.py",
+      "class": "InstructorDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\login_screen.py",
+      "class": "LoginScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\maintenance_activities_manager_dashboard_screen.py",
+      "class": "MaintenanceActivitiesManagerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\maintenance_manager_dashboard_screen.py",
+      "class": "MaintenanceManagerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\maintenance_technician_dashboard_screen.py",
+      "class": "MaintenanceTechnicianDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\mission_specialist_dashboard_screen.py",
+      "class": "MissionSpecialistDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\modules_admin_screen.py",
+      "class": "ModulesAdminScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\operations_coordinator_dashboard_screen.py",
+      "class": "OperationsCoordinatorDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\ops_manager_dashboard_screen.py",
+      "class": "OpsManagerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\payload_operator_dashboard_screen.py",
+      "class": "PayloadOperatorDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\pilot_dashboard_screen.py",
+      "class": "PilotDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\procedures_manager_screen.py",
+      "class": "ProceduresManagerScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\quality_assurance_manager_dashboard_screen.py",
+      "class": "QualityAssuranceManagerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\quality_inspector_dashboard_screen.py",
+      "class": "QualityInspectorDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\roles_manager_screen.py",
+      "class": "RolesManagerScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\role_edit_screen.py",
+      "class": "RoleEditScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\security_agent_dashboard_screen.py",
+      "class": "SecurityAgentDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\senior_manager_dashboard_screen.py",
+      "class": "SeniorManagerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\site_manager_dashboard_screen.py",
+      "class": "SiteManagerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\sms_manager_dashboard_screen.py",
+      "class": "SMSManagerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\specialized_dashboard_screen.py",
+      "class": "SpecializedDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\splash_screen.py",
+      "class": "SplashScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\super_admin_dashboard_screen.py",
+      "class": "SuperAdminDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\system_maintainer_dashboard_screen.py",
+      "class": "SystemMaintainerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\task_manager_screen.py",
+      "class": "TaskManagerScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\trainer_dashboard_screen.py",
+      "class": "TrainerDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\training_coordinator_dashboard_screen.py",
+      "class": "TrainingCoordinatorDashboardScreen",
+      "potential_module": "screens"
+    },
+    {
+      "file": "views\\screens\\training_manager_dashboard_screen.py",
+      "class": "TrainingManagerDashboardScreen",
+      "potential_module": "screens"
+    }
+  ],
+  "mqtt_topics": [
+    "hc_rpas/modules/module_base",
+    "hc_rpas/modules/nom_nouveau_module"
+  ]
+}

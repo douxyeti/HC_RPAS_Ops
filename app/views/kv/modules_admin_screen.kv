@@ -1,0 +1,156 @@
+#:kivy 2.3.1
+#:import dp kivy.metrics.dp
+#:import MDTopAppBar kivymd.uix.appbar.MDTopAppBar
+#:import MDScrollView kivymd.uix.scrollview.MDScrollView
+#:import MDBoxLayout kivymd.uix.boxlayout.MDBoxLayout
+#:import MDLabel kivymd.uix.label.MDLabel
+#:import MDButton kivymd.uix.button.MDButton
+#:import MDIconButton kivymd.uix.button.MDIconButton
+#:import MDButtonText kivymd.uix.button.MDButtonText
+
+<ModulesAdminScreen>:
+    name: 'modules_admin'
+    modules_container: modules_container
+    screens_container: screens_container
+    index_value: index_value
+    
+    MDBoxLayout:
+        orientation: 'vertical'
+        spacing: dp(16)
+        padding: dp(16)
+        
+        # En-tête avec barre bleue
+        MDBoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(56)
+            spacing: dp(10)
+            padding: [dp(10), 0]
+            md_bg_color: [0.2, 0.2, 0.9, 1]  # Bleu foncé
+            
+            MDIconButton:
+                icon: "arrow-left"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                on_release: root.go_back()
+                pos_hint: {"center_y": 0.5}
+            
+            Widget:
+                size_hint_x: 0.3
+            
+            MDLabel:
+                text: "Index des Modules et Écrans"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                theme_font_size: "Custom"
+                font_size: "24sp"
+                halign: "center"
+                pos_hint: {"center_y": 0.5}
+            
+            Widget:
+                size_hint_x: 0.3
+            
+            MDIconButton:
+                icon: "refresh"
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                on_release: root.refresh_data()
+                pos_hint: {"center_y": 0.5}
+        
+        # Zone principale divisée en deux colonnes
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: dp(16)
+            
+            # Colonne gauche: Modules
+            MDBoxLayout:
+                orientation: "vertical"
+                size_hint_x: 0.4
+                spacing: dp(8)
+                padding: dp(8)
+                md_bg_color: [0.95, 0.95, 0.95, 1]  # Fond gris très clair
+                
+                MDLabel:
+                    text: "Modules Installés"
+                    theme_font_size: "Custom"
+                    font_size: "18sp"
+                    halign: "center"
+                    size_hint_y: None
+                    height: dp(40)
+                
+                MDScrollView:
+                    do_scroll_x: False
+                    do_scroll_y: True
+                    
+                    MDBoxLayout:
+                        id: modules_container
+                        orientation: "vertical"
+                        spacing: dp(8)
+                        padding: dp(8)
+                        adaptive_height: True
+            
+            # Colonne droite: Écrans du module sélectionné
+            MDBoxLayout:
+                orientation: "vertical"
+                size_hint_x: 0.6
+                spacing: dp(8)
+                padding: dp(8)
+                md_bg_color: [0.95, 0.95, 0.95, 1]  # Fond gris très clair
+                
+                MDLabel:
+                    id: screens_title
+                    text: "Écrans Disponibles"
+                    theme_font_size: "Custom"
+                    font_size: "18sp"
+                    halign: "center"
+                    size_hint_y: None
+                    height: dp(40)
+                
+                MDScrollView:
+                    do_scroll_x: False
+                    do_scroll_y: True
+                    
+                    MDBoxLayout:
+                        id: screens_container
+                        orientation: "vertical"
+                        spacing: dp(8)
+                        padding: dp(8)
+                        adaptive_height: True
+        
+        # Zone inférieure pour l'index sélectionné
+        MDBoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: dp(60)
+            spacing: dp(8)
+            padding: dp(8)
+            md_bg_color: [0.9, 0.9, 1, 1]  # Bleu très clair
+            
+            MDLabel:
+                text: "Index sélectionné:"
+                theme_font_size: "Custom"
+                font_size: "16sp"
+                size_hint_x: None
+                width: dp(150)
+                pos_hint: {"center_y": 0.5}
+            
+            MDLabel:
+                id: index_value
+                text: "Sélectionnez un module et un écran"
+                theme_font_size: "Custom"
+                font_size: "14sp"
+                size_hint_x: 0.7
+                pos_hint: {"center_y": 0.5}
+            
+            MDButton:
+                style: "filled"
+                md_bg_color: [0.2, 0.2, 0.9, 1]
+                size_hint: None, None
+                size: dp(120), dp(40)
+                pos_hint: {"center_y": 0.5}
+                on_release: root.copy_index()
+                
+                MDButtonText:
+                    text: "Copier"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]

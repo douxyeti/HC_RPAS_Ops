@@ -1,0 +1,30 @@
+{
+    "id": "module_base",
+    "name": "Module de Base",
+    "version": "1.0.0",
+    "description": "Module template servant de base pour le développement de nouveaux modules",
+    "author": "HighCloud RPAS Operations",
+    "dependencies": {
+        "core": ">=1.0.0"
+    },
+    "screens": [
+        {
+            "id": "main",
+            "name": "Écran Principal",
+            "default": true,
+            "icon": "home"
+        },
+        {
+            "id": "settings",
+            "name": "Configuration",
+            "icon": "cog"
+        }
+    ],
+    "permissions": [
+        "data.read"
+    ],
+    "mqtt_topics": [
+        "hc_rpas/modules/{module_id}/status/general",
+        "hc_rpas/modules/{module_id}/data/updates"
+    ]
+}

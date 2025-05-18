@@ -230,8 +230,20 @@ class FirebaseService:
             return self._cache[cache_key]
             
         try:
+            print(f"[DEBUG] FirebaseService.get_collection - Récupération de la collection {collection_name} depuis Firebase")
             docs = self.db.collection(collection_name).get()
+            
+            # Log pour voir combien de documents sont récupérés
+            doc_count = len(docs) if docs else 0
+            print(f"[DEBUG] FirebaseService.get_collection - {doc_count} documents récupérés dans {collection_name}")
+            
             result = [doc.to_dict() for doc in docs]
+            
+            # Log pour afficher un aperçu des données récupérées
+            if result:
+                print(f"[DEBUG] FirebaseService.get_collection - Premier document: {str(result[0])[:200]}...")
+            else:
+                print(f"[DEBUG] FirebaseService.get_collection - Aucun document trouvé dans {collection_name}")
             
             # Mettre en cache les résultats
             self._cache[cache_key] = result
