@@ -1,0 +1,122 @@
+{
+  "module_id": "controle_vols",
+  "name": "Contrôle Opérationnel des Vols",
+  "version": "1.0.1",
+  "description": "Module de gestion et contrôle des opérations de vol pour drones",
+  "main_screen": "pilot_dashboard",
+  "screens": [
+    {
+      "id": "login",
+      "name": "Connexion",
+      "description": "Écran de connexion",
+      "class": "LoginScreen",
+      "fields": [
+        {"id": "email", "name": "Adresse email", "type": "text", "description": "Adresse email de l'utilisateur"},
+        {"id": "password", "name": "Mot de passe", "type": "password", "description": "Mot de passe de l'utilisateur"}
+      ],
+      "actions": [
+        {"id": "login", "name": "Connexion", "icon": "login", "description": "Se connecter à l'application"}
+      ]
+    },
+    {
+      "id": "splash",
+      "name": "Chargement",
+      "description": "Écran de chargement",
+      "class": "SplashScreen",
+      "fields": [],
+      "actions": []
+    },
+    {
+      "id": "pilot_dashboard",
+      "name": "Tableau de bord du pilote",
+      "description": "Écran principal pour les pilotes",
+      "class": "PilotDashboardScreen",
+      "fields": [
+        {"id": "tasks", "name": "Tâches", "type": "list", "description": "Liste des tâches assignées"},
+        {"id": "flights", "name": "Vols", "type": "list", "description": "Liste des vols programmés"}
+      ],
+      "actions": [
+        {"id": "view_flight", "name": "Voir vol", "icon": "airplane", "description": "Consulter les détails d'un vol"}
+      ]
+    },
+    {
+      "id": "chief_pilot_dashboard",
+      "name": "Tableau de bord du chef pilote",
+      "description": "Interface de gestion des opérations pour le chef pilote",
+      "class": "ChiefPilotDashboardScreen",
+      "fields": [
+        {"id": "pilots", "name": "Pilotes", "type": "list", "description": "Liste des pilotes"},
+        {"id": "operations", "name": "Opérations", "type": "list", "description": "Liste des opérations en cours"}
+      ]
+    },
+    {
+      "id": "ops_manager_dashboard",
+      "name": "Tableau de bord du gestionnaire des opérations",
+      "description": "Interface de gestion des opérations",
+      "class": "OpsManagerDashboardScreen",
+      "fields": [
+        {"id": "operations", "name": "Opérations", "type": "list", "description": "Liste des opérations"},
+        {"id": "staff", "name": "Personnel", "type": "list", "description": "Liste du personnel"}
+      ]
+    },
+    {
+      "id": "task_manager",
+      "name": "Gestionnaire des tâches",
+      "description": "Interface de gestion des tâches",
+      "class": "TaskManagerScreen",
+      "fields": [
+        {"id": "tasks", "name": "Tâches", "type": "list", "description": "Liste des tâches"},
+        {"id": "task_details", "name": "Détails de la tâche", "type": "form", "description": "Détails d'une tâche"}
+      ],
+      "actions": [
+        {"id": "add_task", "name": "Ajouter une tâche", "icon": "plus", "description": "Créer une nouvelle tâche"},
+        {"id": "edit_task", "name": "Modifier une tâche", "icon": "pencil", "description": "Modifier une tâche existante"},
+        {"id": "delete_task", "name": "Supprimer une tâche", "icon": "delete", "description": "Supprimer une tâche"}
+      ]
+    },
+    {
+      "id": "procedures_manager",
+      "name": "Gestionnaire des procédures",
+      "description": "Interface de gestion des procédures",
+      "class": "ProceduresManagerScreen",
+      "fields": [
+        {"id": "procedures", "name": "Procédures", "type": "list", "description": "Liste des procédures"},
+        {"id": "procedure_details", "name": "Détails de la procédure", "type": "form", "description": "Détails d'une procédure"}
+      ],
+      "actions": [
+        {"id": "add_procedure", "name": "Ajouter une procédure", "icon": "plus", "description": "Créer une nouvelle procédure"},
+        {"id": "edit_procedure", "name": "Modifier une procédure", "icon": "pencil", "description": "Modifier une procédure existante"},
+        {"id": "delete_procedure", "name": "Supprimer une procédure", "icon": "delete", "description": "Supprimer une procédure"}
+      ]
+    },
+    {
+      "id": "roles_manager",
+      "name": "Gestionnaire des rôles",
+      "description": "Interface de gestion des rôles",
+      "class": "RolesManagerScreen",
+      "fields": [
+        {"id": "roles", "name": "Rôles", "type": "list", "description": "Liste des rôles"},
+        {"id": "role_details", "name": "Détails du rôle", "type": "form", "description": "Détails d'un rôle"}
+      ],
+      "actions": [
+        {"id": "add_role", "name": "Ajouter un rôle", "icon": "plus", "description": "Créer un nouveau rôle"},
+        {"id": "edit_role", "name": "Modifier un rôle", "icon": "pencil", "description": "Modifier un rôle existant"},
+        {"id": "delete_role", "name": "Supprimer un rôle", "icon": "delete", "description": "Supprimer un rôle"}
+      ]
+    },
+    {
+      "id": "role_edit",
+      "name": "Édition de rôle",
+      "description": "Interface d'édition d'un rôle",
+      "class": "RoleEditScreen",
+      "fields": [
+        {"id": "role_name", "name": "Nom du rôle", "type": "text", "description": "Nom du rôle"},
+        {"id": "role_permissions", "name": "Permissions", "type": "list", "description": "Liste des permissions"}
+      ],
+      "actions": [
+        {"id": "save_role", "name": "Sauvegarder", "icon": "content-save", "description": "Sauvegarder les modifications"},
+        {"id": "cancel", "name": "Annuler", "icon": "close", "description": "Annuler les modifications"}
+      ]
+    }
+  ]
+}

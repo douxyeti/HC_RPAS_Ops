@@ -4,6 +4,7 @@ from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
 from dotenv import load_dotenv
 import os
+import logging
 
 # Import des services
 from services.firebase_service import FirebaseService
@@ -17,6 +18,9 @@ from views.screens.specialized_dashboard_screen import SpecializedDashboardScree
 
 # Import du container
 from core.container import Container
+
+# Import du système d'indexation des écrans
+from modules.controle_vols.module_registry import ModuleRegistry
 
 class MainScreenManager(MDScreenManager):
     def __init__(self, **kwargs):
@@ -64,7 +68,26 @@ class ControleVolsApp(MDApp):
     def on_start(self):
         """Appelé quand l'application démarre."""
         # Initialiser les services si nécessaire
-        pass
+        
+        # Initialiser le registre du module et enregistrer les écrans
+        try:
+            # Configurer le logger
+            logger = logging.getLogger('hc_rpas')
+            logger.setLevel(logging.INFO)
+            
+            # Initialiser le registre des modules et des écrans
+            module_registry = ModuleRegistry.get_instance()
+            module_registry.initialize(self.firebase_service)
+            logger.info("Module de contrôle des vols initialisé avec succès")
+            
+            # Enregistrer ce module dans Firebase pour l'indexation des écrans
+            module_registry.index_storage.register_from_manifest(
+                "controle_vols", 
+                module_registry.manifest_data
+            )
+        except Exception as e:
+            logger = logging.getLogger('hc_rpas')
+            logger.error(f"Erreur lors de l'initialisation du module: {str(e)}", exc_info=True)
 
     def on_stop(self):
         """Appelé quand l'application s'arrête."""
