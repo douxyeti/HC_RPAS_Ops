@@ -12,9 +12,15 @@ class Task(EventDispatcher):
     module = StringProperty('operations')
     icon = StringProperty('checkbox-marked')
     status = StringProperty('En attente')  # Propriété ajoutée
-    screen = StringProperty(None)  # Ajout de l'attribut screen
+    screen = StringProperty(None)  # Attribut legacy à conserver pour compatibilité
+    screen_id = StringProperty('')  # ID de l'écran
+    screen_path = StringProperty('')  # Chemin complet vers l'écran
+    target_module_id = StringProperty('')  # Module cible
+    target_screen_id = StringProperty('')  # Écran cible
 
-    def __init__(self, title: str, description: str, module: str = 'operations', icon: str = 'checkbox-marked', status: str = 'En attente', screen: str = None):
+    def __init__(self, title: str, description: str, module: str = 'operations', icon: str = 'checkbox-marked', 
+                 status: str = 'En attente', screen: str = None, screen_id: str = '', screen_path: str = '',
+                 target_module_id: str = '', target_screen_id: str = ''):
         super().__init__()
         self.title = title
         self.description = description
@@ -22,6 +28,10 @@ class Task(EventDispatcher):
         self.icon = icon
         self.status = status
         self.screen = screen
+        self.screen_id = screen_id
+        self.screen_path = screen_path
+        self.target_module_id = target_module_id
+        self.target_screen_id = target_screen_id
 
     def to_dict(self) -> Dict:
         return {
@@ -30,7 +40,11 @@ class Task(EventDispatcher):
             'module': self.module,
             'icon': self.icon,
             'status': self.status,
-            'screen': self.screen
+            'screen': self.screen,
+            'screen_id': self.screen_id,
+            'screen_path': self.screen_path,
+            'target_module_id': self.target_module_id,
+            'target_screen_id': self.target_screen_id
         }
 
     @classmethod
@@ -49,6 +63,10 @@ class Task(EventDispatcher):
         icon = data.get('icon', 'checkbox-marked')
         status = data.get('status', 'En attente')
         screen = data.get('screen', None)
+        screen_id = data.get('screen_id', '')
+        screen_path = data.get('screen_path', '')
+        target_module_id = data.get('target_module_id', '')
+        target_screen_id = data.get('target_screen_id', '')
         
         return cls(
             title=title,
@@ -56,7 +74,11 @@ class Task(EventDispatcher):
             module=module,
             icon=icon,
             status=status,
-            screen=screen
+            screen=screen,
+            screen_id=screen_id,
+            screen_path=screen_path,
+            target_module_id=target_module_id,
+            target_screen_id=target_screen_id
         )
 
 class Role(EventDispatcher):
