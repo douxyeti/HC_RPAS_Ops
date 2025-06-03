@@ -1,9 +1,0 @@
-"""
-Module de contrôle des vols pour HighCloud RPAS Operations Manager.
-Gère les opérations liées aux vols de drones, incluant la planification,
-l'exécution et le suivi des missions.
-"""
-
-from .models import *
-from .viewmodels import *
-from .services import *

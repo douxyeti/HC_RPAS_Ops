@@ -17,6 +17,8 @@ from app.views.screens.specialized_dashboard_screen import SpecializedDashboardS
 from app.views.screens.roles_manager_screen import RolesManagerScreen
 from app.views.screens.role_edit_screen import RoleEditScreen
 from app.views.screens.task_manager_screen import TaskManagerScreen
+from app.views.screens.procedures_manager_screen import ProceduresManagerScreen
+from app.views.screens.modules_admin_screen import ModulesAdminScreen
 
 # Import du modèle
 from app.models.application_model import ApplicationModel
@@ -36,6 +38,7 @@ class MainScreenManager(MDScreenManager):
         self.add_widget(RolesManagerScreen(name="roles_manager"))
         self.add_widget(RoleEditScreen(name="role_edit"))
         self.add_widget(TaskManagerScreen(name="task_manager"))
+        self.add_widget(ModulesAdminScreen(name="modules_admin"))
 
 class HighCloudRPASApp(MDApp):
     def __init__(self, **kwargs):
@@ -78,10 +81,13 @@ class HighCloudRPASApp(MDApp):
             broker = os.getenv('MQTT_BROKER', 'localhost')
             port = int(os.getenv('MQTT_PORT', 1883))
             
+            # Récupérer le logger depuis le container
+            self.logger = self.container.logger()
+            
             if self.mqtt_service.connect(broker, port):
-                print("Service MQTT initialisé avec succès")
+                self.logger.info("Service MQTT initialisé avec succès")
             else:
-                print("Erreur lors de l'initialisation du service MQTT")
+                self.logger.error("Erreur lors de l'initialisation du service MQTT")
             
             # Initialise le service Firebase
             self.firebase_service = FirebaseService()
@@ -97,9 +103,9 @@ class HighCloudRPASApp(MDApp):
                     self.available_roles.append(role.get('name'))
             self.available_roles.sort()  # Trie les rôles par ordre alphabétique
             
-            print("Services initialisés avec succès")
+            self.logger.info("Services initialisés avec succès")
         except Exception as e:
-            print(f"Erreur lors de l'initialisation des services: {str(e)}")
+            self.logger.error(f"Erreur lors de l'initialisation des services: {str(e)}", exc_info=True)
             raise
         
         # Charge les fichiers KV
@@ -108,28 +114,54 @@ class HighCloudRPASApp(MDApp):
         # Crée le gestionnaire d'écrans
         self.screen_manager = MainScreenManager()
         
+        # Ajoute l'écran de gestion des procédures avec son service
+        procedures_manager_screen = ProceduresManagerScreen(
+            name="procedures_manager",
+            procedures_manager_service=self.container.procedures_manager()
+        )
+        self.screen_manager.add_widget(procedures_manager_screen)
+        
         # Définit l'écran initial
         self.screen_manager.current = "splash"
         
         return self.screen_manager
         
     def _load_kv_files(self):
-        """Charge tous les fichiers KV"""
-        kv_files = [
-            'app/views/kv/splash_screen.kv',
-            'app/views/kv/login_screen.kv',
-            'app/views/kv/dashboard_screen.kv',
-            'app/views/kv/roles_manager_screen.kv',
-            'app/views/kv/role_edit_screen.kv',  # Ajout du fichier KV pour l'édition des rôles
-            'app/views/kv/task_manager_screen.kv',  # Fichier KV pour la gestion des tâches
+        """Charge tous les fichiers KV dynamiquement"""
+        from pathlib import Path
+        
+        # Répertoire contenant les fichiers KV
+        kv_directory = Path("app/views/kv")
+        
+        # Vérifier que le répertoire existe
+        if not kv_directory.exists():
+            self.logger.error(f"Le répertoire {kv_directory} n'existe pas")
+            return
+        
+        # Liste des fichiers qui doivent être chargés en premier (ordre spécifique si nécessaire)
+        # Par exemple, si certains fichiers définissent des widgets utilisés par d'autres
+        priority_files = [
+            "splash_screen.kv"  # Exemple : charger d'abord l'écran de démarrage
         ]
-        for kv_file in kv_files:
-            Builder.load_file(kv_file)
+        
+        # Charger d'abord les fichiers prioritaires
+        for filename in priority_files:
+            kv_file = kv_directory / filename
+            if kv_file.exists():
+                self.logger.debug(f"Chargement prioritaire du fichier KV: {kv_file}")
+                Builder.load_file(str(kv_file))
+        
+        # Charger tous les autres fichiers .kv
+        for kv_file in kv_directory.glob("*.kv"):
+            # Ne pas recharger les fichiers prioritaires déjà chargés
+            if kv_file.name not in priority_files:
+                self.logger.debug(f"Chargement du fichier KV: {kv_file}")
+                Builder.load_file(str(kv_file))
 
     def toggle_theme(self):
         """Bascule entre le thème clair et sombre"""
         self.theme_cls.theme_style = "Dark" if self.theme_cls.theme_style == "Light" else "Light"
-        print(f"Theme changed to: {self.theme_cls.theme_style}")
+        self.logger.info(f"Theme changed to: {self.theme_cls.theme_style}")
 
     def switch_screen(self, screen_name, direction='left'):
         """Change l'écran courant avec une transition"""

@@ -5,21 +5,37 @@ import random
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
 from kivy.event import EventDispatcher
 from app.services.roles_manager_service import RolesManagerService
+import logging
 
 class Task(EventDispatcher):
     title = StringProperty('')
     description = StringProperty('')
     module = StringProperty('operations')
     icon = StringProperty('checkbox-marked')
-    status = StringProperty('En attente')  # Propriété ajoutée
+    status = StringProperty('En attente')
+    
+    # Champs pour l'intégration avec les modules indexés
+    target_module_id = StringProperty('')  # ID du module cible
+    target_screen_id = StringProperty('')  # ID de l'écran cible
+    target_field_id = StringProperty('')   # ID du champ cible (optionnel)
+    
+    # Champ legacy pour compatibilité avec l'ancien système
+    screen = StringProperty(None)
 
-    def __init__(self, title: str, description: str, module: str = 'operations', icon: str = 'checkbox-marked', status: str = 'En attente'):
+    def __init__(self, title: str, description: str, module: str = 'operations', 
+                icon: str = 'checkbox-marked', status: str = 'En attente', 
+                target_module_id: str = '', target_screen_id: str = '', 
+                target_field_id: str = '', screen: str = None):
         super().__init__()
         self.title = title
         self.description = description
         self.module = module
         self.icon = icon
-        self.status = status  # Initialisation correcte
+        self.status = status
+        self.target_module_id = target_module_id
+        self.target_screen_id = target_screen_id
+        self.target_field_id = target_field_id
+        self.screen = screen
 
     def to_dict(self) -> Dict:
         return {
@@ -27,7 +43,11 @@ class Task(EventDispatcher):
             'description': self.description,
             'module': self.module,
             'icon': self.icon,
-            'status': self.status  # Ajout de la propriété status
+            'status': self.status,
+            'target_module_id': self.target_module_id,
+            'target_screen_id': self.target_screen_id,
+            'target_field_id': self.target_field_id,
+            'screen': self.screen
         }
 
     @classmethod
@@ -46,12 +66,24 @@ class Task(EventDispatcher):
         icon = data.get('icon', 'checkbox-marked')
         status = data.get('status', 'En attente')
         
+        # Valeurs pour l'intégration avec les modules indexés
+        target_module_id = data.get('target_module_id', '')
+        target_screen_id = data.get('target_screen_id', '')
+        target_field_id = data.get('target_field_id', '')
+        
+        # Valeur legacy
+        screen = data.get('screen', None)
+        
         return cls(
             title=title,
             description=description,
             module=module,
             icon=icon,
-            status=status
+            status=status,
+            target_module_id=target_module_id,
+            target_screen_id=target_screen_id,
+            target_field_id=target_field_id,
+            screen=screen
         )
 
 class Role(EventDispatcher):

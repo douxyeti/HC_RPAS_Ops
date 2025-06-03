@@ -22,7 +22,8 @@ class DashboardController:
                     description=task_data.get('description', ''),
                     module=task_data.get('module', ''),
                     status="En attente",
-                    icon=task_data.get('icon', 'checkbox-marked-circle')
+                    icon=task_data.get('icon', 'checkbox-marked-circle'),
+                    screen=task_data.get('screen', None)
                 ))
             print(f"Loaded {len(tasks)} tasks for {role_id}")
             return tasks
