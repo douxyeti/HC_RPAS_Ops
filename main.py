@@ -4,10 +4,14 @@ from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
 from dotenv import load_dotenv
 import os
+import logging
 
 # Import des services
 from app.services import ConfigService, FirebaseService, RolesManagerService
 from app.services.mqtt_service import MQTTService
+
+# Import de l'initialisation des modules
+from app.utils.module_initializer import get_module_initializer
 
 # Import des écrans
 from app.views.screens.splash_screen import SplashScreen
@@ -69,40 +73,13 @@ class HighCloudRPASApp(MDApp):
         self.theme_cls.primary_palette = "Blue"  # Couleur principale
         self.theme_cls.accent_palette = "Amber"  # Couleur d'accent
         
-        # Initialisation des services
+        # Initialiser les services (y compris l'initialisation du module)
+        self.init_services()
+        
+        # Récupérer le logger depuis le container
+        self.logger = self.container.logger()
+        
         try:
-            # Initialise le service de configuration
-            self.config_service = ConfigService()
-            
-            # Initialise le service MQTT
-            self.mqtt_service = MQTTService()
-            
-            # Utilise les variables d'environnement pour MQTT
-            broker = os.getenv('MQTT_BROKER', 'localhost')
-            port = int(os.getenv('MQTT_PORT', 1883))
-            
-            # Récupérer le logger depuis le container
-            self.logger = self.container.logger()
-            
-            if self.mqtt_service.connect(broker, port):
-                self.logger.info("Service MQTT initialisé avec succès")
-            else:
-                self.logger.error("Erreur lors de l'initialisation du service MQTT")
-            
-            # Initialise le service Firebase
-            self.firebase_service = FirebaseService()
-            
-            # Initialise le service de gestion des rôles
-            self.roles_manager_service = RolesManagerService()
-            
-            # Charge les rôles depuis Firebase
-            roles_data = self.roles_manager_service.get_all_roles()
-            self.available_roles = []
-            for role in roles_data:
-                if role.get('name'):
-                    self.available_roles.append(role.get('name'))
-            self.available_roles.sort()  # Trie les rôles par ordre alphabétique
-            
             self.logger.info("Services initialisés avec succès")
         except Exception as e:
             self.logger.error(f"Erreur lors de l'initialisation des services: {str(e)}", exc_info=True)
@@ -183,8 +160,30 @@ class HighCloudRPASApp(MDApp):
         pass
 
     def init_services(self):
-        # Code pour initialiser les services
-        pass
+        """Initialise tous les services"""
+        self.config_service = ConfigService()
+        self.firebase_service = FirebaseService.get_instance()
+        
+        # On initialise la connexion MQTT si le service est activé
+        mqtt_enabled = self.config_service.get_mqtt_enabled()
+        if mqtt_enabled:
+            self.mqtt_service = MQTTService()
+            # Connexion au broker MQTT
+            self.mqtt_service.connect()
+        
+        self.roles_manager_service = RolesManagerService()
+        
+        # Initialiser le module pour cette branche si nécessaire
+        try:
+            module_initializer = get_module_initializer()
+            module_initializer.initialize_with_services(self.firebase_service)
+            if module_initializer.is_module_initialized():
+                self.logger.info("Module correctement initialisé et indexé pour la branche actuelle.")
+            else:
+                self.logger.info("Le module était déjà indexé pour la branche actuelle.")
+        except Exception as e:
+            self.logger.error(f"Erreur lors de l'initialisation du module: {e}")
+            # Ne pas bloquer le démarrage de l'application en cas d'erreur
 
 if __name__ == "__main__":
     HighCloudRPASApp().run()
