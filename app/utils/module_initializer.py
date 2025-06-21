@@ -12,6 +12,8 @@ import subprocess
 import importlib.util
 import logging
 import time
+import re
+import datetime
 from typing import Optional, List, Dict, Any
 
 # Configuration du logging
@@ -110,57 +112,208 @@ class ModuleInitializer:
     
     def _run_indexing(self) -> bool:
         """
-        Exécute le script d'indexation pour la branche courante
+        Exécute l'indexation des écrans et la création du module directement (sans scripts externes)
         Retourne True en cas de succès
         """
         try:
-            # Construction du chemin vers les scripts
-            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            scripts_dir = os.path.join(base_dir, "scripts")
+            # Indexer les écrans de l'application
+            logger.info(f"Démarrage de l'indexation des écrans pour la branche: {self.current_branch}")
+            indexed_screens = self._index_screens()
             
-            # Exécuter le script d'indexation
-            index_script = os.path.join(scripts_dir, "index_app_screens.py")
-            if not os.path.exists(index_script):
-                logger.error(f"Le script d'indexation n'existe pas: {index_script}")
+            if not indexed_screens or len(indexed_screens) == 0:
+                logger.error("Aucun écran n'a été indexé. Abandon.")
                 return False
+                
+            logger.info(f"Indexation réussie: {len(indexed_screens)} écrans trouvés")
             
-            logger.info(f"Exécution du script d'indexation: {index_script}")
-            result = subprocess.run(
-                [sys.executable, index_script],
-                capture_output=True,
-                text=True
-            )
+            # Créer le module dans Firebase
+            result = self._create_module(indexed_screens)
             
-            if result.returncode != 0:
-                logger.error(f"Erreur lors de l'indexation: {result.stderr}")
+            if not result:
+                logger.error("Échec de la création du module. Abandon.")
                 return False
-            
-            logger.info(f"Indexation réussie: {result.stdout}")
-            
-            # Exécuter le script de création du module
-            module_script = os.path.join(scripts_dir, "create_app_index_module.py")
-            if not os.path.exists(module_script):
-                logger.error(f"Le script de création du module n'existe pas: {module_script}")
-                return False
-            
-            logger.info(f"Exécution du script de création du module: {module_script}")
-            result = subprocess.run(
-                [sys.executable, module_script],
-                capture_output=True,
-                text=True
-            )
-            
-            if result.returncode != 0:
-                logger.error(f"Erreur lors de la création du module: {result.stderr}")
-                return False
-            
-            logger.info(f"Création du module réussie: {result.stdout}")
+                
+            logger.info("Création du module réussie")
             self.module_indexed = True
             return True
             
         except Exception as e:
-            logger.error(f"Erreur lors de l'exécution des scripts d'indexation: {e}")
+            logger.error(f"Erreur lors de l'indexation et création du module: {e}")
             return False
+            
+    def _index_screens(self) -> list:
+        """
+        Indexe tous les écrans de l'application
+        Retourne la liste des écrans indexés
+        """
+        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        screens = []
+        
+        # Sanitize la branche pour le nom de collection
+        sanitized_branch = self._sanitize_branch_name(self.current_branch)
+        collection_name = f"app_screens_index_{sanitized_branch}"
+        
+        # Trouver tous les fichiers Python qui pourraient contenir des écrans
+        screen_files = []
+        for root, _, files in os.walk(os.path.join(app_dir, "app")):
+            for file in files:
+                if file.endswith(".py"):
+                    file_path = os.path.join(root, file)
+                    # Vérifier si le fichier pourrait contenir un écran
+                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                        content = f.read()
+                        if re.search(r"class\s+\w+(?:Screen|Window|View|Page)", content) or "Screen" in content:
+                            screen_files.append(file_path)
+        
+        logger.info(f"{len(screen_files)} fichiers potentiels d'écrans trouvés")
+        
+        # Analyser chaque fichier pour extraire les écrans
+        for file_path in screen_files:
+            rel_path = os.path.relpath(file_path, app_dir)
+            logger.debug(f"Analyse du fichier: {rel_path}")
+            
+            # Lire le contenu du fichier
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+            
+            # Rechercher les classes d'écran
+            screen_classes = re.finditer(
+                r"class\s+(\w+)(?:Screen|Window|View|Page)?\s*\(([^)]*)\):\s*(?:\"\"\"(.*?)\"\"\")?\s*",
+                content, 
+                re.DOTALL
+            )
+            
+            # Pour chaque classe trouvée
+            for match in screen_classes:
+                class_name = match.group(1)
+                parent_class = match.group(2).strip() if match.group(2) else ""
+                docstring = match.group(3).strip() if match.group(3) else ""
+                
+                # Si c'est potentiellement un écran
+                if ("Screen" in class_name or 
+                    "Window" in class_name or 
+                    "View" in class_name or 
+                    "Page" in class_name or
+                    "Screen" in parent_class):
+                    
+                    # Extraction d'un titre/description depuis le docstring
+                    title = ""
+                    description = ""
+                    
+                    if docstring:
+                        lines = docstring.split("\n")
+                        title = lines[0].strip()
+                        description = "\n".join(lines[1:]).strip() if len(lines) > 1 else ""
+                    
+                    # Création de l'entrée d'écran
+                    screen_entry = {
+                        "id": f"{class_name.lower()}",
+                        "name": class_name,
+                        "title": title or f"Écran {class_name}",
+                        "description": description or f"Écran {class_name} de l'application",
+                        "file_path": rel_path,
+                        "full_class_name": f"{os.path.splitext(os.path.basename(rel_path))[0]}.{class_name}",
+                        "branch": self.current_branch,
+                        "indexed_at": datetime.datetime.now().isoformat()
+                    }
+                    
+                    screens.append(screen_entry)
+                    logger.debug(f"Écran trouvé: {class_name}")
+        
+        # Sauvegarder les écrans indexés dans Firebase
+        if len(screens) > 0:
+            # Créer un document de métadonnées pour l'index
+            metadata = {
+                "id": "app_screens_index",
+                "name": "Index des écrans de l'application",
+                "branch": self.current_branch,
+                "screen_count": len(screens),
+                "created_at": datetime.datetime.now().isoformat(),
+                "app_version": "1.0.1"  # À ajuster selon la version de l'app
+            }
+            
+            # Sauvegarder les métadonnées
+            self.firebase_service.set_data(collection_name, metadata)
+            
+            # Sauvegarder chaque écran
+            for screen in screens:
+                self.firebase_service.set_data(collection_name, screen)
+                
+            logger.info(f"Index des écrans sauvegardé dans la collection '{collection_name}'")
+        
+        return screens
+    
+    def _create_module(self, screens: list) -> bool:
+        """
+        Crée le module pour la branche courante dans Firebase
+        Retourne True en cas de succès
+        """
+        if not screens:
+            logger.error("Impossible de créer le module sans liste d'écrans")
+            return False
+        
+        # Sanitize la branche pour les noms de collection
+        sanitized_branch = self._sanitize_branch_name(self.current_branch)
+        module_collection = f"module_indexes_modules_{sanitized_branch}"
+        
+        # Créer le module pour cette branche
+        module_data = {
+            "id": f"module_{sanitized_branch}",
+            "name": f"Module {self.current_branch}",
+            "description": f"Module automatiquement créé pour la branche {self.current_branch}",
+            "version": "1.0.0",
+            "main_screen": "dashboard",  # Écran principal du module
+            "updated_at": int(time.time()),
+            "branch": self.current_branch,
+            "icon": "view-dashboard",  # Icône Material Design
+            "type": "satellite",
+            "category": "system",
+            "screens_count": len(screens),
+            "is_main_app": self.current_branch == "dev_application_principale_v2"  # Est-ce l'app principale?
+        }
+        
+        # Sauvegarder le module dans la collection générique et spécifique à la branche
+        self.firebase_service.set_data("module_indexes_modules", module_data)
+        self.firebase_service.set_data(module_collection, module_data)
+        
+        # Collection pour les écrans du module
+        screens_collection = f"module_indexes_screens_{module_data['id']}_{sanitized_branch}"
+        
+        # Créer d'abord une entrée pour l'écran principal (dashboard)
+        dashboard_data = {
+            "id": "dashboard",
+            "name": "Tableau de bord",
+            "title": "Tableau de bord",
+            "description": f"Tableau de bord principal du module {self.current_branch}",
+            "module_id": module_data['id'],
+            "branch": self.current_branch,
+            "is_main": True
+        }
+        
+        self.firebase_service.set_data(screens_collection, dashboard_data)
+        
+        # Ajouter tous les écrans indexés
+        for screen in screens:
+            if 'id' not in screen:
+                continue
+                
+            # Convertir au format de module
+            screen_data = {
+                "id": screen['id'],
+                "name": screen.get('name', screen['id']),
+                "title": screen.get('title', screen.get('name', screen['id'])),
+                "description": screen.get('description', f"Écran {screen.get('name', screen['id'])} du module"),
+                "module_id": module_data['id'],
+                "branch": self.current_branch,
+                "file_path": screen.get('file_path', ''),
+                "full_class_name": screen.get('full_class_name', ''),
+                "added_from_index": True
+            }
+            
+            self.firebase_service.set_data(screens_collection, screen_data)
+        
+        logger.info(f"Module créé avec {len(screens)} écrans dans '{screens_collection}'")
+        return True
     
     def is_module_initialized(self) -> bool:
         """Vérifie si le module a été correctement initialisé et indexé"""
