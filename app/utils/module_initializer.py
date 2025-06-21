@@ -86,29 +86,94 @@ class ModuleInitializer:
     
     def _is_indexing_needed(self) -> bool:
         """
-        Vérifie si une indexation est nécessaire
-        Retourne True si l'index n'existe pas dans Firebase
+        Vérifie si l'indexation est nécessaire pour la branche courante dans plusieurs cas :
+        1. Si la collection d'index n'existe pas ou est vide
+        2. Si la branche est en mode développement (contient 'dev_' ou 'develop')
+        3. Si le nombre d'écrans dans le code source diffère du nombre dans l'index
         """
         if not self.firebase_service:
-            logger.error("Firebase n'est pas initialisé. Impossible de vérifier l'index.")
             return False
         
-        # Nom de collection spécifique à la branche pour l'index des écrans
         sanitized_branch = self._sanitize_branch_name(self.current_branch)
         collection_name = f"app_screens_index_{sanitized_branch}"
         
-        # Vérifie si la collection existe et contient des données
-        try:
-            documents = self.firebase_service.get_collection(collection_name)
-            if documents and len(documents) > 0:
-                logger.info(f"Collection d'index trouvée avec {len(documents)} documents")
-                return False
-            else:
-                logger.info(f"Collection d'index vide ou inexistante: {collection_name}")
-                return True
-        except Exception as e:
-            logger.error(f"Erreur lors de la vérification de l'index: {e}")
+        # Vérifier si la collection existe et n'est pas vide
+        results = self.firebase_service.get_collection(collection_name)
+        if not results or len(results) == 0:
+            logger.info(f"Indexation nécessaire: Collection {collection_name} vide ou inexistante")
             return True
+        
+        # Vérifier si c'est une branche de développement
+        is_dev_branch = 'dev_' in self.current_branch.lower() or 'develop' in self.current_branch.lower()
+        
+        # Si c'est une branche de développement, on vérifie si les écrans ont changé
+        if is_dev_branch:
+            # Trouver les écrans potentiels dans le code source
+            potential_screens_count = self._count_potential_screens()
+            
+            # Récupérer le nombre d'écrans dans l'index
+            indexed_screens_count = 0
+            metadata_doc = None
+            
+            # Chercher le document de métadonnées qui contient le nombre d'écrans indexés
+            for doc in results:
+                if doc.get('id') == 'app_screens_index':
+                    metadata_doc = doc
+                    indexed_screens_count = doc.get('screen_count', 0)
+                    break
+            
+            # Si le nombre diffère ou si les métadonnées sont absentes, réindexer
+            if not metadata_doc or potential_screens_count > indexed_screens_count:
+                logger.info(f"Indexation nécessaire: Branche de développement avec des changements détectés. "
+                            f"Écrans trouvés: {potential_screens_count}, Écrans indexés: {indexed_screens_count}")
+                return True
+                
+            # Si la dernière indexation date de plus d'une heure, réindexer (pour les branches dev)
+            if metadata_doc and 'created_at' in metadata_doc:
+                try:
+                    last_indexed_time = datetime.datetime.fromisoformat(metadata_doc['created_at'])
+                    one_hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
+                    
+                    if last_indexed_time < one_hour_ago:
+                        logger.info(f"Indexation nécessaire: Dernière indexation trop ancienne "
+                                   f"({last_indexed_time.isoformat()})")
+                        return True
+                except (ValueError, TypeError):
+                    pass  # Ignorer les erreurs de parsing de date
+        
+        # Si aucune condition n'est remplie, pas besoin de réindexer
+        logger.info(f"Indexation non nécessaire: Collection {collection_name} existe et est à jour")
+        return False
+        
+    def _count_potential_screens(self) -> int:
+        """
+        Compte le nombre d'écrans potentiels dans le code source
+        """
+        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        screen_count = 0
+        
+        # Trouver tous les fichiers Python qui pourraient contenir des écrans
+        for root, _, files in os.walk(os.path.join(app_dir, "app")):
+            for file in files:
+                if file.endswith(".py"):
+                    file_path = os.path.join(root, file)
+                    # Vérifier si le fichier pourrait contenir un écran
+                    try:
+                        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                            content = f.read()
+                            # Compter les classes potentielles d'écran
+                            screens = re.findall(r"class\s+(\w+)(?:Screen|Window|View|Page)?\s*\(", content)
+                            for class_name in screens:
+                                if ("Screen" in class_name or 
+                                    "Window" in class_name or 
+                                    "View" in class_name or 
+                                    "Page" in class_name or
+                                    "screen" in content.lower()):
+                                    screen_count += 1
+                    except Exception as e:
+                        logger.error(f"Erreur lors de l'analyse du fichier {file_path}: {e}")
+                    
+        return screen_count
     
     def _run_indexing(self) -> bool:
         """
