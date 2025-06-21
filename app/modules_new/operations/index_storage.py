@@ -1,10 +1,12 @@
 """
 Système de stockage des index dans Firebase pour le module de contrôle des vols.
 Permet une synchronisation multi-utilisateurs des index.
+Inclut le nom de la branche pour différencier les applications.
 """
 
 import json
 import logging
+import subprocess
 from typing import Dict, List, Any, Optional
 
 class FirebaseIndexStorage:
@@ -24,7 +26,31 @@ class FirebaseIndexStorage:
         """
         self.firebase = firebase_service
         self.logger = logging.getLogger('hc_rpas.index_storage')
+        self.branch_name = self._get_clean_branch_name()
         
+    def _get_clean_branch_name(self) -> str:
+        """
+        Récupère le nom de la branche Git actuelle et enlève le préfixe 'dev_' si présent
+        
+        Returns:
+            Nom nettoyé de la branche
+        """
+        try:
+            # Récupérer le nom de la branche Git
+            result = subprocess.run(['git', 'branch', '--show-current'], 
+                                   capture_output=True, text=True, check=True)
+            branch_name = result.stdout.strip()
+            
+            # Enlever le préfixe 'dev_' si présent
+            if branch_name.startswith('dev_'):
+                branch_name = branch_name[4:]
+                
+            self.logger.info(f"Nom de branche détecté pour l'indexation: {branch_name}")
+            return branch_name
+        except Exception as e:
+            self.logger.warning(f"Impossible de détecter le nom de la branche: {str(e)}")
+            return "default_app"
+    
     def register_module(self, module_id: str, module_data: Dict[str, Any]) -> bool:
         """
         Enregistre les métadonnées d'un module
@@ -37,7 +63,10 @@ class FirebaseIndexStorage:
             True si l'enregistrement a réussi, False sinon
         """
         try:
-            collection_name = f"{self.COLLECTION_NAME}_modules"
+            # Ajouter le nom de la branche/application aux métadonnées
+            module_data['application_name'] = self.branch_name
+            
+            collection_name = f"{self.COLLECTION_NAME}_modules_{self.branch_name}"
             result = self.firebase.add_document_with_id(collection_name, module_id, module_data)
             self.logger.info(f"Module '{module_id}' enregistré dans Firebase")
             return result
@@ -59,11 +88,12 @@ class FirebaseIndexStorage:
         """
         try:
             # Adapter le format aux collections/documents de Firestore
-            collection_name = f"{self.COLLECTION_NAME}_screens_{module_id}"
+            collection_name = f"{self.COLLECTION_NAME}_screens_{module_id}_{self.branch_name}"
             document_id = screen_id
             
-            # Ajouter l'identifiant du module aux données pour les requêtes
+            # Ajouter l'identifiant du module et de l'application aux données pour les requêtes
             screen_data['module_id'] = module_id
+            screen_data['application_name'] = self.branch_name
             
             # Utiliser la méthode existante pour ajouter le document
             result = self.firebase.add_document_with_id(collection_name, document_id, screen_data)
@@ -84,7 +114,7 @@ class FirebaseIndexStorage:
             Données du module ou None si non trouvé
         """
         try:
-            collection_name = f"{self.COLLECTION_NAME}_modules"
+            collection_name = f"{self.COLLECTION_NAME}_modules_{self.branch_name}"
             return self.firebase.get_document(collection_name, module_id)
         except Exception as e:
             self.logger.error(f"Erreur lors de la récupération du module '{module_id}': {str(e)}")
@@ -102,7 +132,7 @@ class FirebaseIndexStorage:
             Données de l'écran ou None si non trouvé
         """
         try:
-            collection_name = f"{self.COLLECTION_NAME}_screens_{module_id}"
+            collection_name = f"{self.COLLECTION_NAME}_screens_{module_id}_{self.branch_name}"
             return self.firebase.get_document(collection_name, screen_id)
         except Exception as e:
             self.logger.error(f"Erreur lors de la récupération de l'écran '{module_id}.{screen_id}': {str(e)}")
@@ -116,12 +146,12 @@ class FirebaseIndexStorage:
             Dictionnaire de modules {module_id: module_data}
         """
         try:
-            collection_name = f"{self.COLLECTION_NAME}_modules"
-            modules_list = self.firebase.get_collection(collection_name)
+            collection_name = f"{self.COLLECTION_NAME}_modules_{self.branch_name}"
+            documents = self.firebase.get_collection(collection_name)
             
             # Convertir la liste en dictionnaire avec module_id comme clé
             modules_dict = {}
-            for module_data in modules_list:
+            for module_data in documents:
                 if 'id' in module_data:
                     modules_dict[module_data['id']] = module_data
                     
@@ -144,13 +174,13 @@ class FirebaseIndexStorage:
             results = {}
             
             if module_id:
-                # Récupérer les écrans d'un module spécifique
-                collection_name = f"{self.COLLECTION_NAME}_screens_{module_id}"
-                screens_list = self.firebase.get_collection(collection_name)
+                # Construire le nom de collection incluant l'ID du module et le nom de l'application
+                collection_name = f"{self.COLLECTION_NAME}_screens_{module_id}_{self.branch_name}"
+                documents = self.firebase.get_collection(collection_name)
                 
                 # Convertir la liste en dictionnaire
                 screens_dict = {}
-                for screen_data in screens_list:
+                for screen_data in documents:
                     if 'id' in screen_data:
                         screens_dict[screen_data['id']] = screen_data
                     

@@ -101,6 +101,21 @@ class TaskModel:
         self.firebase_service = firebase_service
         self.collection = 'roles'
         self.roles_service = RolesManagerService()
+        self.branch_name = self._get_clean_branch_name()
+        print(f"[DEBUG] TaskModel.__init__ - Branche actuelle : {self.branch_name}")
+        
+    def _get_clean_branch_name(self) -> str:
+        """Récupère le nom de la branche Git actuelle sans le préfixe 'dev_'"""
+        try:
+            import subprocess
+            result = subprocess.run(['git', 'branch', '--show-current'], capture_output=True, text=True, check=True)
+            branch_name = result.stdout.strip()
+            if branch_name.startswith('dev_'):
+                branch_name = branch_name[4:]
+            return branch_name
+        except Exception:
+            print("[DEBUG] TaskModel._get_clean_branch_name - Erreur lors de la récupération du nom de la branche Git")
+            return "default_app"
 
     def get_tasks(self, role_id: str) -> List[Task]:
         """Récupère toutes les tâches pour un rôle donné"""
@@ -109,24 +124,26 @@ class TaskModel:
             # Pour tous les rôles, essayer d'abord avec l'ID exact
             role_doc = self.firebase_service.get_document(self.collection, role_id)
             
-            # Si non trouvé, essayer avec l'ID normalisé
-            if not role_doc:
-                normalized_id = self.roles_service.normalize_string(role_id)
-                print(f"[DEBUG] TaskModel.get_tasks - Essai avec l'ID normalisé: {normalized_id}")
-                role_doc = self.firebase_service.get_document(self.collection, normalized_id)
-            
-            print(f"[DEBUG] TaskModel.get_tasks - Document récupéré : {role_doc}")
-            
-            if not role_doc:
-                print(f"[DEBUG] TaskModel.get_tasks - Document non trouvé pour le rôle {role_id}")
-                return []
-                
-            # Vérifier si le document a des tâches
-            tasks_data = role_doc.get('tasks', [])
-            if not tasks_data:
+            if not role_doc or 'tasks' not in role_doc:
                 print(f"[DEBUG] TaskModel.get_tasks - Aucune tâche trouvée pour le rôle {role_id}")
                 return []
                 
+            print(f"[DEBUG] TaskModel.get_tasks - Document récupéré : {role_doc}")
+            tasks_data = role_doc.get('tasks', [])
+            
+            # Vérifier et ajouter des métadonnées de branche aux tâches qui ont des index
+            modifications_needed = False
+            for task in tasks_data:
+                if 'target_module_id' in task and 'target_screen_id' in task and 'application_name' not in task:
+                    print(f"[DEBUG] TaskModel.get_tasks - Ajout du champ application_name: {self.branch_name} à la tâche {task.get('title')}")
+                    task['application_name'] = self.branch_name
+                    modifications_needed = True
+            
+            # Persister les modifications dans Firebase si nécessaire
+            if modifications_needed:
+                print(f"[DEBUG] TaskModel.get_tasks - Mise à jour des tâches avec application_name dans Firebase")
+                self.firebase_service.update_document(self.collection, role_id, {'tasks': tasks_data})
+            
             # Convertir les données en objets Task
             tasks = []
             for task_data in tasks_data:
@@ -146,7 +163,7 @@ class TaskModel:
 
     def add_task(self, role_id, task_data):
         """Ajoute une nouvelle tâche au rôle spécifié"""
-        print(f"[DEBUG] TaskModel.add_task - Ajout d'une tâche pour le rôle {role_id}")
+        print(f"[DEBUG] TaskModel.add_task - Branche: {self.branch_name}, ajout d'une tâche pour le rôle {role_id}")
         try:
             # Récupérer le document du rôle
             role_doc = self.firebase_service.get_document(self.collection, role_id)
@@ -158,6 +175,10 @@ class TaskModel:
             # Récupérer les données du rôle
             role_data = role_doc
             tasks = role_data.get('tasks', [])
+            
+            # Ajouter des métadonnées de branche aux tâches qui ont des index
+            if 'target_module_id' in task_data and 'target_screen_id' in task_data:
+                task_data['application_name'] = self.branch_name
 
             # Générer un ID unique pour la tâche
             task_id = f"{task_data['title'].lower().replace(' ', '_')}_{task_data['module']}_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
@@ -182,7 +203,7 @@ class TaskModel:
     def update_task(self, role_id, old_title, updated_task):
         """Met à jour une tâche existante"""
         try:
-            print(f"[DEBUG] TaskModel.update_task - Mise à jour de la tâche '{old_title}' pour le rôle {role_id}")
+            print(f"[DEBUG] TaskModel.update_task - Branche: {self.branch_name}, mise à jour de la tâche '{old_title}' pour le rôle {role_id}")
             role_doc = self.firebase_service.get_document(self.collection, role_id)
             
             if not role_doc or 'tasks' not in role_doc:
@@ -197,9 +218,16 @@ class TaskModel:
                     # Si updated_task est déjà un dictionnaire, l'utiliser directement
                     # Sinon, appeler to_dict() s'il s'agit d'un objet Task
                     if isinstance(updated_task, dict):
+                        # Ajouter des métadonnées de branche aux tâches qui ont des index
+                        if 'target_module_id' in updated_task and 'target_screen_id' in updated_task:
+                            updated_task['application_name'] = self.branch_name
                         tasks[i] = updated_task
                     else:
-                        tasks[i] = updated_task.to_dict()
+                        task_dict = updated_task.to_dict()
+                        # Ajouter des métadonnées de branche aux tâches qui ont des index
+                        if 'target_module_id' in task_dict and 'target_screen_id' in task_dict:
+                            task_dict['application_name'] = self.branch_name
+                        tasks[i] = task_dict
                     task_updated = True
                     break
             
@@ -220,13 +248,44 @@ class TaskModel:
 
     def delete_task(self, role_id, title):
         """Supprime une tâche"""
-        role_ref = self.firebase_service.db.collection('roles').document(role_id)
-        role_data = role_ref.get().to_dict()
-        
-        if role_data and 'tasks' in role_data:
-            tasks = role_data['tasks']
-            tasks = [task for task in tasks if task['title'] != title]
-            role_ref.update({'tasks': tasks})
+        try:
+            print(f"[DEBUG] TaskModel.delete_task - Suppression de la tâche '{title}' pour le rôle {role_id}")
+            
+            # Vérifier que le rôle existe
+            role_doc = self.firebase_service.get_document(self.collection, role_id)
+            
+            if not role_doc or 'tasks' not in role_doc:
+                print(f"[DEBUG] TaskModel.delete_task - Rôle non trouvé ou pas de tâches")
+                return False
+            
+            tasks = role_doc['tasks']
+            original_count = len(tasks)
+            
+            # Filtrer la tâche à supprimer
+            tasks = [task for task in tasks if task.get('title') != title]
+            
+            # Vérifier si une tâche a été supprimée
+            if len(tasks) == original_count:
+                print(f"[DEBUG] TaskModel.delete_task - Tâche '{title}' non trouvée")
+                return False
+                
+            # Mettre à jour le document
+            updated = self.firebase_service.update_document(
+                self.collection,
+                role_id,
+                {'tasks': tasks}
+            )
+            
+            if updated:
+                print(f"[DEBUG] TaskModel.delete_task - Tâche '{title}' supprimée avec succès")
+                return True
+            else:
+                print(f"[DEBUG] TaskModel.delete_task - Échec de la mise à jour dans Firebase")
+                return False
+                
+        except Exception as e:
+            print(f"[ERROR] TaskModel.delete_task - Erreur lors de la suppression : {str(e)}")
+            return False
 
     def filter_by_module(self, tasks, module_type):
         """Filtre une liste de tâches par module"""

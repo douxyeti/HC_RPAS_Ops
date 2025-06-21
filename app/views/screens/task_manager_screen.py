@@ -23,6 +23,8 @@ class TaskCard(MDCard):
     description = StringProperty("")
     icon = StringProperty("checkbox-marked-circle")
     current_role = StringProperty("")
+    target_module_id = StringProperty("")
+    target_screen_id = StringProperty("")
     
     PROTECTED_TASKS = [
         'Configuration système',
@@ -104,7 +106,13 @@ class TaskCard(MDCard):
     def edit_task(self):
         """Déclenche l'édition de la tâche"""
         if hasattr(self.parent.parent.parent.parent, 'show_edit_task_dialog'):
-            self.parent.parent.parent.parent.show_edit_task_dialog(self.title, self.description)
+            print(f"[DEBUG] TaskCard.edit_task - Edition de la tâche {self.title} avec index: {self.target_module_id}.{self.target_screen_id}")
+            self.parent.parent.parent.parent.show_edit_task_dialog(
+                self.title, 
+                self.description,
+                self.target_module_id,
+                self.target_screen_id
+            )
             
     def delete_task(self):
         """Déclenche la suppression de la tâche"""
@@ -232,7 +240,9 @@ class TaskManagerScreen(MDScreen):
                 task_card = TaskCard(
                     title=task.get('title', ''),
                     description=task.get('description', ''),
-                    current_role=self.current_role_id
+                    current_role=self.current_role_id,
+                    target_module_id=task.get('target_module_id', ''),
+                    target_screen_id=task.get('target_screen_id', '')
                 )
                 self.tasks_container.add_widget(task_card)
                 
@@ -670,8 +680,21 @@ class TaskManagerScreen(MDScreen):
 
     def delete_task_confirm(self, title):
         """Supprime une tâche après confirmation"""
-        self.task_model.delete_task(self.current_role_id, title)
-        self.load_tasks()  
+        print(f"[DEBUG] TaskManagerScreen.delete_task_confirm - Début de la suppression de '{title}'")
+        result = self.task_model.delete_task(self.current_role_id, title)
+        
+        if result:
+            print(f"[DEBUG] TaskManagerScreen.delete_task_confirm - Suppression réussie, rechargement des tâches")
+            # Recréer une nouvelle instance du modèle de tâches pour éviter les problèmes de cache
+            self.task_model = TaskModel(FirebaseService())
+            # Vider et reconstruire la liste de tâches
+            self.tasks = []
+            self.load_tasks()
+        else:
+            print(f"[ERROR] TaskManagerScreen.delete_task_confirm - Échec de la suppression de '{title}'")
+            # On recharge quand même pour s'assurer que l'interface est à jour
+            self.load_tasks()
+            
         self.remove_delete_confirmation()
 
     def show_menu(self, items, caller=None):
@@ -929,17 +952,27 @@ class TaskManagerScreen(MDScreen):
             # Définitions des fonctions de callback
             # -------------------------------------------
             
-            # Fonction pour sélectionner un module
+            # Fonction pour sélectionner un module en utilisant la méthode set_selected de CustomModuleCard
             def select_module(instance, module_id):
                 print(f"[DEBUG] Module sélectionné: {module_id}")
                 # Mettre à jour la sélection
                 selected_module[0] = module_id
                 selected_screen[0] = None
                 
-                # Mettre en surbrillance l'item sélectionné
+                # Désélectionner tous les modules
                 for child in modules_content.children:
-                    child.md_bg_color = [1, 1, 1, 1]
-                instance.md_bg_color = [0.9, 0.9, 1, 1]
+                    if hasattr(child, 'set_selected'):
+                        child.set_selected(False)
+                
+                # Sélectionner le module cliqué
+                if hasattr(instance, 'set_selected'):
+                    instance.set_selected(True)
+                    print(f"[DEBUG] Surbrillance appliquée au module: {module_id}")
+                else:
+                    print(f"[DEBUG] ERREUR: L'instance n'a pas la méthode set_selected")
+                
+                # Forcer la mise à jour du layout pour KivyMD 2
+                modules_content.do_layout()
                 
                 # Débogage - lister les collections disponibles
                 from app.services.firebase_service import FirebaseService
@@ -996,8 +1029,74 @@ class TaskManagerScreen(MDScreen):
                 else:
                     print(f"[DEBUG] Écrans récupérés: {len(screens)}")
                     for screen in screens:
-                        # Créer une carte pour l'écran
-                        screen_card = MDCard(
+                        # Définir la classe personnalisée pour les cartes d'écrans
+                        class CustomScreenCard(MDCard):
+                            def __init__(self, **kwargs):
+                                self.screen_id = kwargs.pop('screen_id', '')
+                                self.is_selected = kwargs.pop('is_selected', False)
+                                super().__init__(**kwargs)
+                                
+                                # Créer un conteneur principal pour gérer le layout
+                                self.main_layout = MDBoxLayout(
+                                    orientation="horizontal",
+                                    spacing=0,
+                                    padding=0,
+                                    size_hint=(1, 1)
+                                )
+                                
+                                # Créer un marqueur de sélection (bande latérale)
+                                self.selection_indicator = MDBoxLayout(
+                                    size_hint=(None, 1),
+                                    width=dp(8),
+                                    md_bg_color=[0, 0.6, 1, 1],  # Bleu vif
+                                    opacity=0  # Invisible par défaut
+                                )
+                                
+                                # Créer le conteneur pour le contenu
+                                self.content_layout = MDBoxLayout(
+                                    orientation="vertical",
+                                    spacing=dp(4),
+                                    padding=dp(10),
+                                    size_hint=(1, 1)
+                                )
+                                
+                                # Ajouter les éléments au layout principal
+                                self.main_layout.add_widget(self.selection_indicator)
+                                self.main_layout.add_widget(self.content_layout)
+                                
+                                # Ajouter le layout principal à la carte
+                                super().add_widget(self.main_layout)
+                            
+                            def on_touch_down(self, touch):
+                                if self.collide_point(*touch.pos):
+                                    select_screen(self, self.screen_id)
+                                    return True
+                                return super().on_touch_down(touch)
+                                
+                            # Surcharger add_widget pour ajouter les widgets au content_layout
+                            def add_widget(self, widget, index=0, canvas=None):
+                                if hasattr(self, 'content_layout'):
+                                    return self.content_layout.add_widget(widget, index, canvas)
+                                return super().add_widget(widget, index, canvas)
+                            
+                            def set_selected(self, is_selected):
+                                self.is_selected = is_selected
+                                # Mettre à jour l'apparence
+                                if is_selected:
+                                    self.md_bg_color = [0.85, 0.9, 1, 1]  # Bleu très clair
+                                    self.selection_indicator.opacity = 1  # Afficher la bande bleue
+                                    self.elevation = 4  # Augmenter l'élévation
+                                else:
+                                    self.md_bg_color = [1, 1, 1, 1]  # Blanc normal
+                                    self.selection_indicator.opacity = 0  # Cacher la bande bleue
+                                    self.elevation = 1  # Élévation normale
+                                
+                                # Force le rafraîchissement de l'ombre pour KivyMD 2
+                                if hasattr(self, '_do_refresh_shadow'):
+                                    self._do_refresh_shadow()
+                        
+                        # Créer une carte d'écran avec la classe personnalisée
+                        screen_card = CustomScreenCard(
                             orientation="vertical",
                             size_hint_y=None,
                             height=dp(75),
@@ -1005,7 +1104,8 @@ class TaskManagerScreen(MDScreen):
                             padding=dp(10),
                             spacing=dp(4),
                             elevation=1,
-                            radius=[dp(4)]
+                            radius=[dp(4)],
+                            screen_id=screen.get('id', '')
                         )
                         
                         # Titre de l'écran
@@ -1039,28 +1139,6 @@ class TaskManagerScreen(MDScreen):
                             )
                             screen_card.add_widget(desc_label)
                         
-                        # Stocker l'ID de l'écran pour le callback
-                        screen_card.screen_id = screen.get('id', '')
-                        
-                        # Gérer l'événement de clic en utilisant une classe intermédiaire
-                        screen_card_id = screen.get('id', '')
-                        
-                        # Méthode plus simple en utilisant une classe qui capture l'état
-                        class ScreenCardBehavior:
-                            def __init__(self, card, screen_id):
-                                self.card = card
-                                self.screen_id = screen_id
-                            
-                            def on_touch_down(self, touch):
-                                if self.card.collide_point(*touch.pos):
-                                    select_screen(self.card, self.screen_id)
-                                    return True
-                                return False
-                        
-                        # Créer et assigner le comportement
-                        behavior = ScreenCardBehavior(screen_card, screen_card_id)
-                        screen_card.on_touch_down = behavior.on_touch_down
-                        
                         screens_content.add_widget(screen_card)
             
             # Fonction pour gérer le touch sur un module
@@ -1077,16 +1155,26 @@ class TaskManagerScreen(MDScreen):
                     return True
                 return False
             
-            # Fonction pour sélectionner un écran
+            # Fonction pour sélectionner un écran en utilisant la méthode set_selected de CustomScreenCard
             def select_screen(instance, screen_id):
                 print(f"[DEBUG] Écran sélectionné: {screen_id}")
+                # Mettre à jour la sélection
                 selected_screen[0] = screen_id
                 
-                # Mettre en surbrillance l'item sélectionné
+                # Désélectionner tous les écrans
                 for child in screens_content.children:
-                    if hasattr(child, 'md_bg_color'):
-                        child.md_bg_color = [1, 1, 1, 1]
-                instance.md_bg_color = [0.9, 0.9, 1, 1]
+                    if hasattr(child, 'set_selected'):
+                        child.set_selected(False)
+                
+                # Sélectionner l'écran cliqué
+                if hasattr(instance, 'set_selected'):
+                    instance.set_selected(True)
+                    print(f"[DEBUG] Surbrillance appliquée à l'écran: {screen_id}")
+                else:
+                    print(f"[DEBUG] ERREUR: L'instance n'a pas la méthode set_selected")
+                
+                # Forcer la mise à jour du layout pour KivyMD 2
+                screens_content.do_layout()
             
             # Fonction pour sélectionner et fermer
             def select_and_close():
@@ -1114,8 +1202,75 @@ class TaskManagerScreen(MDScreen):
             # Remplissage de la liste des modules
             # -------------------------------------------
             for module in modules:
-                # Créer une carte pour le module
-                module_card = MDCard(
+                # Définir la classe personnalisée pour les cartes de modules
+                # Note: définir la classe une fois en dehors de la boucle serait mieux,
+                # mais nous la gardons ici pour êvitre de trop modifier le code existant
+                class CustomModuleCard(MDCard):
+                    def __init__(self, **kwargs):
+                        self.module_id = kwargs.pop('module_id', '')
+                        self.is_selected = kwargs.pop('is_selected', False)
+                        super().__init__(**kwargs)
+                        # Créer un conteneur principal pour gérer le layout
+                        self.main_layout = MDBoxLayout(
+                            orientation="horizontal",
+                            spacing=0,
+                            padding=0,
+                            size_hint=(1, 1)
+                        )
+                        
+                        # Créer un marqueur de sélection (bande latérale)
+                        self.selection_indicator = MDBoxLayout(
+                            size_hint=(None, 1),
+                            width=dp(8),
+                            md_bg_color=[0, 0.6, 1, 1],  # Bleu vif
+                            opacity=0  # Invisible par défaut
+                        )
+                        
+                        # Créer le conteneur pour le contenu
+                        self.content_layout = MDBoxLayout(
+                            orientation="vertical",
+                            spacing=dp(4),
+                            padding=dp(10),
+                            size_hint=(1, 1)
+                        )
+                        
+                        # Ajouter les éléments au layout principal
+                        self.main_layout.add_widget(self.selection_indicator)
+                        self.main_layout.add_widget(self.content_layout)
+                        
+                        # Ajouter le layout principal à la carte
+                        super().add_widget(self.main_layout)
+                        
+                    def on_touch_down(self, touch):
+                        if self.collide_point(*touch.pos):
+                            select_module(self, self.module_id)
+                            return True
+                        return super().on_touch_down(touch)
+                        
+                    # Surcharger add_widget pour ajouter les widgets au content_layout
+                    def add_widget(self, widget, index=0, canvas=None):
+                        if hasattr(self, 'content_layout'):
+                            return self.content_layout.add_widget(widget, index, canvas)
+                        return super().add_widget(widget, index, canvas)
+                    
+                    def set_selected(self, is_selected):
+                        self.is_selected = is_selected
+                        # Mettre à jour l'apparence
+                        if is_selected:
+                            self.md_bg_color = [0.85, 0.9, 1, 1]  # Bleu très clair
+                            self.selection_indicator.opacity = 1  # Afficher la bande bleue
+                            self.elevation = 4  # Augmenter l'élévation
+                        else:
+                            self.md_bg_color = [1, 1, 1, 1]  # Blanc normal
+                            self.selection_indicator.opacity = 0  # Cacher la bande bleue
+                            self.elevation = 1  # Élévation normale
+                        
+                        # Force le rafraîchissement de l'ombre pour KivyMD 2
+                        if hasattr(self, '_do_refresh_shadow'):
+                            self._do_refresh_shadow()
+                
+                # Créer une carte de module avec la classe personnalisée
+                module_card = CustomModuleCard(
                     orientation="vertical",
                     size_hint_y=None,
                     height=dp(75),
@@ -1123,7 +1278,8 @@ class TaskManagerScreen(MDScreen):
                     padding=dp(10),
                     spacing=dp(4),
                     elevation=1,
-                    radius=[dp(4)]
+                    radius=[dp(4)],
+                    module_id=module.get('id', '')
                 )
                 
                 # Titre du module
@@ -1146,28 +1302,6 @@ class TaskManagerScreen(MDScreen):
                 module_card.add_widget(module_title)
                 module_card.add_widget(module_version)
                 
-                # Stocker l'ID du module pour le callback
-                module_card.module_id = module.get('id', '')
-                
-                # Gérer l'événement de clic en utilisant une classe intermédiaire
-                module_card_id = module.get('id', '')
-                
-                # Méthode plus simple en utilisant une classe qui capture l'état
-                class ModuleCardBehavior:
-                    def __init__(self, card, module_id):
-                        self.card = card
-                        self.module_id = module_id
-                    
-                    def on_touch_down(self, touch):
-                        if self.card.collide_point(*touch.pos):
-                            select_module(self.card, self.module_id)
-                            return True
-                        return False
-                
-                # Créer et assigner le comportement
-                behavior = ModuleCardBehavior(module_card, module_card_id)
-                module_card.on_touch_down = behavior.on_touch_down
-                
                 modules_content.add_widget(module_card)
             
             # Ajouter le sélecteur à l'interface
@@ -1186,8 +1320,16 @@ class TaskManagerScreen(MDScreen):
                 # Mettre à jour le champ avec l'index sélectionné
                 index = f"{module_id}.{screen_id}"
                 self.target_screen_field.text = index
-                print(f"[DEBUG] Index sélectionné: {index}")
+                print(f"[DEBUG] Index sélectionné et appliqué: {index}")
         except Exception as e:
             print(f"[ERROR] Erreur lors de la sélection du module/écran: {str(e)}")
             import traceback
             traceback.print_exc()
+    
+    def open_modules_browser(self):
+        """
+        Ouvre le navigateur de modules et d'écrans pour la sélection.
+        Cette méthode est appelée par le bouton 'Parcourir...'
+        """
+        print(f"[DEBUG] Bouton parcourir cliqué!")
+        self.show_module_selector()
