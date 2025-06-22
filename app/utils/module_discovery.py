@@ -153,11 +153,11 @@ class ModuleDiscovery:
     
     def get_installed_modules(self) -> List[Dict[str, Any]]:
         """
-        Récupère la liste des modules installés depuis Firebase pour toutes les branches connues.
-        Commence par la branche Git courante, puis vérifie les autres branches connues.
+        Récupère la liste des modules installés depuis Firebase pour toutes les branches connues,
+        en filtrant pour ne montrer que les modules en développement (branches commençant par 'dev_').
         
         Returns:
-            List[Dict[str, Any]]: Liste des modules installés
+            List[Dict[str, Any]]: Liste des modules en développement
         """
         try:
             self.logger.info(f"Branche Git détectée: {self.branch_name}")
@@ -165,31 +165,47 @@ class ModuleDiscovery:
             
             # Vérifier si les modules sont déjà en cache
             if self.modules_cache:
-                return list(self.modules_cache.values())
+                # Filtrer le cache pour ne garder que les modules de développement
+                filtered_cache = {k: v for k, v in self.modules_cache.items() 
+                                if 'branch' in v and v['branch'].startswith('dev_')}
+                if filtered_cache:
+                    return list(filtered_cache.values())
                 
             modules_list = []
-            modules_found_in_branches = False
             
-            # D'abord traiter la branche courante (priorité)
-            sanitized_branch = self._sanitize_branch_name(self.branch_name)
-            branch_collection = f"module_indexes_modules_{sanitized_branch}"
-            self.logger.info(f"Récupération des modules depuis la collection de la branche courante: {branch_collection}")
+            # Supprimer la référence à 'application_principale' si elle existe
+            try:
+                # Vérifier si la collection existe
+                app_collection = "module_indexes_modules_application_principale"
+                app_modules = self.firebase_service.get_collection(app_collection)
+                if app_modules:
+                    self.logger.info(f"Suppression de la collection d'application principale: {app_collection}")
+                    # Notez que pour une vraie suppression, il faudrait faire une opération DELETE
+                    # Ici, on ne la traite simplement pas dans notre résultat
+            except Exception as e:
+                self.logger.warning(f"Erreur lors de la vérification de la collection application_principale: {e}")
             
-            branch_modules = self.firebase_service.get_collection(branch_collection)
+            # Récupérer uniquement les branches de développement
+            # D'abord traiter la branche courante si c'est une branche de développement
+            if self.branch_name.startswith('dev_'):
+                sanitized_branch = self._sanitize_branch_name(self.branch_name)
+                branch_collection = f"module_indexes_modules_{sanitized_branch}"
+                self.logger.info(f"Récupération des modules depuis la collection de la branche courante: {branch_collection}")
+                
+                branch_modules = self.firebase_service.get_collection(branch_collection)
+                
+                if branch_modules:
+                    # Ajouter le champ branch à chaque module
+                    for module in branch_modules:
+                        module["branch"] = self.branch_name
+                        
+                    # Ajouter ces modules à la liste finale
+                    modules_list.extend(branch_modules)
+                    self.logger.info(f"Trouvé {len(branch_modules)} modules dans la branche courante")
             
-            if branch_modules:
-                modules_found_in_branches = True
-                # Ajouter le champ branch à chaque module
-                for module in branch_modules:
-                    module["branch"] = self.branch_name
-                    
-                # Ajouter ces modules à la liste finale
-                modules_list.extend(branch_modules)
-                self.logger.info(f"Trouvé {len(branch_modules)} modules dans la branche courante")
-            
-            # Ensuite, récupérer les modules des autres branches connues
-            known_branches = self._get_known_branches()
-            self.logger.info(f"Branches Git connues: {known_branches}")
+            # Ensuite, récupérer les modules des autres branches de développement connues
+            known_branches = [branch for branch in self._get_known_branches() if branch.startswith('dev_')]
+            self.logger.info(f"Branches Git de développement connues: {known_branches}")
             
             # Exclure la branche courante déjà traitée
             if self.branch_name in known_branches:
@@ -214,14 +230,18 @@ class ModuleDiscovery:
                 modules_list.extend(branch_modules)
             
             # Mettre en cache - utiliser l'ID et la branche comme clé unique pour éviter les doublons
+            # Ne conserver que les modules de développement
             self.modules_cache = {}
+            filtered_modules = []
             for module in modules_list:
                 if 'id' in module and 'branch' in module:
-                    key = f"{module['id']}_{module['branch']}"
-                    self.modules_cache[key] = module
+                    if module['branch'].startswith('dev_'):
+                        key = f"{module['id']}_{module['branch']}"
+                        self.modules_cache[key] = module
+                        filtered_modules.append(module)
             
-            self.logger.info(f"Nombre total de modules trouvés: {len(modules_list)}")
-            return modules_list
+            self.logger.info(f"Nombre total de modules de développement trouvés: {len(filtered_modules)}")
+            return filtered_modules
             
         except Exception as e:
             self.logger.error(f"Erreur lors de la récupération des modules: {str(e)}")
