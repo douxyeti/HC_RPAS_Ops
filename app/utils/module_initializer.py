@@ -31,10 +31,43 @@ class ModuleInitializer:
     def __init__(self):
         """Initialisation"""
         self.current_branch = self._get_current_branch()
+        # Normaliser le nom de branche (pour gérer les versions/alias d'une même application)
+        self.normalized_branch = self._normalize_branch_name(self.current_branch)
         self.firebase_service = None
         self.module_indexed = False
         
-        logger.info(f"Initialisation du module pour la branche: {self.current_branch}")
+        logger.info(f"Initialisation du module pour la branche: {self.current_branch} (normalisée: {self.normalized_branch})")
+        
+    def _normalize_branch_name(self, branch_name: str) -> str:
+        """
+        Normalise le nom de la branche pour gérer les alias et les versions
+        Par exemple, 'dev_application_principale_v2' et 'application_principale' 
+        deviennent tous les deux 'application_principale'
+        """
+        # Définir les branches qui correspondent à l'application principale
+        main_app_branches = [
+            "dev_application_principale_v2", 
+            "dev_application_principale",
+            "application_principale"
+        ]
+        
+        # Vérifier si c'est une branche de l'application principale
+        if branch_name in main_app_branches:
+            return "application_principale"
+            
+        # Autres normalisations possibles pour d'autres modules
+        # Par exemple, différentes versions du module UTM
+        utm_branches = [
+            "dev_UTM_v2",
+            "UTM",
+            "utm"  
+        ]
+        
+        if branch_name in utm_branches:
+            return "UTM"  
+            
+        # Si aucune règle de normalisation ne s'applique, utiliser le nom tel quel
+        return branch_name
     
     def _get_current_branch(self) -> str:
         """Récupère le nom de la branche Git courante"""
@@ -337,8 +370,8 @@ class ModuleInitializer:
             "is_main_app": self.current_branch == "dev_application_principale_v2"  # Est-ce l'app principale?
         }
         
-        # Sauvegarder le module dans la collection générique et spécifique à la branche
-        self.firebase_service.set_data("module_indexes_modules", module_data)
+        # Sauvegarder le module uniquement dans la collection spécifique à la branche
+        # Ne plus sauvegarder dans la collection générique pour éviter les duplications
         self.firebase_service.set_data(module_collection, module_data)
         
         # Collection pour les écrans du module
