@@ -88,13 +88,30 @@ class ModulesAdminScreen(MDScreen):
             
         try:
             # Récupérer les modules
-            modules = self.discovery.get_installed_modules()
+            all_modules = self.discovery.get_installed_modules()
+            
+            # Filtrer pour ne garder que les modules de développement et éliminer les doublons
+            filtered_modules = []
+            seen_ids = set()  # Pour suivre les IDs déjà vus
+            
+            for module in all_modules:
+                module_id = module.get('id', '')
+                branch = module.get('branch', '')
+                
+                # Ne garder que les branches de développement et exclure explicitement application_principale
+                if (branch.startswith('dev_') and 
+                    module_id not in seen_ids and 
+                    'application_principale' not in module_id):
+                    filtered_modules.append(module)
+                    seen_ids.add(module_id)
+            
+            print(f"[DEBUG] ModulesAdminScreen.refresh_data - Total modules: {len(all_modules)}, Après filtrage: {len(filtered_modules)}")
             
             # Vider le conteneur de modules
             self.modules_container.clear_widgets()
             
             # Ajouter les cartes de modules de façon programmatique
-            for module in modules:
+            for module in filtered_modules:
                 # Créer la carte
                 module_card = MDCard(
                     orientation="vertical",
