@@ -90,18 +90,27 @@ class ModulesAdminScreen(MDScreen):
             # Récupérer les modules
             all_modules = self.discovery.get_installed_modules()
             
-            # Filtrer pour ne garder que les modules de développement et éliminer les doublons
+            # Filtrage STRICT pour n'afficher QUE les modules de développement sans doublons
             filtered_modules = []
             seen_ids = set()  # Pour suivre les IDs déjà vus
             
             for module in all_modules:
                 module_id = module.get('id', '')
+                module_name = module.get('name', '')
                 branch = module.get('branch', '')
                 
-                # Ne garder que les branches de développement et exclure explicitement application_principale
+                # Triple filtrage:
+                # 1. Vérifier que c'est une branche de développement
+                # 2. Vérifier que l'ID contient 'dev_' aussi (très important)
+                # 3. Exclure explicitement tout ce qui contient 'application_principale'
+                # 4. Éliminer les doublons basés sur l'ID
+                
                 if (branch.startswith('dev_') and 
+                    'dev_' in module_id and 
                     module_id not in seen_ids and 
-                    'application_principale' not in module_id):
+                    'application_principale' not in module_id.lower() and
+                    'application_principale' not in branch.lower() and
+                    'application_principale' not in module_name.lower()):
                     filtered_modules.append(module)
                     seen_ids.add(module_id)
             

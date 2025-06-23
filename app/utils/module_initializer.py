@@ -353,10 +353,11 @@ class ModuleInitializer:
         # Sanitize la branche pour les noms de collection
         sanitized_branch = self._sanitize_branch_name(self.current_branch)
         module_collection = f"module_indexes_modules_{sanitized_branch}"
+        module_id = f"module_{sanitized_branch}"
         
-        # Créer le module pour cette branche
+        # Préparer les données du module
         module_data = {
-            "id": f"module_{sanitized_branch}",
+            "id": module_id,
             "name": f"Module {self.current_branch}",
             "description": f"Module automatiquement créé pour la branche {self.current_branch}",
             "version": "1.0.0",
@@ -370,9 +371,15 @@ class ModuleInitializer:
             "is_main_app": self.current_branch == "dev_application_principale_v2"  # Est-ce l'app principale?
         }
         
-        # Sauvegarder le module uniquement dans la collection spécifique à la branche
-        # Ne plus sauvegarder dans la collection générique pour éviter les duplications
-        self.firebase_service.set_data(module_collection, module_data)
+        # Utiliser set_data_with_id qui vérifie automatiquement si le document existe déjà
+        # et fait une mise à jour au lieu d'une création si c'est le cas
+        logger.info(f"Création/mise à jour du module {module_id} dans la collection {module_collection}")
+        result = self.firebase_service.set_data_with_id(module_collection, module_id, module_data)
+        
+        # Si échec, sortir avec erreur
+        if not result:
+            logger.error(f"Erreur lors de la création/mise à jour du module {module_id}")
+            return False
         
         # Collection pour les écrans du module
         screens_collection = f"module_indexes_screens_{module_data['id']}_{sanitized_branch}"
@@ -388,7 +395,8 @@ class ModuleInitializer:
             "is_main": True
         }
         
-        self.firebase_service.set_data(screens_collection, dashboard_data)
+        # Utiliser l'ID de l'écran pour éviter les doublons
+        self.firebase_service.set_data_with_id(screens_collection, dashboard_data["id"], dashboard_data)
         
         # Ajouter tous les écrans indexés
         for screen in screens:
@@ -408,7 +416,8 @@ class ModuleInitializer:
                 "added_from_index": True
             }
             
-            self.firebase_service.set_data(screens_collection, screen_data)
+            # Utiliser l'ID de l'écran pour éviter les doublons
+            self.firebase_service.set_data_with_id(screens_collection, screen_data["id"], screen_data)
         
         logger.info(f"Module créé avec {len(screens)} écrans dans '{screens_collection}'")
         return True

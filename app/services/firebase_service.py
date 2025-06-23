@@ -67,12 +67,31 @@ class FirebaseService:
             raise
 
     def set_data(self, path, data):
-        """Définit des données dans la base de données temps réel"""
+        """Définit des données dans la base de données temps réel avec un ID généré automatiquement"""
         try:
             self.db.collection(path).document().set(data)
         except Exception as e:
             print(f"Erreur lors de l'écriture des données: {str(e)}")
             raise
+            
+    def set_data_with_id(self, path, doc_id, data):
+        """Définit des données dans la base de données temps réel avec un ID spécifique"""
+        try:
+            # Vérifier si le document existe déjà
+            doc_ref = self.db.collection(path).document(doc_id)
+            doc = doc_ref.get()
+            
+            if doc.exists:
+                print(f"[DEBUG] FirebaseService.set_data_with_id - Document {doc_id} existe déjà - mise à jour")
+                doc_ref.update(data)
+            else:
+                print(f"[DEBUG] FirebaseService.set_data_with_id - Création du document {doc_id}")
+                doc_ref.set(data)
+                
+            return True
+        except Exception as e:
+            print(f"Erreur lors de l'écriture du document {doc_id}: {str(e)}")
+            return False
 
     def update_data(self, path, data):
         """Met à jour des données dans la base de données temps réel"""

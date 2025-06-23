@@ -153,24 +153,15 @@ class ModuleDiscovery:
     
     def get_installed_modules(self) -> List[Dict[str, Any]]:
         """
-        Récupère la liste des modules installés depuis Firebase pour toutes les branches connues,
-        en filtrant pour ne montrer que les modules en développement (branches commençant par 'dev_').
+        Récupère tous les modules installés depuis Firebase
         
         Returns:
-            List[Dict[str, Any]]: Liste des modules en développement
+            List[Dict[str, Any]]: Liste des modules installés
         """
         try:
             self.logger.info(f"Branche Git détectée: {self.branch_name}")
             self.logger.info(f"ModuleDiscovery initialisé pour la branche: '{self.branch_name}'")
             
-            # Vérifier si les modules sont déjà en cache
-            if self.modules_cache:
-                # Filtrer le cache pour ne garder que les modules de développement
-                filtered_cache = {k: v for k, v in self.modules_cache.items() 
-                                if 'branch' in v and v['branch'].startswith('dev_')}
-                if filtered_cache:
-                    return list(filtered_cache.values())
-                
             modules_list = []
             
             # Supprimer la référence à 'application_principale' si elle existe
@@ -223,25 +214,35 @@ class ModuleDiscovery:
                 
                 # Ajouter les informations de branche à chaque module
                 for module in branch_modules:
-                    if 'id' in module:
-                        module['branch'] = branch_name
-                        self.logger.debug(f"Module trouvé dans la branche {branch_name}: {module['id']}")
-                
+                    module["branch"] = branch_name
+                    
+                # Ajouter ces modules à la liste finale
                 modules_list.extend(branch_modules)
+                self.logger.info(f"Trouvé {len(branch_modules)} modules dans la branche {branch_name}")
             
-            # Mettre en cache - utiliser l'ID et la branche comme clé unique pour éviter les doublons
-            # Ne conserver que les modules de développement
-            self.modules_cache = {}
-            filtered_modules = []
-            for module in modules_list:
-                if 'id' in module and 'branch' in module:
-                    if module['branch'].startswith('dev_'):
-                        key = f"{module['id']}_{module['branch']}"
-                        self.modules_cache[key] = module
-                        filtered_modules.append(module)
+            # Éliminer les doublons en conservant une seule instance de chaque module par ID
+            unique_modules = {}
             
-            self.logger.info(f"Nombre total de modules de développement trouvés: {len(filtered_modules)}")
-            return filtered_modules
+            # Afficher les modules trouvés et conserver uniquement la dernière instance de chaque ID
+            for i, module in enumerate(modules_list):
+                if 'id' in module:
+                    module_id = module['id']
+                    branch = module.get('branch', 'INCONNUE')
+                    self.logger.info(f"Module trouvé: ID={module_id}, Branch={branch}")
+                    
+                    # Si c'est un doublon, le signaler
+                    if module_id in unique_modules:
+                        self.logger.warning(f"Doublon détecté pour le module {module_id} - seule la dernière occurrence sera conservée")
+                    
+                    # Conserver uniquement la version la plus récente
+                    unique_modules[module_id] = module
+                else:
+                    self.logger.warning(f"Module sans ID ignoré: {module}")
+            
+            # Convertir en liste pour le retour
+            deduplicated_modules = list(unique_modules.values())
+            self.logger.info(f"Nombre de modules après déduplication: {len(deduplicated_modules)} (sur {len(modules_list)} au total)")
+            return deduplicated_modules
             
         except Exception as e:
             self.logger.error(f"Erreur lors de la récupération des modules: {str(e)}")

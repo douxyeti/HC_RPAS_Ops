@@ -37,6 +37,7 @@ class TaskCard(MDCard):
         super().__init__(**kwargs)
         self.orientation = "vertical"
         self.size_hint_y = None
+        self.size_hint_x = 0.95  # Laisse une marge de 5% pour éviter la superposition avec la barre de défilement
         self.height = dp(120)
         self.padding = dp(16)
         self.spacing = dp(8)
@@ -259,7 +260,7 @@ class TaskManagerScreen(MDScreen):
             # Créer le formulaire
             self.task_form = MDCard(
                 size_hint=(None, None),
-                size=(500, 450),  # Augmentation de la hauteur pour le nouveau champ
+                size=(500, 550),  # Augmentation de la hauteur pour accommoder les labels
                 pos_hint={"center_x": 0.5, "center_y": 0.5},
                 elevation=4,
                 md_bg_color=[1, 1, 1, 1],
@@ -281,12 +282,46 @@ class TaskManagerScreen(MDScreen):
             height=dp(36)
         )
         
-        # Champs de saisie
+        # Champs de saisie avec labels
+        # Label + champ pour le titre
+        title_box = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(70),
+            spacing=2
+        )
+        
+        title_label = MDLabel(
+            text="Titre de la tâche:",
+            theme_font_size="Custom",
+            font_size="14sp",
+            bold=True,
+            adaptive_height=True
+        )
+        
         self.title_field = MDTextField(
             hint_text="Titre de la tâche",
             helper_text="Le titre de la tâche est requis",
             helper_text_mode="on_error",
             required=True
+        )
+        
+        title_box.add_widget(title_label)
+        title_box.add_widget(self.title_field)
+        
+        # Label + champ pour la description
+        description_box = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(120), spacing=12
+        )
+        
+        description_label = MDLabel(
+            text="Description:",
+            theme_font_size="Custom",
+            font_size="14sp",
+            bold=True,
+            adaptive_height=True
         )
         
         self.description_field = MDTextField(
@@ -295,18 +330,53 @@ class TaskManagerScreen(MDScreen):
             helper_text="La description est optionnelle"
         )
         
+        description_box.add_widget(description_label)
+        description_box.add_widget(self.description_field)
+        
         # Champ pour l'écran cible (module)
-        target_screen_box = MDBoxLayout(
+        target_section_box = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(120), spacing=12
+        )
+        
+        target_section_label = MDLabel(
+            text="Module et écran cible:",
+            theme_font_size="Custom",
+            font_size="14sp",
+            bold=True,
+            adaptive_height=True
+        )
+        
+        # Champ pour le module (première partie)
+        module_box = MDBoxLayout(
             orientation='horizontal',
-            spacing=8,
+            spacing=12,
+            size_hint_y=None,
+            height=dp(50)
+        )
+        
+        self.target_module_field = MDTextField(
+            id="target_module_field",
+            hint_text="Nom du module",
+            helper_text="Ex: operations, gestion, etc.",
+            size_hint_x=1.0
+        )
+        
+        module_box.add_widget(self.target_module_field)
+        
+        # Champ pour l'écran (deuxième partie)
+        screen_box = MDBoxLayout(
+            orientation='horizontal',
+            spacing=12,
             size_hint_y=None,
             height=dp(50)
         )
         
         self.target_screen_field = MDTextField(
             id="target_screen_field",
-            hint_text="Écran cible (format: module.screen)",
-            helper_text="Lien vers un écran de module",
+            hint_text="Nom de l'écran",
+            helper_text="Ex: missions_screen, tasks_screen",
             size_hint_x=0.7
         )
         
@@ -323,8 +393,18 @@ class TaskManagerScreen(MDScreen):
             font_size="14sp"
         ))
         
-        target_screen_box.add_widget(self.target_screen_field)
-        target_screen_box.add_widget(browse_button)
+        screen_box.add_widget(self.target_screen_field)
+        screen_box.add_widget(browse_button)
+        
+        # Ajouter les deux boîtes au conteneur parent
+        target_screen_box = MDBoxLayout(
+            orientation='vertical',
+            spacing=12,
+            size_hint_y=None,
+            height=dp(110)
+        )        
+        target_screen_box.add_widget(module_box)
+        target_screen_box.add_widget(screen_box)
         
         # Boutons
         buttons_box = MDBoxLayout(
@@ -358,11 +438,18 @@ class TaskManagerScreen(MDScreen):
         buttons_box.add_widget(cancel_button)
         buttons_box.add_widget(save_button)
         
+        # Ajouter l'étiquette de l'écran cible au conteneur
+        target_section_box.add_widget(target_section_label)
+        target_section_box.add_widget(target_screen_box)
+        
         # Ajouter tous les widgets au formulaire
         self.task_form.add_widget(form_title)
-        self.task_form.add_widget(self.title_field)
-        self.task_form.add_widget(self.description_field)
-        self.task_form.add_widget(target_screen_box)
+        self.task_form.add_widget(title_box)
+        self.task_form.add_widget(description_box)
+        # Ajouter un spacer pour créer plus d'espace entre description et cible
+        spacer = Widget(size_hint_y=None, height=dp(20))
+        self.task_form.add_widget(spacer)
+        self.task_form.add_widget(target_section_box)
         self.task_form.add_widget(buttons_box)
         
         # Ajouter le formulaire à l'écran
@@ -375,6 +462,7 @@ class TaskManagerScreen(MDScreen):
             delattr(self, 'task_form')
             self.title_field = None
             self.description_field = None
+            self.target_module_field = None
             self.target_screen_field = None
 
     def add_task(self, *args):
@@ -393,14 +481,14 @@ class TaskManagerScreen(MDScreen):
             }
             
             # Ajouter les informations d'écran cible si présentes
-            target_screen = self.target_screen_field.text.strip()
-            if target_screen:
-                parts = target_screen.split('.')
-                if len(parts) == 2:
-                    task_data['target_module_id'] = parts[0]
-                    task_data['target_screen_id'] = parts[1]
-                    # Ajouter une icône spécifique pour les tâches liées à un module
-                    task_data['icon'] = 'link-variant'
+            module_id = self.target_module_field.text.strip()
+            screen_id = self.target_screen_field.text.strip()
+            
+            if module_id and screen_id:
+                task_data['target_module_id'] = module_id
+                task_data['target_screen_id'] = screen_id
+                # Ajouter une icône spécifique pour les tâches liées à un module
+                task_data['icon'] = 'link-variant'
             
             # Ajouter la tâche
             if self.task_model.add_task(self.current_role_id, task_data):
@@ -434,7 +522,7 @@ class TaskManagerScreen(MDScreen):
         edit_card = MDCard(
             orientation='vertical',
             size_hint=(None, None),
-            size=(500, 350),  # Augmentation de la hauteur pour le nouveau champ
+            size=(500, 550),  # Augmentation de la hauteur pour accommoder les labels
             pos_hint={'center_x': 0.5, 'center_y': 0.5},
             elevation=4,
             md_bg_color=[1, 1, 1, 1],
@@ -443,15 +531,32 @@ class TaskManagerScreen(MDScreen):
         )
         
         # Titre du formulaire
-        title_label = MDLabel(
+        form_title = MDLabel(
             text="Modifier la tâche",
             theme_font_size="Custom",
-            font_size="20sp",
+            font_size="24sp",
+            halign="center",
+            size_hint_y=None,
+            height=dp(36)
+        )
+        edit_card.add_widget(form_title)
+        
+        # Label + champ pour le titre
+        title_box = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(70),
+            spacing=2
+        )
+        
+        title_label = MDLabel(
+            text="Titre de la tâche:",
+            theme_font_size="Custom",
+            font_size="14sp",
+            bold=True,
             adaptive_height=True
         )
-        edit_card.add_widget(title_label)
         
-        # Champ titre
         self.title_field = MDTextField(
             text=title,
             hint_text="Titre de la tâche",
@@ -459,35 +564,90 @@ class TaskManagerScreen(MDScreen):
             helper_text_mode="on_error",
             required=True
         )
-        edit_card.add_widget(self.title_field)
         
-        # Champ description
+        title_box.add_widget(title_label)
+        title_box.add_widget(self.title_field)
+        edit_card.add_widget(title_box)
+        
+        # Label + champ pour la description
+        description_box = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(120), spacing=12
+        )
+        
+        description_label = MDLabel(
+            text="Description:",
+            theme_font_size="Custom",
+            font_size="14sp",
+            bold=True,
+            adaptive_height=True
+        )
+        
         self.description_field = MDTextField(
             text=description,
             hint_text="Description de la tâche",
             multiline=True,
             max_height="100dp"
         )
-        edit_card.add_widget(self.description_field)
         
-        # Champ pour l'écran cible (module)
-        target_screen_box = MDBoxLayout(
+        description_box.add_widget(description_label)
+        description_box.add_widget(self.description_field)
+        edit_card.add_widget(description_box)
+        # Ajouter un spacer pour créer plus d'espace entre description et cible
+        spacer = Widget(size_hint_y=None, height=dp(20))
+        edit_card.add_widget(spacer)
+        
+        # Section pour l'écran cible (module)
+        target_section_box = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(120), spacing=12
+        )
+        
+        target_section_label = MDLabel(
+            text="Module et écran cible:",
+            theme_font_size="Custom",
+            font_size="14sp",
+            bold=True,
+            adaptive_height=True
+        )
+        
+        # Champ pour le module (première partie)
+        module_box = MDBoxLayout(
             orientation='horizontal',
-            spacing=8,
+            spacing=12,
             size_hint_y=None,
             height=dp(50)
         )
         
-        # Format: module_id.screen_id
-        target_screen_text = f"{target_module_id}.{target_screen_id}" if target_module_id and target_screen_id else ""
+        self.target_module_field = MDTextField(
+            id="target_module_field",
+            text=target_module_id,
+            hint_text="Nom du module",
+            helper_text="Ex: operations, gestion, etc.",
+            size_hint_x=1.0
+        )
+        
+        module_box.add_widget(self.target_module_field)
+        
+        # Champ pour l'écran (deuxième partie)
+        screen_box = MDBoxLayout(
+            orientation='horizontal',
+            spacing=12,
+            size_hint_y=None,
+            height=dp(50)
+        )
         
         self.target_screen_field = MDTextField(
             id="target_screen_field",
-            text=target_screen_text,
-            hint_text="Écran cible (format: module.screen)",
-            helper_text="Lien vers un écran de module",
+            text=target_screen_id,
+            hint_text="Nom de l'écran",
+            helper_text="Ex: missions_screen, tasks_screen",
             size_hint_x=0.7
         )
+        
+        target_section_box.add_widget(target_section_label)
         
         print("[DEBUG] Création du bouton parcourir...")
         
@@ -510,9 +670,13 @@ class TaskManagerScreen(MDScreen):
             self.show_module_selector()
             
         browse_button.bind(on_release=browse_click)
-        target_screen_box.add_widget(self.target_screen_field)
-        target_screen_box.add_widget(browse_button)
-        edit_card.add_widget(target_screen_box)
+        screen_box.add_widget(self.target_screen_field)
+        screen_box.add_widget(browse_button)
+        
+        # Assembler les parties du formulaire
+        target_section_box.add_widget(module_box)
+        target_section_box.add_widget(screen_box)
+        edit_card.add_widget(target_section_box)
         
         # Conteneur pour les boutons
         buttons_container = MDBoxLayout(
@@ -568,6 +732,7 @@ class TaskManagerScreen(MDScreen):
             delattr(self, 'edit_task_card')
             self.title_field = None
             self.description_field = None
+            self.target_module_field = None
             self.target_screen_field = None
 
     def update_task(self, old_title):
@@ -580,14 +745,14 @@ class TaskManagerScreen(MDScreen):
             }
             
             # Ajouter les informations d'écran cible si présentes
-            target_screen = self.target_screen_field.text.strip()
-            if target_screen:
-                parts = target_screen.split('.')
-                if len(parts) == 2:
-                    updated_task['target_module_id'] = parts[0]
-                    updated_task['target_screen_id'] = parts[1]
-                    # Ajouter une icône spécifique pour les tâches liées à un module
-                    updated_task['icon'] = 'link-variant'
+            module_id = self.target_module_field.text.strip()
+            screen_id = self.target_screen_field.text.strip()
+            
+            if module_id and screen_id:
+                updated_task['target_module_id'] = module_id
+                updated_task['target_screen_id'] = screen_id
+                # Ajouter une icône spécifique pour les tâches liées à un module
+                updated_task['icon'] = 'link-variant'
             
             # Mettre à jour la tâche
             if self.task_model.update_task(self.current_role_id, old_title, updated_task):
@@ -1099,7 +1264,7 @@ class TaskManagerScreen(MDScreen):
                         screen_card = CustomScreenCard(
                             orientation="vertical",
                             size_hint_y=None,
-                            height=dp(75),
+                            height=dp(50),  # Hauteur réduite car moins de contenu
                             md_bg_color=[1, 1, 1, 1],
                             padding=dp(10),
                             spacing=dp(4),
@@ -1108,7 +1273,7 @@ class TaskManagerScreen(MDScreen):
                             screen_id=screen.get('id', '')
                         )
                         
-                        # Titre de l'écran
+                        # Seulement le titre de l'écran
                         screen_title = MDLabel(
                             text=screen.get('name', 'Écran sans nom'),
                             theme_font_size="Custom",
@@ -1116,28 +1281,8 @@ class TaskManagerScreen(MDScreen):
                             bold=True
                         )
                         
-                        # ID de l'écran
-                        screen_id_label = MDLabel(
-                            text=f"ID: {screen.get('id', '')}",
-                            theme_font_size="Custom",
-                            font_size="14sp",
-                            theme_text_color="Secondary"
-                        )
-                        
-                        # Assembler la carte dans le bon ordre
+                        # Assembler la carte avec uniquement le titre
                         screen_card.add_widget(screen_title)
-                        screen_card.add_widget(screen_id_label)
-                        
-                        # Description de l'écran (si disponible)
-                        description = screen.get('description', '')
-                        if description:
-                            desc_label = MDLabel(
-                                text=description,
-                                theme_font_size="Custom",
-                                font_size="14sp",
-                                theme_text_color="Secondary"
-                            )
-                            screen_card.add_widget(desc_label)
                         
                         screens_content.add_widget(screen_card)
             
@@ -1181,13 +1326,16 @@ class TaskManagerScreen(MDScreen):
                 print(f"[DEBUG] select_and_close - Module: {selected_module[0]}, Écran: {selected_screen[0]}")
                 
                 if selected_module[0] and selected_screen[0]:
-                    # Mettre à jour le champ
-                    index = f"{selected_module[0]}.{selected_screen[0]}"
+                    # Mettre à jour les champs séparément
+                    if hasattr(self, 'target_module_field') and self.target_module_field:
+                        self.target_module_field.text = selected_module[0]
+                        print(f"[DEBUG] Module sélectionné et appliqué: {selected_module[0]}")
+                    
                     if hasattr(self, 'target_screen_field') and self.target_screen_field:
-                        self.target_screen_field.text = index
-                        print(f"[DEBUG] Index sélectionné et appliqué: {index}")
+                        self.target_screen_field.text = selected_screen[0]
+                        print(f"[DEBUG] Écran sélectionné et appliqué: {selected_screen[0]}")
                     else:
-                        print(f"[DEBUG] Index sélectionné mais aucun champ cible trouvé: {index}")
+                        print(f"[DEBUG] Sélection faite mais champs cibles non trouvés")
                         
                     # Stockage pour usage futur (facultatif)
                     self._last_selected_module = selected_module[0]
@@ -1333,3 +1481,9 @@ class TaskManagerScreen(MDScreen):
         """
         print(f"[DEBUG] Bouton parcourir cliqué!")
         self.show_module_selector()
+
+
+
+
+
+

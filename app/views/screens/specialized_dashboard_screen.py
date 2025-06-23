@@ -11,6 +11,7 @@ from kivymd.app import MDApp
 from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
+
 from app.controllers.dashboard_controller import DashboardController
 from kivymd.uix.dialog import MDDialog
 
@@ -377,6 +378,7 @@ class SpecializedDashboardScreen(MDScreen):
         self.menu = MDDropdownMenu(
             caller=button,
             items=menu_items,
+            position="bottom",
             width_mult=4,
             max_height=dp(250),
             radius=[8, 8, 8, 8],
