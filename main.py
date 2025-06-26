@@ -160,30 +160,44 @@ class HighCloudRPASApp(MDApp):
 
     def init_services(self):
         """Initialise tous les services"""
-        # Initialise le service de configuration
-        self.config_service = ConfigService()
-        
-        # Initialise le service Firebase
-        self.firebase_service = FirebaseService.get_instance()
-        
-        # On initialise la connexion MQTT si le service est activé
-        mqtt_enabled = self.config_service.get_config('mqtt.enabled', False)
-        if mqtt_enabled:
-            self.mqtt_service = MQTTService()
-            # Connexion au broker MQTT
-            broker = self.config_service.get_config('mqtt.broker', 'localhost')
-            port = int(self.config_service.get_config('mqtt.port', 1883))
-            self.mqtt_service.connect(broker, port)
-        
-        # Initialise le service de gestion des rôles
-        self.roles_manager_service = RolesManagerService()
-        
-        # Charge les rôles depuis Firebase
-        roles_data = self.roles_manager_service.get_all_roles()
-        self.available_roles = []
-        for role in roles_data:
-            if role.get('name'):
-                self.available_roles.append(role.get('name'))
+        try:
+            # Initialise le service de configuration (toujours en premier)
+            self.config_service = ConfigService()
+            self.logger.info("Service de configuration initialisé")
+            
+            # On initialise d'abord la connexion MQTT si le service est activé
+            mqtt_enabled = self.config_service.get_config('mqtt.enabled', False)
+            if mqtt_enabled:
+                self.logger.info("Initialisation du service MQTT...")
+                self.mqtt_service = MQTTService()
+                # Connexion au broker MQTT
+                broker = self.config_service.get_config('mqtt.broker', 'localhost')
+                port = int(self.config_service.get_config('mqtt.port', 1883))
+                self.mqtt_service.connect(broker, port)
+                self.logger.info(f"Service MQTT connecté à {broker}:{port}")
+            else:
+                self.logger.info("Service MQTT désactivé dans la configuration")
+            
+            # Initialise ensuite le service Firebase
+            self.logger.info("Initialisation du service Firebase...")
+            self.firebase_service = FirebaseService.get_instance()
+            self.logger.info("Service Firebase initialisé")
+            
+            # Initialise le service de gestion des rôles
+            self.logger.info("Initialisation du service de gestion des rôles...")
+            self.roles_manager_service = RolesManagerService()
+            
+            # Charge les rôles depuis Firebase
+            self.logger.info("Chargement des rôles depuis Firebase...")
+            roles_data = self.roles_manager_service.get_all_roles()
+            self.available_roles = []
+            for role in roles_data:
+                if role.get('name'):
+                    self.available_roles.append(role.get('name'))
+            self.logger.info(f"{len(self.available_roles)} rôles chargés")
+        except Exception as e:
+            self.logger.error(f"Erreur lors de l'initialisation des services: {e}")
+            raise
         self.available_roles.sort()  # Trie les rôles par ordre alphabétique
         
         # Initialiser le module pour cette branche si nécessaire

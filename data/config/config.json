@@ -1,6 +1,7 @@
 {
     "version": "2.0.0",
     "mqtt": {
+        "enabled": true,
         "broker": "${MQTT_BROKER}",
         "port": "${MQTT_PORT}",
         "username": "${MQTT_USERNAME}",
