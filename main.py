@@ -2,6 +2,7 @@ from kivymd.app import MDApp
 from kivymd.uix.screenmanager import MDScreenManager
 from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
+from kivy.clock import Clock
 from dotenv import load_dotenv
 import os
 import logging
@@ -9,6 +10,7 @@ import logging
 # Import des services
 from app.services import ConfigService, FirebaseService, RolesManagerService
 from app.services.mqtt_service import MQTTService
+from app.services.encryption_service import EncryptionService
 
 # Import de l'initialisation des modules
 from app.utils.module_initializer import get_module_initializer
@@ -23,6 +25,7 @@ from app.views.screens.role_edit_screen import RoleEditScreen
 from app.views.screens.task_manager_screen import TaskManagerScreen
 from app.views.screens.procedures_manager_screen import ProceduresManagerScreen
 from app.views.screens.modules_admin_screen import ModulesAdminScreen
+from app.views.screens.sso_management_screen import SsoManagementScreen
 
 # Import du modèle
 from app.models.application_model import ApplicationModel
@@ -43,6 +46,7 @@ class MainScreenManager(MDScreenManager):
         self.add_widget(RoleEditScreen(name="role_edit"))
         self.add_widget(TaskManagerScreen(name="task_manager"))
         self.add_widget(ModulesAdminScreen(name="modules_admin"))
+        self.add_widget(SsoManagementScreen(name="sso_management"))
 
 class HighCloudRPASApp(MDApp):
     def __init__(self, **kwargs):
@@ -51,6 +55,7 @@ class HighCloudRPASApp(MDApp):
         self.config_service = None
         self.firebase_service = None
         self.mqtt_service = None
+        self.encryption_service = None
         self.roles_manager_service = None
         self.current_role = None
         self.available_roles = []  # Sera chargé depuis Firebase
@@ -97,9 +102,12 @@ class HighCloudRPASApp(MDApp):
         )
         self.screen_manager.add_widget(procedures_manager_screen)
         
-        # Définit l'écran initial
+        # Définit l'écran initial sur le splash screen
         self.screen_manager.current = "splash"
         
+        # Tente une connexion SSO après un court instant, pour laisser le splash screen s'afficher
+        Clock.schedule_once(lambda dt: self._check_for_sso_session(), 1)
+
         return self.screen_manager
         
     def _load_kv_files(self):
@@ -158,6 +166,88 @@ class HighCloudRPASApp(MDApp):
         # Code pour charger la configuration
         pass
 
+    def _check_for_sso_session(self):
+        """Vérifie la présence d'un token SSO sur MQTT au démarrage."""
+        if not self.mqtt_service or self.mqtt_service.connection_state != 'connected':
+            self.logger.warning("SSO Check: MQTT non connecté, passage à l'écran de connexion.")
+            self.switch_screen("login")
+            return
+
+        sso_config = self.config_service.get_config('sso')
+        token_topic = sso_config.get('token_topic')
+
+        # Définir un timeout pour passer à l'écran de login si aucun token n'est reçu
+        self._login_timeout = Clock.schedule_once(
+            lambda dt: self.switch_screen("login"), 2
+        )
+
+        # S'abonner au topic et définir le callback
+        self.mqtt_service.subscribe(token_topic, self._on_sso_token_received)
+        self.logger.info(f"SSO Check: Abonné au topic '{token_topic}' avec un timeout de 2s.")
+
+    def _on_sso_token_received(self, client, userdata, message):
+        """Callback exécuté à la réception d'un token SSO."""
+        if hasattr(self, '_login_timeout'):
+            self._login_timeout.cancel()
+        
+        encrypted_token = message.payload
+        if not encrypted_token:
+            self.logger.warning("SSO Login: Message reçu mais payload vide. Passage à l'écran de connexion.")
+            self.switch_screen("login")
+            return
+
+        try:
+            self.logger.info("SSO Login: Token reçu, tentative de déchiffrement et connexion.")
+            custom_token = self.encryption_service.decrypt(encrypted_token)
+            user_tokens = self.firebase_service.sign_in_with_custom_token(custom_token)
+            
+            if user_tokens:
+                self.logger.info("SSO Login: Connexion automatique réussie.")
+                self.load_user_roles()  # Les détails de l'utilisateur sont maintenant dans firebase_service.current_user
+                self.switch_screen("dashboard")
+            else:
+                self.logger.error("SSO Login: Échec de la connexion avec le token personnalisé.")
+                self.switch_screen("login")
+        except Exception as e:
+            self.logger.error(f"SSO Login: Échec du processus de connexion SSO : {e}", exc_info=True)
+            self.switch_screen("login")
+
+    def load_user_roles(self):
+        """Charge les rôles de l'utilisateur depuis Firebase en utilisant l'utilisateur actuellement connecté."""
+        if not self.firebase_service.current_user:
+            logging.warning("Load Roles: Attempting to load roles without a logged-in user.")
+            return
+
+        try:
+            user_id = self.firebase_service.current_user['localId']
+            logging.info(f"Load Roles: Loading roles for user {user_id}.")
+
+            # New logic: Fetch the pilot document using the user_id
+            pilot_doc = self.firebase_service.get_document(f'pilots/{user_id}')
+
+            if not pilot_doc:
+                logging.warning(f"Load Roles: No pilot document found for user ID '{user_id}'.")
+                self.user_roles = []
+                return
+
+            role_name = pilot_doc.get('role_name')
+            if not role_name:
+                logging.warning(f"Load Roles: 'role_name' not found in pilot document for user '{user_id}'.")
+                self.user_roles = []
+                return
+
+            logging.info(f"User '{user_id}' has role '{role_name}'. Assigning to user_roles.")
+            # For now, we just assign the role name. The dropdown menu will be populated with this.
+            self.user_roles = [role_name]
+            logging.info(f"Roles loaded for {user_id}: {self.user_roles}")
+
+        except KeyError:
+            logging.error("Load Roles: 'localId' not found in self.firebase_service.current_user.")
+            self.user_roles = []
+        except Exception as e:
+            logging.error(f"Load Roles: An unexpected error occurred: {e}")
+            self.user_roles = []
+
     def init_services(self):
         """Initialise tous les services"""
         try:
@@ -195,6 +285,16 @@ class HighCloudRPASApp(MDApp):
                 if role.get('name'):
                     self.available_roles.append(role.get('name'))
             self.logger.info(f"{len(self.available_roles)} rôles chargés")
+
+            # Initialise le service de chiffrement
+            self.logger.info("Initialisation du service de chiffrement...")
+            self.encryption_service = EncryptionService()
+            self.logger.info("Service de chiffrement initialisé")
+
+            # Initialise le service de chiffrement
+            self.logger.info("Initialisation du service de chiffrement...")
+            self.encryption_service = EncryptionService()
+            self.logger.info("Service de chiffrement initialisé")
         except Exception as e:
             self.logger.error(f"Erreur lors de l'initialisation des services: {e}")
             raise
@@ -211,6 +311,27 @@ class HighCloudRPASApp(MDApp):
         except Exception as e:
             logging.error(f"Erreur lors de l'initialisation du module: {e}")
             # Ne pas bloquer le démarrage de l'application en cas d'erreur
+
+    def on_stop(self):
+        """Méthode exécutée à la fermeture de l'application."""
+        self.logger.info("Fermeture de l'application. Nettoyage de la session SSO.")
+        try:
+            if self.mqtt_service and self.mqtt_service.connection_state == 'connected':
+                # Récupérer le topic du token SSO
+                sso_config = self.config_service.get_config('sso')
+                token_topic = sso_config.get('token_topic')
+                
+                if token_topic:
+                    # Publier un message vide pour effacer le token retenu sur le broker
+                    self.logger.info(f"Nettoyage du token SSO sur le topic '{token_topic}'.")
+                    self.mqtt_service.publish(topic=token_topic, message="", retain=True)
+                
+                # Déconnexion propre du service MQTT
+                self.mqtt_service.disconnect()
+                self.logger.info("Service MQTT déconnecté proprement.")
+        except Exception as e:
+            self.logger.error(f"Erreur lors du nettoyage à la fermeture : {e}", exc_info=True)
+
 
 if __name__ == "__main__":
     HighCloudRPASApp().run()
