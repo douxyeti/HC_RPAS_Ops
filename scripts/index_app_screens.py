@@ -21,9 +21,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Importer les services nécessaires de l'application
 from app.services.firebase_service import FirebaseService
 
-# Nom de la collection pour l'index des fenêtres
-BRANCH_NAME = "dev_application_principale_v2"
-COLLECTION_NAME = f"app_screens_index_{BRANCH_NAME}"
+# Nom de la collection unique pour l'index des fenêtres de l'application principale
+# Cette collection est partagée par toutes les branches.
+COLLECTION_NAME = "app_screens_index"
 
 class ScreenIndexer:
     """Classe pour indexer les fenêtres de l'application principale"""
@@ -33,20 +33,7 @@ class ScreenIndexer:
         self.app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.screens = []
         
-    def get_current_branch(self) -> str:
-        """Obtenir le nom de la branche Git actuelle"""
-        try:
-            result = subprocess.run(
-                ["git", "branch", "--show-current"],
-                cwd=self.app_dir,
-                check=True,
-                capture_output=True,
-                text=True
-            )
-            return result.stdout.strip()
-        except Exception as e:
-            print(f"Erreur lors de la récupération de la branche Git: {e}")
-            return BRANCH_NAME  # Fallback à la valeur connue
+
     
     def find_screen_files(self) -> List[str]:
         """Trouver tous les fichiers Python qui pourraient contenir des écrans"""
@@ -109,7 +96,6 @@ class ScreenIndexer:
                     "description": description or f"Écran {class_name} de l'application principale",
                     "file_path": rel_path,
                     "full_class_name": f"{os.path.splitext(os.path.basename(rel_path))[0]}.{class_name}",
-                    "branch": BRANCH_NAME,
                     "indexed_at": datetime.datetime.now().isoformat()
                 }
                 
@@ -134,7 +120,6 @@ class ScreenIndexer:
         metadata = {
             "id": "app_screens_index",
             "name": "Index des écrans de l'application principale",
-            "branch": BRANCH_NAME,
             "screen_count": len(self.screens),
             "created_at": datetime.datetime.now().isoformat(),
             "app_version": "1.0.1"  # À ajuster selon la version de l'app
@@ -154,17 +139,8 @@ class ScreenIndexer:
 def main():
     """Fonction principale"""
     indexer = ScreenIndexer()
-    current_branch = indexer.get_current_branch()
     
-    print(f"Indexation des écrans de l'application principale sur la branche: {current_branch}")
-    
-    # Vérifier que nous sommes sur la bonne branche
-    if current_branch != BRANCH_NAME:
-        print(f"ATTENTION: La branche actuelle ({current_branch}) ne correspond pas à la branche cible ({BRANCH_NAME}).")
-        response = input("Voulez-vous continuer quand même? (o/n): ")
-        if response.lower() != "o":
-            print("Opération annulée.")
-            return
+    print("Indexation des écrans de l'application principale...")
     
     indexer.index_all_screens()
     indexer.save_to_firebase()

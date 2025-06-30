@@ -3,6 +3,8 @@ from firebase_admin import credentials, auth, firestore, storage
 import pyrebase
 import time
 import threading
+import os
+import json
 from kivy.clock import Clock
 from functools import partial
 from .config_service import ConfigService
@@ -17,13 +19,34 @@ class FirebaseService:
         self.firebase = pyrebase.initialize_app(config)
         self.auth_client = self.firebase.auth()
         
-        # Initialisation de l'Admin SDK avec les permissions par défaut
+        # Initialisation de l'Admin SDK
         if not firebase_admin._apps:
-            cred = credentials.ApplicationDefault()
-            firebase_admin.initialize_app(cred, {
-                'projectId': config['projectId'],
-                'storageBucket': config['storageBucket']
-            })
+            # Méthode 1: Essayer de charger la clé depuis la variable d'environnement (plus sécurisé)
+            service_account_json_str = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON')
+            if service_account_json_str:
+                try:
+                    # Nettoyer la chaîne de caractères si elle est entourée de guillemets
+                    if service_account_json_str.startswith("'") and service_account_json_str.endswith("'"):
+                        service_account_json_str = service_account_json_str[1:-1]
+                    
+                    service_account_info = json.loads(service_account_json_str)
+                    cred = credentials.Certificate(service_account_info)
+                    firebase_admin.initialize_app(cred, {
+                        'storageBucket': config.get('storageBucket')
+                    })
+                    print("[INFO] Firebase initialisé avec la clé de service depuis l'environnement.")
+                except Exception as e:
+                    print(f"[ERREUR] Impossible d'initialiser Firebase depuis FIREBASE_SERVICE_ACCOUNT_JSON: {e}")
+                    # En cas d'échec, lever une exception pour arrêter l'application
+                    raise e
+            else:
+                # Méthode 2: Fallback sur les 'Application Default Credentials'
+                print("[AVERTISSEMENT] FIREBASE_SERVICE_ACCOUNT_JSON non trouvée. Utilisation des credentials par défaut.")
+                cred = credentials.ApplicationDefault()
+                firebase_admin.initialize_app(cred, {
+                    'projectId': config['projectId'],
+                    'storageBucket': config.get('storageBucket')
+                })
         
         self.auth = auth
         self.db = firestore.client()
@@ -418,8 +441,28 @@ class FirebaseService:
             print(f"Erreur lors de la suppression du document: {str(e)}")
             return False
 
-    def clear_cache(self):
-        """Vide entièrement le cache"""
-        self._cache = {}
-        self._cache_expiry = {}
-        print("[DEBUG] FirebaseService - Cache vidé")
+    def clear_cache(self, prefix: str = None):
+        """
+        Vide le cache. Si un préfixe est fourni, ne vide que les clés correspondantes.
+        
+        Args:
+            prefix (str, optional): Le préfixe des clés de cache à supprimer. 
+                                    Si None, tout le cache est vidé.
+        """
+        if prefix:
+            # Trouve toutes les clés qui contiennent le préfixe
+            keys_to_delete = [k for k in self._cache if prefix in k]
+            if keys_to_delete:
+                print(f"[DEBUG] FirebaseService - Nettoyage du cache pour les clés avec le préfixe '{prefix}'")
+                for key in keys_to_delete:
+                    del self._cache[key]
+                    if key in self._cache_expiry:
+                        del self._cache_expiry[key]
+                print(f"[DEBUG] FirebaseService - {len(keys_to_delete)} entrées de cache supprimées.")
+            else:
+                print(f"[DEBUG] FirebaseService - Aucun élément de cache trouvé avec le préfixe '{prefix}'")
+        else:
+            # Vide tout le cache si aucun préfixe n'est fourni
+            self._cache.clear()
+            self._cache_expiry.clear()
+            print("[DEBUG] FirebaseService - Cache entièrement vidé")

@@ -249,68 +249,61 @@ class HighCloudRPASApp(MDApp):
             self.user_roles = []
 
     def init_services(self):
-        """Initialise tous les services"""
+        """Initialise tous les services dans le bon ordre."""
         try:
-            # Initialise le service de configuration (toujours en premier)
+            # 1. Service de configuration
             self.config_service = ConfigService()
             self.logger.info("Service de configuration initialisé")
-            
-            # On initialise d'abord la connexion MQTT si le service est activé
-            mqtt_enabled = self.config_service.get_config('mqtt.enabled', False)
-            if mqtt_enabled:
+
+            # 2. Service MQTT (optionnel)
+            if self.config_service.get_config('mqtt.enabled', False):
                 self.logger.info("Initialisation du service MQTT...")
                 self.mqtt_service = MQTTService()
-                # Connexion au broker MQTT
                 broker = self.config_service.get_config('mqtt.broker', 'localhost')
                 port = int(self.config_service.get_config('mqtt.port', 1883))
                 self.mqtt_service.connect(broker, port)
                 self.logger.info(f"Service MQTT connecté à {broker}:{port}")
             else:
                 self.logger.info("Service MQTT désactivé dans la configuration")
-            
-            # Initialise ensuite le service Firebase
+
+            # 3. Service Firebase
             self.logger.info("Initialisation du service Firebase...")
             self.firebase_service = FirebaseService.get_instance()
             self.logger.info("Service Firebase initialisé")
+
+            # 4. Vider le cache et lancer l'indexation des modules
+            self.logger.info("Préparation de l'indexation des modules...")
+            try:
+                # Vider le cache pour forcer la relecture depuis Firebase
+                self.logger.debug("Nettoyage du cache des modules...")
+                self.firebase_service.clear_cache(prefix="module_indexes")
+                
+                # Lancer l'indexation
+                self.logger.info("Lancement de l'indexation...")
+                module_initializer = get_module_initializer()
+                module_initializer.initialize_with_services(self.firebase_service)
+                self.logger.info("Indexation des modules terminée.")
+            except Exception as e:
+                self.logger.error(f"Erreur critique lors de l'indexation des modules: {e}", exc_info=True)
             
-            # Initialise le service de gestion des rôles
+            # 5. Service de gestion des rôles
             self.logger.info("Initialisation du service de gestion des rôles...")
             self.roles_manager_service = RolesManagerService()
             
-            # Charge les rôles depuis Firebase
+            # 6. Chargement des rôles
             self.logger.info("Chargement des rôles depuis Firebase...")
             roles_data = self.roles_manager_service.get_all_roles()
-            self.available_roles = []
-            for role in roles_data:
-                if role.get('name'):
-                    self.available_roles.append(role.get('name'))
+            self.available_roles = [role.get('name') for role in roles_data if role.get('name')]
+            self.available_roles.sort()
             self.logger.info(f"{len(self.available_roles)} rôles chargés")
 
             # Initialise le service de chiffrement
             self.logger.info("Initialisation du service de chiffrement...")
             self.encryption_service = EncryptionService()
             self.logger.info("Service de chiffrement initialisé")
-
-            # Initialise le service de chiffrement
-            self.logger.info("Initialisation du service de chiffrement...")
-            self.encryption_service = EncryptionService()
-            self.logger.info("Service de chiffrement initialisé")
         except Exception as e:
-            self.logger.error(f"Erreur lors de l'initialisation des services: {e}")
+            self.logger.error(f"Échec de l'initialisation d'un service critique: {e}", exc_info=True)
             raise
-        self.available_roles.sort()  # Trie les rôles par ordre alphabétique
-        
-        # Initialiser le module pour cette branche si nécessaire
-        try:
-            module_initializer = get_module_initializer()
-            module_initializer.initialize_with_services(self.firebase_service)
-            if module_initializer.is_module_initialized():
-                logging.info("Module correctement initialisé et indexé pour la branche actuelle.")
-            else:
-                logging.info("Le module était déjà indexé pour la branche actuelle.")
-        except Exception as e:
-            logging.error(f"Erreur lors de l'initialisation du module: {e}")
-            # Ne pas bloquer le démarrage de l'application en cas d'erreur
 
     def on_stop(self):
         """Méthode exécutée à la fermeture de l'application."""

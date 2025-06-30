@@ -152,181 +152,65 @@ class ModuleDiscovery:
         return ""
     
     def get_installed_modules(self) -> List[Dict[str, Any]]:
-        """
-        Récupère tous les modules installés depuis Firebase
-        
-        Returns:
-            List[Dict[str, Any]]: Liste des modules installés
-        """
+        """Récupère tous les modules installés depuis toutes les branches dans Firebase."""
         try:
-            self.logger.info(f"Branche Git détectée: {self.branch_name}")
-            self.logger.info(f"ModuleDiscovery initialisé pour la branche: '{self.branch_name}'")
+            # Forcer le nettoyage du cache pour garantir des données à jour
+            self.logger.debug("Nettoyage du cache des modules avant la lecture...")
+            self.firebase_service.clear_cache(prefix="module_indexes_modules")
+
+            self.logger.info("Récupération de tous les modules depuis toutes les branches...")
+            all_modules = []
             
-            modules_list = []
+            known_branches = self._get_known_branches()
             
-            # Supprimer la référence à 'application_principale' si elle existe
-            try:
-                # Vérifier si la collection existe
-                app_collection = "module_indexes_modules_application_principale"
-                app_modules = self.firebase_service.get_collection(app_collection)
-                if app_modules:
-                    self.logger.info(f"Suppression de la collection d'application principale: {app_collection}")
-                    # Notez que pour une vraie suppression, il faudrait faire une opération DELETE
-                    # Ici, on ne la traite simplement pas dans notre résultat
-            except Exception as e:
-                self.logger.warning(f"Erreur lors de la vérification de la collection application_principale: {e}")
-            
-            # Récupérer uniquement les branches de développement
-            # D'abord traiter la branche courante si c'est une branche de développement
-            if self.branch_name.startswith('dev_'):
-                sanitized_branch = self._sanitize_branch_name(self.branch_name)
-                branch_collection = f"module_indexes_modules_{sanitized_branch}"
-                self.logger.info(f"Récupération des modules depuis la collection de la branche courante: {branch_collection}")
+            for branch in known_branches:
+                sanitized_branch = self._sanitize_branch_name(branch)
+                collection_name = f"module_indexes_modules_{sanitized_branch}"
+                self.logger.debug(f"Recherche de modules dans la collection: '{collection_name}'")
                 
-                branch_modules = self.firebase_service.get_collection(branch_collection)
-                
-                if branch_modules:
-                    # Ajouter le champ branch à chaque module
-                    for module in branch_modules:
-                        module["branch"] = self.branch_name
-                        
-                    # Ajouter ces modules à la liste finale
-                    modules_list.extend(branch_modules)
-                    self.logger.info(f"Trouvé {len(branch_modules)} modules dans la branche courante")
+                modules_in_branch = self.firebase_service.get_collection(collection_name)
+                if modules_in_branch:
+                    for module in modules_in_branch:
+                        if 'branch' not in module:
+                            module['branch'] = branch
+                    all_modules.extend(modules_in_branch)
+
+            if not all_modules:
+                self.logger.warning("Aucun module trouvé dans aucune branche.")
+                return []
             
-            # Ensuite, récupérer les modules des autres branches de développement connues
-            known_branches = [branch for branch in self._get_known_branches() if branch.startswith('dev_')]
-            self.logger.info(f"Branches Git de développement connues: {known_branches}")
+            modules_list = [m for m in all_modules if not m.get('id', '').startswith('module_indexes_modules')]
             
-            # Exclure la branche courante déjà traitée
-            if self.branch_name in known_branches:
-                known_branches.remove(self.branch_name)
-                
-            for branch_name in known_branches:
-                if not branch_name:  # Ignorer les branches sans nom
-                    continue
-                    
-                sanitized_name = self._sanitize_branch_name(branch_name)
-                collection_name = f"module_indexes_modules_{sanitized_name}"
-                self.logger.info(f"Vérification des modules dans la branche: {branch_name} (collection: {collection_name})")
-                
-                branch_modules = self.firebase_service.get_collection(collection_name)
-                
-                # Ajouter les informations de branche à chaque module
-                for module in branch_modules:
-                    module["branch"] = branch_name
-                    
-                # Ajouter ces modules à la liste finale
-                modules_list.extend(branch_modules)
-                self.logger.info(f"Trouvé {len(branch_modules)} modules dans la branche {branch_name}")
-            
-            # Éliminer les doublons en conservant une seule instance de chaque module par ID
-            unique_modules = {}
-            
-            # Afficher les modules trouvés et conserver uniquement la dernière instance de chaque ID
-            for i, module in enumerate(modules_list):
-                if 'id' in module:
-                    module_id = module['id']
-                    branch = module.get('branch', 'INCONNUE')
-                    self.logger.info(f"Module trouvé: ID={module_id}, Branch={branch}")
-                    
-                    # Si c'est un doublon, le signaler
-                    if module_id in unique_modules:
-                        self.logger.warning(f"Doublon détecté pour le module {module_id} - seule la dernière occurrence sera conservée")
-                    
-                    # Conserver uniquement la version la plus récente
-                    unique_modules[module_id] = module
-                else:
-                    self.logger.warning(f"Module sans ID ignoré: {module}")
-            
-            # Convertir en liste pour le retour
-            deduplicated_modules = list(unique_modules.values())
-            self.logger.info(f"Nombre de modules après déduplication: {len(deduplicated_modules)} (sur {len(modules_list)} au total)")
-            return deduplicated_modules
+            self.logger.info(f"Trouvé {len(modules_list)} modules au total dans {len(known_branches)} branches.")
+            return modules_list
             
         except Exception as e:
-            self.logger.error(f"Erreur lors de la récupération des modules: {str(e)}")
-            import traceback
-            self.logger.error(traceback.format_exc())
+            self.logger.error(f"Erreur lors de la récupération des modules: {e}", exc_info=True)
             return []
     
-    def get_module_screens(self, module_id: str) -> List[Dict[str, Any]]:
-        """
-        Récupère les écrans d'un module spécifique depuis toutes les branches connues
-        
-        Args:
-            module_id (str): Identifiant du module
-            
-        Returns:
-            List[Dict[str, Any]]: Liste des écrans du module dans toutes les branches
-        """
+    def get_module_screens(self, module_id: str, branch: str) -> List[Dict[str, Any]]:
+        """Récupère les écrans d'un module spécifique d'une branche spécifique."""
         try:
-            # Vérifier si déjà en cache
-            if module_id in self.screens_cache and self.screens_cache[module_id]:
-                return list(self.screens_cache[module_id].values())
+            cache_key = f"{module_id}_{branch}"
+            if cache_key in self.screens_cache:
+                self.logger.debug(f"Écrans pour le module {module_id} (branche {branch}) trouvés dans le cache.")
+                return self.screens_cache[cache_key]
+
+            sanitized_branch = self._sanitize_branch_name(branch)
+            screens_collection = f"module_indexes_screens_{module_id}_{sanitized_branch}"
             
-            screens_list = []
+            self.logger.info(f"Récupération des écrans depuis '{screens_collection}'")
+            screens = self.firebase_service.get_collection(screens_collection)
             
-            # D'abord récupérer les écrans de la branche courante (priorité)
-            sanitized_branch = self._sanitize_branch_name(self.branch_name) if self.branch_name else ""
-            current_branch_collection = f"module_indexes_screens_{module_id}_{sanitized_branch}" if sanitized_branch else f"module_indexes_screens_{module_id}"
-            self.logger.info(f"Récupération des écrans pour le module {module_id} dans la branche courante: {current_branch_collection}")
+            if not screens:
+                self.logger.warning(f"La collection d'écrans '{screens_collection}' est vide ou n'existe pas.")
+                return []
             
-            current_branch_screens = self.firebase_service.get_collection(current_branch_collection)
+            self.screens_cache[cache_key] = screens
+            return screens
             
-            # Ajouter des informations sur la provenance
-            for screen in current_branch_screens:
-                if 'id' in screen:
-                    screen['branch'] = self.branch_name
-                    self.logger.debug(f"Écran trouvé dans la branche courante {self.branch_name}: {screen['id']}")
-            
-            screens_list.extend(current_branch_screens)
-            
-            # Ensuite récupérer les écrans des autres branches connues
-            known_branches = self._get_known_branches()
-            self.logger.info(f"Branches Git connues pour la recherche d'écrans: {known_branches}")
-            
-            # Exclure la branche courante déjà traitée
-            if self.branch_name in known_branches:
-                known_branches.remove(self.branch_name)
-            
-            # Format des collections d'écrans: module_indexes_screens_{module_id}_{branch_name}
-            for branch_name in known_branches:
-                if not branch_name:  # Ignorer les branches sans nom
-                    continue
-                    
-                sanitized_name = self._sanitize_branch_name(branch_name)
-                collection_name = f"module_indexes_screens_{module_id}_{sanitized_name}"
-                self.logger.info(f"Vérification des écrans du module {module_id} dans la branche: {branch_name} (collection: {collection_name})")
-                
-                branch_screens = self.firebase_service.get_collection(collection_name)
-                
-                # Ajouter des informations sur la provenance
-                for screen in branch_screens:
-                    if 'id' in screen:
-                        screen['branch'] = branch_name
-                        self.logger.debug(f"Écran trouvé dans la branche {branch_name}: {screen['id']}")
-                
-                screens_list.extend(branch_screens)
-            
-            # Détails de tous les écrans pour le débogage
-            self.logger.info(f"Nombre total d'écrans récupérés pour le module {module_id}: {len(screens_list)}")
-            if screens_list:
-                for idx, screen in enumerate(screens_list):
-                    self.logger.debug(f"Écran {idx+1}: ID={screen.get('id', 'N/A')}, Nom={screen.get('name', 'N/A')}, Branche={screen.get('branch', 'N/A')}")
-            
-            # Mettre en cache - utiliser l'ID et la branche comme clé unique pour éviter les doublons
-            if module_id not in self.screens_cache:
-                self.screens_cache[module_id] = {}
-            
-            for screen in screens_list:
-                if 'id' in screen and 'branch' in screen:
-                    key = f"{screen['id']}_{screen['branch']}"
-                    self.screens_cache[module_id][key] = screen
-            
-            return list(self.screens_cache[module_id].values())
         except Exception as e:
-            self.logger.error(f"Erreur lors de la récupération des écrans du module {module_id} pour la branche {self.branch_name}: {str(e)}")
+            self.logger.error(f"Erreur lors de la récupération des écrans pour le module {module_id}: {e}", exc_info=True)
             return []
     
     def get_screen_details(self, module_id: str, screen_id: str, branch_name: str = None) -> Optional[Dict[str, Any]]:

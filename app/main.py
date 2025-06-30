@@ -2,6 +2,7 @@ from kivymd.app import MDApp
 from app.core.container import Container
 from app.core.config import load_config
 from app.views.screens.procedures_manager_screen import ProceduresManagerScreen
+from app.utils.module_initializer import ModuleInitializer
 
 class MainApp(MDApp):
     """Application principale."""
@@ -20,6 +21,10 @@ class MainApp(MDApp):
         self.firebase_service = self.container.firebase_service()
         self.task_manager = self.container.task_manager()
         self.dashboard_controller = self.container.dashboard_controller()
+
+        # Lancer l'indexation du module principal
+        module_initializer = ModuleInitializer(self.firebase_service)
+        module_initializer.initialize()
         
     def build(self):
         """Construit l'interface utilisateur principale."""

@@ -17,24 +17,40 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Importer les services nécessaires de l'application
 from app.services.firebase_service import FirebaseService
 
-# Nom de la branche et des collections
-BRANCH_NAME = "dev_application_principale_v2"
-MODULE_COLLECTION = f"module_indexes_modules_{BRANCH_NAME}"
-SCREENS_INDEX_COLLECTION = f"app_screens_index_{BRANCH_NAME}"
+# Nom des collections uniques
+MODULE_COLLECTION = "module_indexes_modules"
+SCREENS_INDEX_COLLECTION = "app_screens_index"
 
 def create_module_entry():
     """Créer une entrée pour l'application principale en tant que module"""
     firebase_service = FirebaseService()
     
     # Vérifier que l'index des écrans existe
-    screens = firebase_service.get_collection(SCREENS_INDEX_COLLECTION)
-    if not screens:
-        print(f"Erreur: La collection d'index des écrans '{SCREENS_INDEX_COLLECTION}' est vide ou n'existe pas.")
+    all_screens = []
+    max_retries = 3
+    retry_delay = 5  # secondes
+
+    for attempt in range(max_retries):
+        print(f"Tentative {attempt + 1}/{max_retries} de récupération de l'index '{SCREENS_INDEX_COLLECTION}'...")
+        all_screens = firebase_service.get_collection(SCREENS_INDEX_COLLECTION)
+        
+        # On filtre le document de métadonnées pour ne garder que les vrais écrans
+        all_screens = [doc for doc in all_screens if doc.get('id') != 'app_screens_index']
+        
+        if all_screens:
+            print(f"Index trouvé avec {len(all_screens)} documents d'écrans.")
+            break
+            
+        if attempt < max_retries - 1:
+            print(f"L'index est vide ou ne contient que des métadonnées. Prochaine tentative dans {retry_delay} secondes...")
+            time.sleep(retry_delay)
+
+    if not all_screens:
+        print(f"ERREUR: La collection d'index '{SCREENS_INDEX_COLLECTION}' est restée vide après {max_retries} tentatives.")
         return False
     
     # Compter les écrans réels (exclure les métadonnées)
-    real_screens = [s for s in screens if s.get('id') != 'app_screens_index']
-    screen_count = len(real_screens)
+    screen_count = len(all_screens)
     
     # Créer le module pour l'application principale
     module_data = {
@@ -44,7 +60,6 @@ def create_module_entry():
         "version": "1.0.1",  # Version de l'application
         "main_screen": "dashboard",  # Écran principal de l'application
         "updated_at": int(time.time()),
-        "branch": BRANCH_NAME,
         "icon": "home-variant",  # Icône Material Design
         "type": "core",
         "category": "system",
@@ -52,17 +67,12 @@ def create_module_entry():
         "is_main_app": True  # Marquer comme application principale
     }
     
-    # Ajouter dans la collection standard des modules (sans suffixe de branche)
-    # pour que l'application principale soit toujours visible
-    firebase_service.set_data("module_indexes_modules", module_data)
-    print(f"Application principale créée comme module dans la collection 'module_indexes_modules'")
-    
-    # Ajouter aussi dans la collection spécifique à la branche
+    # Ajouter/Mettre à jour dans la collection standard des modules
     firebase_service.set_data(MODULE_COLLECTION, module_data)
-    print(f"Application principale créée comme module dans la collection '{MODULE_COLLECTION}'")
+    print(f"Application principale créée/mise à jour comme module dans la collection '{MODULE_COLLECTION}'")
     
-    # Idée: Pour chaque écran de l'index, créer une entrée dans la collection des écrans du module
-    screens_collection = f"module_indexes_screens_application_principale_{BRANCH_NAME}"
+    # Collection pour les écrans de ce module
+    screens_collection_name = f"module_indexes_screens_application_principale"
     
     # D'abord, créer une entrée pour l'écran principal (dashboard)
     dashboard_data = {
@@ -71,16 +81,15 @@ def create_module_entry():
         "title": "Tableau de bord",
         "description": "Tableau de bord principal de l'application HC RPAS Operations",
         "module_id": "application_principale",
-        "branch": BRANCH_NAME,
         "is_main": True
     }
     
-    firebase_service.set_data(screens_collection, dashboard_data)
-    print(f"Ajout de l'écran principal dans la collection '{screens_collection}'")
+    firebase_service.set_data(screens_collection_name, dashboard_data)
+    print(f"Ajout de l'écran principal dans la collection '{screens_collection_name}'")
     
     # Ensuite, ajouter tous les écrans de l'application depuis l'index
     added_count = 0
-    for i, screen in enumerate(real_screens):
+    for i, screen in enumerate(all_screens):
         if 'id' not in screen:
             continue
             
@@ -91,24 +100,23 @@ def create_module_entry():
             "title": screen.get('title', screen.get('name', screen['id'])),
             "description": screen.get('description', f"Écran {screen.get('name', screen['id'])} de l'application principale"),
             "module_id": "application_principale",
-            "branch": BRANCH_NAME,
             "file_path": screen.get('file_path', ''),
             "full_class_name": screen.get('full_class_name', ''),
             "added_from_index": True  # Marquer comme ajouté depuis l'index
         }
         
         # Ajouter l'écran à la collection des écrans du module
-        firebase_service.set_data(screens_collection, screen_data)
+        firebase_service.set_data(screens_collection_name, screen_data)
         added_count += 1
         
         if i % 10 == 0:  # Log tous les 10 écrans
-            print(f"Ajout de l'écran {screen.get('name', screen['id'])} ({added_count}/{len(real_screens)})")
+            print(f"Ajout de l'écran {screen.get('name', screen['id'])} ({added_count}/{len(all_screens)})")
     
-    print(f"{added_count} écrans ajoutés à la collection '{screens_collection}'")
+    print(f"{added_count} écrans ajoutés à la collection '{screens_collection_name}'")
     return True
 
 if __name__ == "__main__":
-    print(f"Création du module d'index des écrans pour la branche {BRANCH_NAME}...")
+    print("Création du module d'index pour l'application principale...")
     if create_module_entry():
         print("Opération terminée avec succès!")
     else:

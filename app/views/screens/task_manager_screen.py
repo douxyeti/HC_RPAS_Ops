@@ -1,5 +1,5 @@
 from kivy.metrics import dp
-from kivy.properties import StringProperty, ObjectProperty, ListProperty
+from kivy.properties import StringProperty, ObjectProperty, ListProperty, BooleanProperty
 from kivy.uix.widget import Widget
 from kivy.app import App
 from kivymd.uix.screen import MDScreen
@@ -17,6 +17,85 @@ from app.models.task import Task, TaskModel
 from app.services.firebase_service import FirebaseService
 from app.services.roles_manager_service import RolesManagerService
 from app.utils.module_discovery import ModuleDiscovery
+
+
+class ModuleSelectorCard(MDCard):
+    module_id = StringProperty()
+    branch = StringProperty()
+    is_selected = BooleanProperty(False)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.orientation = "vertical"
+        self.size_hint_y = None
+        self.height = dp(70)
+        self.style = "elevated"
+        self.md_bg_color = [1, 1, 1, 1]
+        self.ripple_behavior = True
+        self.shadow_softness = 2
+        self.shadow_offset = (0, 1)
+        self.padding = dp(4)
+
+        self.main_layout = MDBoxLayout(orientation="horizontal", spacing=0, padding=0, size_hint=(1, 1))
+        self.selection_indicator = MDBoxLayout(size_hint=(None, 1), width=dp(5), md_bg_color=[0, 0.6, 1, 1], opacity=0)
+        self.content_layout = MDBoxLayout(orientation="vertical", spacing=dp(2), padding=(dp(8), 0, 0, 0), size_hint=(1, 1))
+        
+        self.main_layout.add_widget(self.selection_indicator)
+        self.main_layout.add_widget(self.content_layout)
+        super().add_widget(self.main_layout)
+
+    def add_widget(self, widget, index=0, canvas=None):
+        if hasattr(self, 'content_layout') and self.content_layout is not None:
+            return self.content_layout.add_widget(widget, index, canvas)
+        return super().add_widget(widget, index, canvas)
+
+    def set_selected(self, is_selected):
+        self.is_selected = is_selected
+        if is_selected:
+            self.md_bg_color = [0.9, 0.95, 1, 1]
+            self.selection_indicator.opacity = 1
+            self.elevation = 4
+        else:
+            self.md_bg_color = [1, 1, 1, 1]
+            self.selection_indicator.opacity = 0
+            self.elevation = 1
+
+
+class ScreenSelectorCard(MDCard):
+    screen_id = StringProperty()
+    is_selected = BooleanProperty(False)
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.orientation = "vertical"
+        self.size_hint_y = None
+        self.height = dp(50)
+        self.md_bg_color = [1, 1, 1, 1]
+        self.ripple_behavior = True
+        self.elevation = 1
+        self.padding = dp(4)
+
+        self.main_layout = MDBoxLayout(orientation="horizontal", spacing=0, padding=0, size_hint=(1, 1))
+        self.selection_indicator = MDBoxLayout(size_hint=(None, 1), width=dp(5), md_bg_color=[0, 0.6, 1, 1], opacity=0)
+        self.content_layout = MDBoxLayout(orientation="vertical", spacing=dp(2), padding=(dp(8), 0, 0, 0), size_hint=(1, 1))
+        
+        self.main_layout.add_widget(self.selection_indicator)
+        self.main_layout.add_widget(self.content_layout)
+        super().add_widget(self.main_layout)
+
+    def add_widget(self, widget, index=0, canvas=None):
+        if hasattr(self, 'content_layout') and self.content_layout is not None:
+            return self.content_layout.add_widget(widget, index, canvas)
+        return super().add_widget(widget, index, canvas)
+
+    def set_selected(self, is_selected):
+        self.is_selected = is_selected
+        if is_selected:
+            self.md_bg_color = [0.9, 0.95, 1, 1]
+            self.selection_indicator.opacity = 1
+        else:
+            self.md_bg_color = [1, 1, 1, 1]
+            self.selection_indicator.opacity = 0
 
 class TaskCard(MDCard):
     title = StringProperty("")
@@ -159,6 +238,9 @@ class TaskEditDialog(MDDialog):
         }
 
 class TaskManagerScreen(MDScreen):
+    selected_module_id = StringProperty(None)
+    selected_screen_id = StringProperty(None)
+
     current_role_id = StringProperty('')  
     current_role_name = StringProperty('')
     tasks = ListProperty([])
@@ -924,538 +1006,120 @@ class TaskManagerScreen(MDScreen):
         sorted_tasks = self.task_model.sort_by_title(self.tasks, ascending)
         self.display_tasks(sorted_tasks)
         
-    def show_module_selector(self):
-        """Affiche un sélecteur de modules et écrans pour associer à une tâche"""
+    def select_module(self, module_id, branch):
+        """Met à jour le module sélectionné et rafraîchit l'interface."""
+        self.selected_module_id = module_id
+
+        # Garder une référence au champ cible pour la réouverture
+        target_field = self.target_screen_field if hasattr(self, 'target_screen_field') else None
+
+        # Fermer le sélecteur actuel pour le forcer à se reconstruire
+        if hasattr(self, '_selector_view') and self._selector_view.parent:
+            self.remove_widget(self._selector_view)
+        
+        # Rouvrir le sélecteur, qui utilisera self.selected_module_id pour l'affichage
+        self.show_module_selector(target_field=target_field)
+
+    def show_module_selector(self, target_field=None):
+        """Affiche un sélecteur de modules et écrans pour associer à une tâche."""
         try:
-            print("[DEBUG] TaskManagerScreen.show_module_selector - Début")
-            
-            # Si un sélecteur existe déjà, on le supprime
-            if hasattr(self, '_selector_view') and self._selector_view:
-                if self._selector_view.parent:
-                    self._selector_view.parent.remove_widget(self._selector_view)
-            
-            # Créer une instance de ModuleDiscovery
+            if hasattr(self, '_selector_view') and self._selector_view and self._selector_view.parent:
+                self.remove_widget(self._selector_view)
+
             app = App.get_running_app()
             discovery = ModuleDiscovery(app.firebase_service)
-            
-            # Récupérer les modules installés
             modules = discovery.get_installed_modules()
-            print(f"[DEBUG] Modules récupérés: {len(modules)}")
-            
-            # Variables pour stocker les sélections
-            selected_module = [None]
-            selected_screen = [None]
-            
-            # Fond semi-transparent (overlay) pour mettre l'accent sur le sélecteur
-            overlay = MDBoxLayout(
-                orientation="vertical", 
-                size_hint=(1, 1),
-                md_bg_color=[0, 0, 0, 0.5],
-                padding=dp(16)
-            )
-            
-            # Carte principale du sélecteur
-            selector_card = MDCard(
-                orientation="vertical",
-                size_hint=(0.9, 0.9),
-                pos_hint={"center_x": 0.5, "center_y": 0.5},
-                elevation=4,
-                md_bg_color=[1, 1, 1, 1],
-                padding=dp(16),
-                spacing=dp(8)
-            )
-            
-            # En-tête avec titre et bouton de fermeture
-            header = MDBoxLayout(
-                orientation="horizontal",
-                size_hint_y=None,
-                height=dp(40),
-                spacing=dp(8),
-                padding=[0, 0, 0, dp(8)]
-            )
-            
-            # Titre
-            title = MDLabel(
-                text="Sélectionner un écran de module",
-                theme_font_size="Custom",
-                font_size="20sp",
-                bold=True,
-                size_hint_x=0.9
-            )
-            
-            # Bouton fermer
-            close_button = MDIconButton(
-                icon="close",
-                size_hint_x=0.1,
-                on_release=lambda x: self.remove_widget(overlay)
-            )
-            
+
+            selected_module_info = {'id': None, 'branch': None}
+            selected_screen_id = [None]
+
+            overlay = MDBoxLayout(orientation="vertical", size_hint=(1, 1), md_bg_color=[0, 0, 0, 0.5], padding=dp(16))
+            selector_card = MDCard(orientation="vertical", size_hint=(0.9, 0.9), pos_hint={"center_x": 0.5, "center_y": 0.5}, elevation=4, md_bg_color=[1, 1, 1, 1], padding=dp(16), spacing=dp(8))
+            header = MDBoxLayout(orientation="horizontal", size_hint_y=None, height=dp(40), spacing=dp(8))
+            title = MDLabel(text="Sélectionner un écran de module", theme_font_size="Custom", font_size="20sp", bold=True, size_hint_x=0.9)
+            close_button = MDIconButton(icon="close", size_hint_x=0.1, on_release=lambda x: self.remove_widget(overlay))
             header.add_widget(title)
             header.add_widget(close_button)
-            selector_card.add_widget(header)
             
-            # Séparateur
-            separator = MDBoxLayout(
-                size_hint_y=None,
-                height=dp(1),
-                md_bg_color=[0.8, 0.8, 0.8, 1],
-                padding=[0, dp(8), 0, dp(8)]
-            )
-            selector_card.add_widget(separator)
-            
-            # Conteneur pour les listes (modules et écrans)
-            content = MDBoxLayout(
-                orientation="horizontal",
-                spacing=dp(16),
-                size_hint_y=0.9
-            )
-            
-            # -------------------------------------------
-            # Colonne des modules (gauche)
-            # -------------------------------------------
-            modules_box = MDBoxLayout(
-                orientation="vertical",
-                size_hint_x=0.5,
-                spacing=dp(8)
-            )
-            
-            # Titre de la section modules
-            modules_title = MDLabel(
-                text="Modules",
-                theme_font_size="Custom",
-                font_size="18sp",
-                bold=True,
-                size_hint_y=None,
-                height=dp(30)
-            )
-            modules_box.add_widget(modules_title)
-            
-            # Liste déroulante des modules
+            content = MDBoxLayout(orientation="horizontal", spacing=dp(16), size_hint_y=0.9)
+            modules_box = MDBoxLayout(orientation="vertical", size_hint_x=0.5, spacing=dp(8))
+            modules_title = MDLabel(text="Modules", theme_font_size="Custom", font_size="18sp", bold=True, size_hint_y=None, height=dp(30))
             modules_scroll = MDScrollView()
-            modules_content = MDBoxLayout(
-                orientation="vertical",
-                size_hint_y=None,
-                spacing=dp(8),
-                padding=[0, dp(4)]
-            )
+            modules_content = MDBoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(8), padding=[0, dp(4)])
             modules_content.bind(minimum_height=modules_content.setter('height'))
             modules_scroll.add_widget(modules_content)
+            modules_box.add_widget(modules_title)
             modules_box.add_widget(modules_scroll)
             
-            # -------------------------------------------
-            # Colonne des écrans (droite)
-            # -------------------------------------------
-            screens_box = MDBoxLayout(
-                orientation="vertical",
-                size_hint_x=0.5,
-                spacing=dp(8)
-            )
-            
-            # Titre de la section écrans
-            screens_title = MDLabel(
-                text="Écrans",
-                theme_font_size="Custom",
-                font_size="18sp",
-                bold=True,
-                size_hint_y=None,
-                height=dp(30)
-            )
-            screens_box.add_widget(screens_title)
-            
-            # Liste déroulante des écrans
+            screens_box = MDBoxLayout(orientation="vertical", size_hint_x=0.5, spacing=dp(8))
+            screens_title = MDLabel(text="Écrans", theme_font_size="Custom", font_size="18sp", bold=True, size_hint_y=None, height=dp(30))
             screens_scroll = MDScrollView()
-            screens_content = MDBoxLayout(
-                orientation="vertical",
-                size_hint_y=None,
-                spacing=dp(8),
-                padding=[0, dp(4)]
-            )
+            screens_content = MDBoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(8), padding=[0, dp(4)])
             screens_content.bind(minimum_height=screens_content.setter('height'))
             screens_scroll.add_widget(screens_content)
+            screens_box.add_widget(screens_title)
             screens_box.add_widget(screens_scroll)
             
-            # Ajouter les colonnes au conteneur principal
             content.add_widget(modules_box)
             content.add_widget(screens_box)
-            selector_card.add_widget(content)
             
-            # -------------------------------------------
-            # Boutons d'action (bas de la carte)
-            # -------------------------------------------
-            buttons_box = MDBoxLayout(
-                orientation="horizontal",
-                size_hint_y=None,
-                height=dp(50),
-                spacing=dp(10),
-                padding=[0, dp(16), 0, 0],
-                pos_hint={"right": 1}
-            )
-            
-            # Bouton Annuler
-            cancel_button = MDButton(
-                style="outlined",
-                on_release=lambda x: self.remove_widget(overlay)
-            )
+            buttons_box = MDBoxLayout(orientation="horizontal", size_hint_y=None, height=dp(50), spacing=dp(10), pos_hint={"right": 1})
+            cancel_button = MDButton(style="outlined", on_release=lambda x: self.remove_widget(overlay))
             cancel_button.add_widget(MDButtonText(text="ANNULER"))
-            
-            # Bouton Sélectionner
-            select_button = MDButton(
-                on_release=lambda x: select_and_close()
-            )
+            select_button = MDButton(on_release=lambda x: select_and_close())
             select_button.add_widget(MDButtonText(text="SÉLECTIONNER"))
-            
-            # Ajouter les boutons à la boîte
-            buttons_box.add_widget(Widget())  # Spacer pour pousser les boutons à droite
+            buttons_box.add_widget(Widget())
             buttons_box.add_widget(cancel_button)
             buttons_box.add_widget(select_button)
+
+            selector_card.add_widget(header)
+            selector_card.add_widget(content)
             selector_card.add_widget(buttons_box)
-            
-            # Ajouter la carte au layout principal
             overlay.add_widget(selector_card)
-            
-            # -------------------------------------------
-            # Définitions des fonctions de callback
-            # -------------------------------------------
-            
-            # Fonction pour sélectionner un module en utilisant la méthode set_selected de CustomModuleCard
-            def select_module(instance, module_id):
-                print(f"[DEBUG] Module sélectionné: {module_id}")
-                # Mettre à jour la sélection
-                selected_module[0] = module_id
-                selected_screen[0] = None
-                
-                # Désélectionner tous les modules
-                for child in modules_content.children:
-                    if hasattr(child, 'set_selected'):
-                        child.set_selected(False)
-                
-                # Sélectionner le module cliqué
-                if hasattr(instance, 'set_selected'):
-                    instance.set_selected(True)
-                    print(f"[DEBUG] Surbrillance appliquée au module: {module_id}")
-                else:
-                    print(f"[DEBUG] ERREUR: L'instance n'a pas la méthode set_selected")
-                
-                # Forcer la mise à jour du layout pour KivyMD 2
-                modules_content.do_layout()
-                
-                # Débogage - lister les collections disponibles
-                from app.services.firebase_service import FirebaseService
-                firebase_service = FirebaseService()
-                print("[DEBUG] Liste des collections disponibles dans Firebase:")
-                try:
-                    collections = firebase_service.db.collections()
-                    for col in collections:
-                        print(f"[DEBUG] Collection: {col.id}")
-                except Exception as e:
-                    print(f"[DEBUG] Erreur lors de la récupération des collections: {str(e)}")
-                
-                # Récupérer les écrans du module
-                screens = discovery.get_module_screens(module_id)
-                print(f"[DEBUG] Récupération des écrans pour le module {module_id}")
-                print(f"[DEBUG] Type de 'screens': {type(screens)}")
-                print(f"[DEBUG] Contenu de 'screens': {screens}")
-                
-                # Solution temporaire : ajouter des écrans fictifs si aucun écran n'est disponible
-                if not screens or len(screens) == 0:
-                    print(f"[DEBUG] Aucun écran trouvé pour le module {module_id}, ajout d'écrans fictifs")
-                    # Créer des écrans fictifs pour le module
-                    screens = [
-                        {
-                            'id': f'{module_id}_screen1',
-                            'name': f'Principal {module_id.capitalize()}',
-                            'description': f'Écran principal du module {module_id}'
-                        },
-                        {
-                            'id': f'{module_id}_screen2',
-                            'name': f'Configuration {module_id.capitalize()}',
-                            'description': f'Écran de configuration du module {module_id}'
-                        },
-                        {
-                            'id': f'{module_id}_screen3',
-                            'name': f'Rapports {module_id.capitalize()}',
-                            'description': f'Écran de rapports du module {module_id}'
-                        }
-                    ]
-                
-                # Vider et remplir la liste des écrans
+
+            def update_screens_list(module_id, branch):
                 screens_content.clear_widgets()
-                
-                if not screens or len(screens) == 0:
-                    # Message si aucun écran n'est disponible
-                    no_screens_label = MDLabel(
-                        text="Aucun écran disponible pour ce module",
-                        theme_font_size="Custom",
-                        font_size="14sp",
-                        theme_text_color="Secondary",
-                        halign="center"
-                    )
-                    screens_content.add_widget(no_screens_label)
+                screens = discovery.get_module_screens(module_id, branch)
+                if not screens:
+                    screens_content.add_widget(MDLabel(text="Aucun écran disponible", halign="center", theme_text_color="Secondary"))
                 else:
-                    print(f"[DEBUG] Écrans récupérés: {len(screens)}")
-                    for screen in screens:
-                        # Définir la classe personnalisée pour les cartes d'écrans
-                        class CustomScreenCard(MDCard):
-                            def __init__(self, **kwargs):
-                                self.screen_id = kwargs.pop('screen_id', '')
-                                self.is_selected = kwargs.pop('is_selected', False)
-                                super().__init__(**kwargs)
-                                
-                                # Créer un conteneur principal pour gérer le layout
-                                self.main_layout = MDBoxLayout(
-                                    orientation="horizontal",
-                                    spacing=0,
-                                    padding=0,
-                                    size_hint=(1, 1)
-                                )
-                                
-                                # Créer un marqueur de sélection (bande latérale)
-                                self.selection_indicator = MDBoxLayout(
-                                    size_hint=(None, 1),
-                                    width=dp(8),
-                                    md_bg_color=[0, 0.6, 1, 1],  # Bleu vif
-                                    opacity=0  # Invisible par défaut
-                                )
-                                
-                                # Créer le conteneur pour le contenu
-                                self.content_layout = MDBoxLayout(
-                                    orientation="vertical",
-                                    spacing=dp(4),
-                                    padding=dp(10),
-                                    size_hint=(1, 1)
-                                )
-                                
-                                # Ajouter les éléments au layout principal
-                                self.main_layout.add_widget(self.selection_indicator)
-                                self.main_layout.add_widget(self.content_layout)
-                                
-                                # Ajouter le layout principal à la carte
-                                super().add_widget(self.main_layout)
-                            
-                            def on_touch_down(self, touch):
-                                if self.collide_point(*touch.pos):
-                                    select_screen(self, self.screen_id)
-                                    return True
-                                return super().on_touch_down(touch)
-                                
-                            # Surcharger add_widget pour ajouter les widgets au content_layout
-                            def add_widget(self, widget, index=0, canvas=None):
-                                if hasattr(self, 'content_layout'):
-                                    return self.content_layout.add_widget(widget, index, canvas)
-                                return super().add_widget(widget, index, canvas)
-                            
-                            def set_selected(self, is_selected):
-                                self.is_selected = is_selected
-                                # Mettre à jour l'apparence
-                                if is_selected:
-                                    self.md_bg_color = [0.85, 0.9, 1, 1]  # Bleu très clair
-                                    self.selection_indicator.opacity = 1  # Afficher la bande bleue
-                                    self.elevation = 4  # Augmenter l'élévation
-                                else:
-                                    self.md_bg_color = [1, 1, 1, 1]  # Blanc normal
-                                    self.selection_indicator.opacity = 0  # Cacher la bande bleue
-                                    self.elevation = 1  # Élévation normale
-                                
-                                # Force le rafraîchissement de l'ombre pour KivyMD 2
-                                if hasattr(self, '_do_refresh_shadow'):
-                                    self._do_refresh_shadow()
-                        
-                        # Créer une carte d'écran avec la classe personnalisée
-                        screen_card = CustomScreenCard(
-                            orientation="vertical",
-                            size_hint_y=None,
-                            height=dp(50),  # Hauteur réduite car moins de contenu
-                            md_bg_color=[1, 1, 1, 1],
-                            padding=dp(10),
-                            spacing=dp(4),
-                            elevation=1,
-                            radius=[dp(4)],
-                            screen_id=screen.get('id', '')
-                        )
-                        
-                        # Seulement le titre de l'écran
-                        screen_title = MDLabel(
-                            text=screen.get('name', 'Écran sans nom'),
-                            theme_font_size="Custom",
-                            font_size="16sp",
-                            bold=True
-                        )
-                        
-                        # Assembler la carte avec uniquement le titre
-                        screen_card.add_widget(screen_title)
-                        
+                    for screen_data in screens:
+                        screen_card = ScreenSelectorCard(screen_id=screen_data.get('id', ''))
+                        screen_card.add_widget(MDLabel(text=screen_data.get('name', 'Sans nom'), bold=True))
+                        screen_card.bind(on_release=lambda w, s=screen_data.get('id'): select_screen(w, s))
                         screens_content.add_widget(screen_card)
-            
-            # Fonction pour gérer le touch sur un module
-            def select_module_touch(widget, touch, module_id):
-                if widget.collide_point(*touch.pos):
-                    select_module(widget, module_id)
-                    return True
-                return False
-            
-            # Fonction pour sélectionner un écran via touch
-            def select_screen_touch(widget, touch, screen_id):
-                if widget.collide_point(*touch.pos):
-                    select_screen(widget, screen_id)
-                    return True
-                return False
-            
-            # Fonction pour sélectionner un écran en utilisant la méthode set_selected de CustomScreenCard
-            def select_screen(instance, screen_id):
-                print(f"[DEBUG] Écran sélectionné: {screen_id}")
-                # Mettre à jour la sélection
-                selected_screen[0] = screen_id
-                
-                # Désélectionner tous les écrans
+
+            def select_module(widget, module_id, branch):
+                selected_module_info['id'] = module_id
+                selected_module_info['branch'] = branch
+                selected_screen_id[0] = None
+                for child in modules_content.children:
+                    child.set_selected(child == widget)
+                update_screens_list(module_id, branch)
+
+            def select_screen(widget, screen_id):
+                selected_screen_id[0] = screen_id
                 for child in screens_content.children:
-                    if hasattr(child, 'set_selected'):
-                        child.set_selected(False)
-                
-                # Sélectionner l'écran cliqué
-                if hasattr(instance, 'set_selected'):
-                    instance.set_selected(True)
-                    print(f"[DEBUG] Surbrillance appliquée à l'écran: {screen_id}")
-                else:
-                    print(f"[DEBUG] ERREUR: L'instance n'a pas la méthode set_selected")
-                
-                # Forcer la mise à jour du layout pour KivyMD 2
-                screens_content.do_layout()
-            
-            # Fonction pour sélectionner et fermer
+                    child.set_selected(child == widget)
+
             def select_and_close():
-                print(f"[DEBUG] select_and_close - Module: {selected_module[0]}, Écran: {selected_screen[0]}")
-                
-                if selected_module[0] and selected_screen[0]:
-                    # Mettre à jour les champs séparément
+                if selected_module_info['id'] and selected_screen_id[0]:
                     if hasattr(self, 'target_module_field') and self.target_module_field:
-                        self.target_module_field.text = selected_module[0]
-                        print(f"[DEBUG] Module sélectionné et appliqué: {selected_module[0]}")
-                    
+                        self.target_module_field.text = selected_module_info['id']
                     if hasattr(self, 'target_screen_field') and self.target_screen_field:
-                        self.target_screen_field.text = selected_screen[0]
-                        print(f"[DEBUG] Écran sélectionné et appliqué: {selected_screen[0]}")
-                    else:
-                        print(f"[DEBUG] Sélection faite mais champs cibles non trouvés")
-                        
-                    # Stockage pour usage futur (facultatif)
-                    self._last_selected_module = selected_module[0]
-                    self._last_selected_screen = selected_screen[0]
-                else:
-                    print(f"[DEBUG] Sélection incomplète - Module: {selected_module[0]}, Écran: {selected_screen[0]}")
-                    
-                # Fermer la vue quelle que soit la sélection
+                        self.target_screen_field.text = selected_screen_id[0]
                 self.remove_widget(overlay)
-            
-            # -------------------------------------------
-            # Remplissage de la liste des modules
-            # -------------------------------------------
+
             for module in modules:
-                # Définir la classe personnalisée pour les cartes de modules
-                # Note: définir la classe une fois en dehors de la boucle serait mieux,
-                # mais nous la gardons ici pour êvitre de trop modifier le code existant
-                class CustomModuleCard(MDCard):
-                    def __init__(self, **kwargs):
-                        self.module_id = kwargs.pop('module_id', '')
-                        self.is_selected = kwargs.pop('is_selected', False)
-                        super().__init__(**kwargs)
-                        # Créer un conteneur principal pour gérer le layout
-                        self.main_layout = MDBoxLayout(
-                            orientation="horizontal",
-                            spacing=0,
-                            padding=0,
-                            size_hint=(1, 1)
-                        )
-                        
-                        # Créer un marqueur de sélection (bande latérale)
-                        self.selection_indicator = MDBoxLayout(
-                            size_hint=(None, 1),
-                            width=dp(8),
-                            md_bg_color=[0, 0.6, 1, 1],  # Bleu vif
-                            opacity=0  # Invisible par défaut
-                        )
-                        
-                        # Créer le conteneur pour le contenu
-                        self.content_layout = MDBoxLayout(
-                            orientation="vertical",
-                            spacing=dp(4),
-                            padding=dp(10),
-                            size_hint=(1, 1)
-                        )
-                        
-                        # Ajouter les éléments au layout principal
-                        self.main_layout.add_widget(self.selection_indicator)
-                        self.main_layout.add_widget(self.content_layout)
-                        
-                        # Ajouter le layout principal à la carte
-                        super().add_widget(self.main_layout)
-                        
-                    def on_touch_down(self, touch):
-                        if self.collide_point(*touch.pos):
-                            select_module(self, self.module_id)
-                            return True
-                        return super().on_touch_down(touch)
-                        
-                    # Surcharger add_widget pour ajouter les widgets au content_layout
-                    def add_widget(self, widget, index=0, canvas=None):
-                        if hasattr(self, 'content_layout'):
-                            return self.content_layout.add_widget(widget, index, canvas)
-                        return super().add_widget(widget, index, canvas)
-                    
-                    def set_selected(self, is_selected):
-                        self.is_selected = is_selected
-                        # Mettre à jour l'apparence
-                        if is_selected:
-                            self.md_bg_color = [0.85, 0.9, 1, 1]  # Bleu très clair
-                            self.selection_indicator.opacity = 1  # Afficher la bande bleue
-                            self.elevation = 4  # Augmenter l'élévation
-                        else:
-                            self.md_bg_color = [1, 1, 1, 1]  # Blanc normal
-                            self.selection_indicator.opacity = 0  # Cacher la bande bleue
-                            self.elevation = 1  # Élévation normale
-                        
-                        # Force le rafraîchissement de l'ombre pour KivyMD 2
-                        if hasattr(self, '_do_refresh_shadow'):
-                            self._do_refresh_shadow()
-                
-                # Créer une carte de module avec la classe personnalisée
-                module_card = CustomModuleCard(
-                    orientation="vertical",
-                    size_hint_y=None,
-                    height=dp(75),
-                    md_bg_color=[1, 1, 1, 1],
-                    padding=dp(10),
-                    spacing=dp(4),
-                    elevation=1,
-                    radius=[dp(4)],
-                    module_id=module.get('id', '')
-                )
-                
-                # Titre du module
-                module_title = MDLabel(
-                    text=module.get('name', 'Module sans nom'),
-                    theme_font_size="Custom",
-                    font_size="16sp",
-                    bold=True
-                )
-                
-                # Version du module
-                module_version = MDLabel(
-                    text=f"Version: {module.get('version', '1.0.0')}",
-                    theme_font_size="Custom",
-                    font_size="14sp",
-                    theme_text_color="Secondary"
-                )
-                
-                # Assembler la carte
-                module_card.add_widget(module_title)
-                module_card.add_widget(module_version)
-                
-                modules_content.add_widget(module_card)
-            
-            # Ajouter le sélecteur à l'interface
+                card = ModuleSelectorCard(module_id=module.get('id'), branch=module.get('branch'))
+                card.add_widget(MDLabel(text=f"{module.get('name', 'Unknown')}", bold=True))
+                card.add_widget(MDLabel(text=f"v{module.get('version', 'N/A')} - {module.get('branch', 'N/A')}", theme_text_color="Secondary"))
+                card.bind(on_release=lambda w, m_id=module.get('id'), b=module.get('branch'): select_module(w, m_id, b))
+                modules_content.add_widget(card)
+
             self._selector_view = overlay
             self.add_widget(overlay)
-            
+
         except Exception as e:
             import traceback
             print(f"[ERROR] Exception dans show_module_selector: {str(e)}")
