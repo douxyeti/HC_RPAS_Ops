@@ -174,6 +174,10 @@ class HighCloudRPASApp(MDApp):
             return
 
         sso_config = self.config_service.get_config('sso')
+        if not sso_config:
+            self.logger.warning("SSO Check: Configuration SSO non trouvée. Passage à l'écran de connexion.")
+            self.switch_screen("login")
+            return
         token_topic = sso_config.get('token_topic')
 
         # Définir un timeout pour passer à l'écran de login si aucun token n'est reçu
