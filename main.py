@@ -59,6 +59,7 @@ class HighCloudRPASApp(MDApp):
         self.roles_manager_service = None
         self.current_role = None
         self.available_roles = []  # Sera chargé depuis Firebase
+        self.is_primary_instance = False  # Indicateur pour la session SSO
         self.model = ApplicationModel()
         
         # Initialiser le container
@@ -167,40 +168,53 @@ class HighCloudRPASApp(MDApp):
         pass
 
     def _check_for_sso_session(self):
-        """Vérifie la présence d'un token SSO sur MQTT au démarrage."""
+        """Vérifie la présence d'un token SSO sur MQTT au démarrage, sans forcer de redirection."""
         if not self.mqtt_service or self.mqtt_service.connection_state != 'connected':
-            self.logger.warning("SSO Check: MQTT non connecté, passage à l'écran de connexion.")
-            self.switch_screen("login")
+            self.logger.warning("SSO Check: MQTT non connecté. La vérification SSO est annulée. L'utilisateur devra se connecter manuellement.")
             return
 
         sso_config = self.config_service.get_config('sso')
-        if not sso_config:
-            self.logger.warning("SSO Check: Configuration SSO non trouvée. Passage à l'écran de connexion.")
-            self.switch_screen("login")
+        if not sso_config or not sso_config.get('token_topic'):
+            self.logger.warning("SSO Check: Configuration SSO invalide ou absente. La vérification SSO est annulée.")
             return
+        
         token_topic = sso_config.get('token_topic')
 
-        # Définir un timeout pour passer à l'écran de login si aucun token n'est reçu
-        self._login_timeout = Clock.schedule_once(
-            lambda dt: self.switch_screen("login"), 2
-        )
+        # Définit un timeout qui ne fait que logger l'information, sans changer d'écran.
+        self._login_timeout = Clock.schedule_once(self._sso_timeout, 2)
 
-        # S'abonner au topic et définir le callback
-        self.mqtt_service.subscribe(token_topic, self._on_sso_token_received)
-        self.logger.info(f"SSO Check: Abonné au topic '{token_topic}' avec un timeout de 2s.")
+        # S'abonne au topic et définit le callback
+        try:
+            self.mqtt_service.client.subscribe(token_topic)
+            self.mqtt_service.register_callback(token_topic, self._on_sso_token_received)
+            self.logger.info(f"SSO Check: Abonné au topic '{token_topic}' avec un timeout de 2s.")
+        except Exception as e:
+            self.logger.error(f"SSO Check: Erreur lors de l'abonnement au topic MQTT: {e}", exc_info=True)
 
-    def _on_sso_token_received(self, client, userdata, message):
-        """Callback exécuté à la réception d'un token SSO."""
-        if hasattr(self, '_login_timeout'):
-            self._login_timeout.cancel()
-        
-        encrypted_token = message.payload
-        if not encrypted_token:
-            self.logger.warning("SSO Login: Message reçu mais payload vide. Passage à l'écran de connexion.")
-            self.switch_screen("login")
+    def _sso_timeout(self, dt):
+        """Gère l'expiration du délai de recherche du token SSO."""
+        self.logger.info("SSO Check: Timeout. Aucun token SSO reçu. En attente d'une action de l'utilisateur sur l'écran d'accueil.")
+
+    def _on_sso_token_received(self, dt, topic, message):
+        """Callback appelé lorsqu'un token SSO est reçu sur MQTT."""
+        # Si cette instance est celle qui a initié la connexion, elle ne doit pas traiter son propre token.
+        if self.is_primary_instance:
+            self.logger.info("SSO Check: Le token a été ignoré car cette instance est la source de la connexion.")
             return
 
+        self.logger.info(f"SSO Check: Token reçu sur le topic '{topic}'. Tentative de connexion.")
+        
+        # Annuler le timer de timeout car on a reçu un token
+        if hasattr(self, '_login_timeout') and self._login_timeout:
+            self._login_timeout.cancel()
+
         try:
+            encrypted_token = message
+            if not encrypted_token:
+                self.logger.warning("SSO Login: Message reçu mais payload vide. Passage à l'écran de connexion.")
+                self.switch_screen("login")
+                return
+
             self.logger.info("SSO Login: Token reçu, tentative de déchiffrement et connexion.")
             custom_token = self.encryption_service.decrypt(encrypted_token)
             user_tokens = self.firebase_service.sign_in_with_custom_token(custom_token)
@@ -227,7 +241,7 @@ class HighCloudRPASApp(MDApp):
             logging.info(f"Load Roles: Loading roles for user {user_id}.")
 
             # New logic: Fetch the pilot document using the user_id
-            pilot_doc = self.firebase_service.get_document(f'pilots/{user_id}')
+            pilot_doc = self.firebase_service.get_document('pilots', user_id)
 
             if not pilot_doc:
                 logging.warning(f"Load Roles: No pilot document found for user ID '{user_id}'.")
@@ -311,19 +325,19 @@ class HighCloudRPASApp(MDApp):
 
     def on_stop(self):
         """Méthode exécutée à la fermeture de l'application."""
-        self.logger.info("Fermeture de l'application. Nettoyage de la session SSO.")
+        self.logger.info("Fermeture de l'application.")
         try:
             if self.mqtt_service and self.mqtt_service.connection_state == 'connected':
-                # Récupérer le topic du token SSO
-                sso_config = self.config_service.get_config('sso')
-                token_topic = sso_config.get('token_topic')
+                # Seule l'instance primaire qui a initié la session SSO nettoie le token.
+                if self.is_primary_instance:
+                    self.logger.info("Instance primaire détectée. Nettoyage de la session SSO.")
+                    sso_config = self.config_service.get_config('sso')
+                    token_topic = sso_config.get('token_topic')
+                    if token_topic:
+                        self.logger.info(f"Nettoyage du token SSO sur le topic '{token_topic}'.")
+                        self.mqtt_service.publish(topic=token_topic, message="", retain=True)
                 
-                if token_topic:
-                    # Publier un message vide pour effacer le token retenu sur le broker
-                    self.logger.info(f"Nettoyage du token SSO sur le topic '{token_topic}'.")
-                    self.mqtt_service.publish(topic=token_topic, message="", retain=True)
-                
-                # Déconnexion propre du service MQTT
+                # Toutes les instances se déconnectent proprement du service MQTT.
                 self.mqtt_service.disconnect()
                 self.logger.info("Service MQTT déconnecté proprement.")
         except Exception as e:

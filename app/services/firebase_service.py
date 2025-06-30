@@ -51,6 +51,7 @@ class FirebaseService:
         self.auth = auth
         self.db = firestore.client()
         self.storage = storage
+        self.current_user = None
         
         # Cache pour optimiser les requêtes
         self._cache = {}
@@ -64,12 +65,44 @@ class FirebaseService:
         return cls._instance
 
     def sign_in_with_email_password(self, email, password):
-        """Authentifie un utilisateur avec email/mot de passe"""
+        """Authentifie un utilisateur avec email/mot de passe et stocke les détails."""
         try:
             user = self.auth_client.sign_in_with_email_and_password(email, password)
+            self.current_user = user
             return user
         except Exception as e:
             print(f"Erreur d'authentification: {str(e)}")
+            self.current_user = None
+            raise
+
+    def create_custom_token(self, uid, claims=None):
+        """Crée un jeton personnalisé pour un UID donné en utilisant l'Admin SDK."""
+        try:
+            # L'Admin SDK est nécessaire pour cette opération
+            return self.auth.create_custom_token(uid, claims)
+        except Exception as e:
+            print(f"Erreur lors de la création du jeton personnalisé: {str(e)}")
+            raise
+
+    def sign_in_with_custom_token(self, token):
+        """Connecte un utilisateur avec un jeton personnalisé et stocke les détails."""
+        try:
+            # Pyrebase est utilisé pour cette opération
+            user = self.auth_client.sign_in_with_custom_token(token)
+            
+            # Pyrebase ne renvoie pas toutes les infos, notamment le localId (UID).
+            # On doit le récupérer manuellement pour être cohérent avec la connexion par mot de passe.
+            id_token = user.get('idToken')
+            if id_token:
+                account_info = self.auth_client.get_account_info(id_token)
+                if account_info and 'users' in account_info and account_info['users']:
+                    user['localId'] = account_info['users'][0].get('localId')
+
+            self.current_user = user
+            return user
+        except Exception as e:
+            print(f"Erreur de connexion avec le jeton personnalisé: {str(e)}")
+            self.current_user = None
             raise
 
     def create_user_with_email_password(self, email, password):

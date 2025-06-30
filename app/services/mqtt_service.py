@@ -80,21 +80,24 @@ class MQTTService(EventDispatcher):
         self.connection_state = 'disconnected'
         
     def on_message(self, client, userdata, msg):
-        """Callback lors de la réception d'un message"""
+        """Callback lors de la réception d'un message, gère JSON et données brutes."""
+        payload = None
         try:
-            payload = json.loads(msg.payload.decode())
-            self.last_message = {
-                'topic': msg.topic,
-                'payload': payload
-            }
-            
-            # Appeler les callbacks enregistrés pour ce topic
+            # Tenter de décoder le message comme du JSON
+            payload = json.loads(msg.payload.decode('utf-8'))
+            self.last_message = {'topic': msg.topic, 'payload': payload}
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            # Si ce n'est pas du JSON valide, traiter comme des données brutes (bytes)
+            payload = msg.payload
+            # Pour la propriété 'last_message', on stocke une représentation string des bytes
+            self.last_message = {'topic': msg.topic, 'payload': repr(payload)}
+
+        # Appeler les callbacks enregistrés pour ce topic, quel que soit le type de payload
+        if payload is not None:
             for topic_pattern, callback in self.topic_callbacks.items():
                 if mqtt.topic_matches_sub(topic_pattern, msg.topic):
-                    Clock.schedule_once(lambda dt: callback(msg.topic, payload))
-                    
-        except json.JSONDecodeError:
-            logging.error(f"Erreur de décodage JSON pour le message: {msg.payload}")
+                    # Utiliser une fonction lambda pour garantir le bon ordre des arguments
+                    Clock.schedule_once(lambda dt: callback(dt, msg.topic, payload))
             
     def subscribe_role(self, role):
         """Souscription aux topics spécifiques à un rôle"""
@@ -117,12 +120,12 @@ class MQTTService(EventDispatcher):
         if topic in self.topic_callbacks:
             del self.topic_callbacks[topic]
             
-    def publish(self, topic, message):
+    def publish(self, topic, message, qos=0, retain=False):
         """Publication d'un message sur un topic"""
         try:
             if isinstance(message, (dict, list)):
                 message = json.dumps(message)
-            self.client.publish(topic, message)
+            self.client.publish(topic, message, qos=qos, retain=retain)
             return True
         except Exception as e:
             logging.error(f"Erreur de publication MQTT: {str(e)}")
