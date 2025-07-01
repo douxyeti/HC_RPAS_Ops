@@ -15,7 +15,8 @@ class MQTTService(EventDispatcher):
     def __init__(self):
         super().__init__()
         # Configuration du client MQTT
-        self.client = mqtt.Client()
+        # Configuration du client MQTT en utilisant l'API v2 pour le support LWT robuste
+        self.client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.client.on_disconnect = self.on_disconnect
@@ -42,9 +43,14 @@ class MQTTService(EventDispatcher):
         # Callbacks pour les topics
         self.topic_callbacks = {}
         
-    def connect(self, broker="localhost", port=1883):
-        """Connexion au broker MQTT"""
+    def connect(self, broker="localhost", port=1883, lwt_topic=None, lwt_payload="", lwt_qos=1, lwt_retain=True):
+        """Connexion au broker MQTT avec support pour Last Will and Testament (LWT)"""
         try:
+            # Configurer le LWT si fourni pour garantir le nettoyage en cas de déconnexion anormale
+            if lwt_topic:
+                self.client.will_set(lwt_topic, lwt_payload, qos=lwt_qos, retain=lwt_retain)
+                logging.info(f"LWT configuré pour le topic: {lwt_topic}")
+
             # Configurer les credentials si disponibles
             if 'MQTT_USERNAME' in os.environ and 'MQTT_PASSWORD' in os.environ:
                 self.client.username_pw_set(
@@ -55,7 +61,7 @@ class MQTTService(EventDispatcher):
             self.client.loop_start()
             return True
         except Exception as e:
-            logging.error(f"Erreur de connexion MQTT: {str(e)}")
+            logging.error(f"Erreur de connexion MQTT: {str(e)}", exc_info=True)
             return False
             
     def disconnect(self):
@@ -63,10 +69,11 @@ class MQTTService(EventDispatcher):
         self.client.loop_stop()
         self.client.disconnect()
         
-    def on_connect(self, client, userdata, flags, rc):
-        """Callback lors de la connexion"""
-        if rc == 0:
+    def on_connect(self, client, userdata, flags, reason_code, properties):
+        """Callback lors de la connexion (API v2)"""
+        if reason_code == mqtt.CONNACK_ACCEPTED:
             self.connection_state = 'connected'
+            logging.info("MQTT Service: Connecté avec succès au broker.")
             # Souscription aux topics généraux
             for category in self.base_topics:
                 for topic in self.base_topics[category].values():
@@ -74,10 +81,15 @@ class MQTTService(EventDispatcher):
                         self.client.subscribe(topic)
         else:
             self.connection_state = 'error'
+            logging.error(f"MQTT Service: Échec de la connexion, code: {reason_code}")
             
-    def on_disconnect(self, client, userdata, rc):
-        """Callback lors de la déconnexion"""
+    def on_disconnect(self, client, userdata, reason_code, properties):
+        """Callback lors de la déconnexion (API v2)"""
         self.connection_state = 'disconnected'
+        if reason_code != mqtt.MQTT_ERR_SUCCESS:
+            logging.warning(f"Déconnexion inattendue de MQTT: {reason_code}. Le LWT devrait être activé.")
+        else:
+            logging.info("Déconnecté proprement de MQTT.")
         
     def on_message(self, client, userdata, msg):
         """Callback lors de la réception d'un message, gère JSON et données brutes."""

@@ -32,7 +32,9 @@ class SplashScreen(MDScreen):
             return False
             
     def go_to_login(self):
-        """Passe à l'écran de connexion"""
+        """Passe à l'écran de connexion."""
         if self.loading_complete:
-            print("go_to_login called")
-            self.manager.current = "login"
+            from kivymd.app import MDApp
+            app = MDApp.get_running_app()
+            app.logger.info("Splash Screen: Clic sur 'Continuer' détecté. Passage à l'écran de connexion.")
+            app.switch_screen("login")

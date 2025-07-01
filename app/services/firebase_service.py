@@ -64,6 +64,16 @@ class FirebaseService:
             cls._instance = FirebaseService()
         return cls._instance
 
+    def disconnect(self):
+        """Déconnecte proprement l'application Firebase Admin."""
+        try:
+            if firebase_admin._apps:
+                app = firebase_admin.get_app()
+                firebase_admin.delete_app(app)
+                print("[INFO] FirebaseService: Application Firebase déconnectée.")
+        except Exception as e:
+            print(f"[ERREUR] FirebaseService: Erreur lors de la déconnexion de Firebase: {e}")
+
     def sign_in_with_email_password(self, email, password):
         """Authentifie un utilisateur avec email/mot de passe et stocke les détails."""
         try:
