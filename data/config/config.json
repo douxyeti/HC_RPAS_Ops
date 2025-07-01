@@ -27,7 +27,7 @@
     },
     "sso": {
         "enabled": true,
-        "session_topic": "hc_rpas/sso/sessions"
+        "token_topic": "${SSO_TOKEN_TOPIC}"
     },
     "firebase": {
         "apiKey": "${FIREBASE_API_KEY}",
