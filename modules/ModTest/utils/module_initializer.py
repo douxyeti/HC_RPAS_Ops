@@ -1,0 +1,191 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Module d'initialisation automatique pour les modules satellites
+Ce module vérifie si un index existe pour la branche courante et en crée un si nécessaire
+"""
+
+import os
+import sys
+import subprocess
+import logging
+import time
+import re
+import datetime
+from typing import Optional, List, Dict, Any
+
+logger = logging.getLogger('hc_rpas.module_initializer')
+
+class ModuleInitializer:
+    """
+    Classe responsable de l'initialisation des modules au démarrage
+    - Vérifie si un index existe pour la branche courante
+    - Crée un index si nécessaire
+    - Configure le module pour être visible dans l'écosystème
+    """
+    
+    def __init__(self):
+        """Initialisation"""
+        self.firebase_service = None
+        self.module_indexed = False
+        self.current_branch = self._get_git_branch()
+        if not self.current_branch:
+            logger.error("Impossible de détecter la branche Git. L'initialisation automatique est désactivée.")
+        logger.info(f"Initialisation du module pour la branche: {self.current_branch}")
+
+    def _get_git_branch(self) -> str:
+        """Récupère le nom de la branche Git courante."""
+        try:
+            result = subprocess.run(
+                ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
+            )
+            return result.stdout.strip()
+        except Exception as e:
+            logger.error(f"Erreur lors de la détection de la branche Git: {e}")
+            return ""
+
+    def _sanitize_branch_name(self, branch_name: str) -> str:
+        """Nettoie le nom de la branche pour la compatibilité avec Firebase."""
+        if not branch_name:
+            return ""
+        return re.sub(r'[^a-zA-Z0-9_-]', '_', branch_name)
+
+    def initialize_with_services(self, firebase_service):
+        """Initialise le module avec les services requis."""
+        self.firebase_service = firebase_service
+        if not self.current_branch:
+            return
+
+        if self._is_indexing_needed():
+            logger.info("L'index pour cette branche est manquant ou obsolète. Lancement de l'indexation...")
+            self._run_indexing()
+        else:
+            logger.info("L'index pour cette branche est à jour.")
+            self.module_indexed = True
+
+    def _is_indexing_needed(self) -> bool:
+        """Vérifie si l'indexation est nécessaire pour la branche courante."""
+        # Forcer la ré-indexation à chaque démarrage pour refléter les changements de code.
+        logger.info("Forçage de la ré-indexation systématique pour la branche courante.")
+        return True
+
+    def _run_indexing(self) -> bool:
+        """Exécute l'indexation des écrans et la création du module."""
+        try:
+            logger.info("Démarrage de l'indexation des écrans pour la branche courante.")
+            indexed_screens = self._index_screens()
+            
+            if not indexed_screens:
+                logger.warning("Aucun écran n'a été indexé. Le module ne sera pas créé.")
+                return False
+                
+            logger.info(f"Indexation réussie: {len(indexed_screens)} écrans trouvés.")
+            
+            result = self._create_module(indexed_screens)
+            if not result:
+                logger.error("Échec de la création du module.")
+                return False
+                
+            logger.info("Création du module pour la branche courante réussie.")
+            self.module_indexed = True
+            return True
+            
+        except Exception as e:
+            logger.error(f"Erreur lors de l'indexation et création du module: {e}", exc_info=True)
+            return False
+
+    def _index_screens(self) -> list:
+        """Indexe tous les écrans de l'application et les retourne."""
+        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        screens = []
+        
+        screens_dir = os.path.join(app_dir, "app", "views", "screens")
+        if not os.path.isdir(screens_dir):
+            logger.warning(f"Le répertoire des écrans '{screens_dir}' n'a pas été trouvé.")
+            return screens
+
+        for root, _, files in os.walk(screens_dir):
+            for file in files:
+                if file.endswith(".py") and file != "__init__.py":
+                    file_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(file_path, app_dir)
+                    
+                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                        content = f.read()
+                    
+                    matches = re.finditer(r"class\s+(\w+)\s*\((.+?)\):", content)
+                    for match in matches:
+                        class_name = match.group(1)
+                        parent_classes = match.group(2)
+                        
+                        if "Screen" in parent_classes or "Window" in parent_classes:
+                            screen_entry = {
+                                "id": f"{class_name.lower()}",
+                                "name": class_name,
+                                "title": f"Écran {class_name}",
+                                "description": f"Écran {class_name} de l'application principale",
+                                "file_path": rel_path.replace('\\', '/'),
+                                "branch": self.current_branch,
+                                "indexed_at": datetime.datetime.now().isoformat()
+                            }
+                            screens.append(screen_entry)
+                            logger.debug(f"Écran trouvé: {class_name} dans {rel_path}")
+        
+        return screens
+
+    def _create_module(self, screens: list) -> bool:
+        """Crée l'entrée du module et de ses écrans dans Firebase pour la branche courante."""
+        if not self.firebase_service:
+            logger.error("Service Firebase non disponible.")
+            return False
+
+        sanitized_branch = self._sanitize_branch_name(self.current_branch)
+        module_collection = f"module_indexes_modules_{sanitized_branch}"
+        module_id = f"module_{sanitized_branch}"
+        
+        module_data = {
+            "id": module_id,
+            "name": f"Application Principale ({self.current_branch})",
+            "description": f"Module principal de l'application HC RPAS Ops pour la branche {self.current_branch}",
+            "version": "1.0.1",
+            "main_screen": "dashboard",
+            "updated_at": int(time.time()),
+            "branch": self.current_branch,
+            "icon": "application",
+            "type": "core",
+            "category": "system",
+            "screens_count": len(screens),
+            "is_main_app": True
+        }
+        
+        logger.info(f"Création/Mise à jour du module '{module_id}' dans '{module_collection}'")
+        if not self.firebase_service.set_data_with_id(module_collection, module_id, module_data):
+            logger.error("Échec de la sauvegarde des données du module.")
+            return False
+
+        screens_collection = f"module_indexes_screens_{module_id}_{sanitized_branch}"
+        logger.info(f"Sauvegarde de {len(screens)} écrans dans '{screens_collection}'")
+        
+        for screen in screens:
+            screen_data = screen.copy()
+            screen_data["module_id"] = module_id
+            if not self.firebase_service.set_data_with_id(screens_collection, screen_data["id"], screen_data):
+                logger.warning(f"Échec de la sauvegarde de l'écran '{screen_data['id']}'")
+        
+        return True
+
+    def is_module_initialized(self) -> bool:
+        """Vérifie si le module a été correctement initialisé."""
+        return self.module_indexed
+
+# Singleton
+_module_initializer = None
+
+def get_module_initializer():
+    """Retourne l'instance unique du ModuleInitializer."""
+    global _module_initializer
+    if _module_initializer is None:
+        _module_initializer = ModuleInitializer()
+    return _module_initializer

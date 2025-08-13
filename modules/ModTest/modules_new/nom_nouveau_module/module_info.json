@@ -1,0 +1,30 @@
+{
+  "id": "nom_nouveau_module",
+  "name": "Controle_vols",
+  "version": "1.0.0",
+  "description": "Module template servant de base pour le d\u00e9veloppement de nouveaux modules",
+  "author": "HighCloud RPAS Operations",
+  "dependencies": {
+    "core": ">=1.0.0"
+  },
+  "screens": [
+    {
+      "id": "main",
+      "name": "\u00c9cran Principal",
+      "default": true,
+      "icon": "home"
+    },
+    {
+      "id": "settings",
+      "name": "Configuration",
+      "icon": "cog"
+    }
+  ],
+  "permissions": [
+    "data.read"
+  ],
+  "mqtt_topics": [
+    "hc_rpas/modules/{module_id}/status/general",
+    "hc_rpas/modules/{module_id}/data/updates"
+  ]
+}

@@ -1,0 +1,78 @@
+BRANCH =====
+feature/invocation-routing
+
+LAST COMMIT =====
+commit 8bf154fe78ed20ac1a1f96390488c536ef6c8332
+Author:     douxyeti <mario@domotiflex.com>
+AuthorDate: Tue Jul 1 19:18:28 2025 -0400
+Commit:     douxyeti <mario@domotiflex.com>
+CommitDate: Tue Jul 1 19:18:28 2025 -0400
+
+    Revert "Sauvegarde avant refonte majeure du syst├¿me SSO avec LWT"
+    
+    This reverts commit 7c542580541dbc336694170b2556b8b1dcd5e186.
+
+STATUS =====
+On branch feature/invocation-routing
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   app/utils/module_discovery.py
+	modified:   app/utils/module_initializer.py
+	modified:   app/views/screens/modules_admin_screen.py
+	modified:   app/views/screens/task_manager_screen.py
+	modified:   main.py
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+CHANGED FILES =====
+app/utils/module_discovery.py
+app/utils/module_initializer.py
+app/views/screens/modules_admin_screen.py
+app/views/screens/task_manager_screen.py
+main.py
+
+INVOCATION.PY HASH =====
+ACE7449EAFC0B1EB
+
+INVOCATION.PY HEAD =====
+import time
+from typing import Any, Dict, Optional
+
+
+def create_invocation(
+    firebase,
+    user_id: str,
+    module: str,
+    route: str,
+    params: Dict[str, Any],
+    ttl_sec: int = 120,
+) -> None:
+    """
+    Crée une invocation single-use pour {user_id}+{module}.
+    Écrit dans la collection invocations_{user_id} le document {user_id}_{module}.
+    Champs:
+      - route: str
+      - params: dict
+      - expires_at: int (epoch seconds)
+    """
+    doc_id = f"{user_id}_{module}"
+    expires_at = int(time.time()) + int(ttl_sec)
+    data = {
+        "route": route,
+        "params": params or {},
+        "expires_at": expires_at,
+    }
+    firebase.set_data_with_id(f"invocations_{user_id}", doc_id, data)
+
+
+def fetch_and_consume_invocation(
+    firebase,
+    user_id: str,
+    module: str,
+) -> Optional[Dict[str, Any]]:
+    """Lit et supprime immédiatement une invocation si non expirée."""
+    doc_id = f"{user_id}_{module}"
+    path = f"invocations_{user_id}/{doc_id}"
+    data = firebase.get_data(path)
+    if not data:

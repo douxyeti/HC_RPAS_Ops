@@ -17,6 +17,7 @@ from app.models.task import Task, TaskModel
 from app.services.firebase_service import FirebaseService
 from app.services.roles_manager_service import RolesManagerService
 from app.utils.module_discovery import ModuleDiscovery
+from app.utils.task_router import go_to_task
 
 
 class ModuleSelectorCard(MDCard):
@@ -148,6 +149,23 @@ class TaskCard(MDCard):
             spacing=dp(4)
         )
         
+        # Bouton Ouvrir (toujours visible)
+        
+        open_button = MDIconButton(
+        
+            icon="play",
+        
+            theme_text_color="Custom",
+        
+            text_color=[0.2, 0.6, 0.2, 1],
+        
+            on_release=lambda x: self.open_task()
+        
+        )
+        
+        buttons_box.add_widget(open_button)
+
+        
         # Vérifier si la tâche est protégée
         is_protected = (self.current_role == 'super_admin' and 
                        self.title in self.PROTECTED_TASKS)
@@ -182,6 +200,40 @@ class TaskCard(MDCard):
         
         self.add_widget(header)
         self.add_widget(description_label)
+        
+    def open_task(self):
+        
+        """Lance la tâche via TaskManagerScreen.launch_task"""
+        
+        # remonte au parent écran
+        
+        parent = getattr(self.parent, 'parent', None)
+        
+        if parent and hasattr(parent, 'parent'):
+        
+            parent = parent.parent
+        
+        if parent and hasattr(parent, 'parent'):
+        
+            parent = parent.parent
+        
+        # parent doit porter 'launch_task'
+        
+        if hasattr(parent, 'launch_task'):
+        
+            task = {'title': self.title, 'description': self.description}
+        
+            if self.target_module_id:
+        
+                task['target_module_id'] = self.target_module_id
+        
+            if self.target_screen_id:
+        
+                task['target_screen_id'] = self.target_screen_id
+        
+            parent.launch_task(task)
+        
+    
         
     def edit_task(self):
         """Déclenche l'édition de la tâche"""
@@ -238,6 +290,18 @@ class TaskEditDialog(MDDialog):
         }
 
 class TaskManagerScreen(MDScreen):
+    def launch_task(self, task: dict):
+        """Route une tâche (ouvre le module/écran cible)."""
+        try:
+            # Reconstruit un ModuleDiscovery et passe l'instance App si dispo
+            md = ModuleDiscovery(FirebaseService.get_instance())
+            try:
+                app = App.get_running_app()
+            except Exception:
+                app = None
+            go_to_task(md, task, app_instance=app)
+        except Exception as e:
+            print(f"[TASK ROUTER] Erreur lancement tâche {task.get('title')}: {e}")
     selected_module_id = StringProperty(None)
     selected_screen_id = StringProperty(None)
 
@@ -476,9 +540,14 @@ class TaskManagerScreen(MDScreen):
         ))
         
         screen_box.add_widget(self.target_screen_field)
+        # Bouton "Parcourir" pour choisir module/écran
+        browse_button = MDButton(style="elevated", size_hint=(None, None), size=(dp(120), dp(40)), pos_hint={"center_y": 0.5})
+        browse_button.add_widget(MDButtonText(text="Parcourir", theme_font_size="Custom", font_size="14sp"))
+        def browse_click(instance):
+            print("[DEBUG] Bouton parcourir cliqué!")
+            self.show_module_selector()
+        browse_button.bind(on_release=browse_click)
         screen_box.add_widget(browse_button)
-        
-        # Ajouter les deux boîtes au conteneur parent
         target_screen_box = MDBoxLayout(
             orientation='vertical',
             spacing=12,
@@ -730,33 +799,16 @@ class TaskManagerScreen(MDScreen):
         )
         
         target_section_box.add_widget(target_section_label)
-        
-        print("[DEBUG] Création du bouton parcourir...")
-        
-        # Bouton pour parcourir les modules
-        browse_button = MDButton(
-            style="elevated",  # Utiliser elevated au lieu de outlined pour le rendre plus visible
-            size_hint=(None, None),
-            size=(dp(120), dp(40)),
-            pos_hint={"center_y": 0.5}
-        )
-        browse_button.add_widget(MDButtonText(
-            text="Parcourir",
-            theme_font_size="Custom",
-            font_size="14sp"
-        ))
-        
-        # Fonction pour le callback du bouton
+        screen_box.add_widget(self.target_screen_field)
+# -- restore "Parcourir" button to pick module->screen, fills target fields
+        # Bouton "Parcourir" pour choisir module/écran
+        browse_button = MDButton(style="elevated", size_hint=(None, None), size=(dp(120), dp(40)), pos_hint={"center_y": 0.5})
+        browse_button.add_widget(MDButtonText(text="Parcourir", theme_font_size="Custom", font_size="14sp"))
         def browse_click(instance):
             print("[DEBUG] Bouton parcourir cliqué!")
             self.show_module_selector()
-            
         browse_button.bind(on_release=browse_click)
-        screen_box.add_widget(self.target_screen_field)
         screen_box.add_widget(browse_button)
-        
-        # Assembler les parties du formulaire
-        target_section_box.add_widget(module_box)
         target_section_box.add_widget(screen_box)
         edit_card.add_widget(target_section_box)
         
@@ -1145,6 +1197,13 @@ class TaskManagerScreen(MDScreen):
         """
         print(f"[DEBUG] Bouton parcourir cliqué!")
         self.show_module_selector()
+
+
+
+
+
+
+
 
 
 

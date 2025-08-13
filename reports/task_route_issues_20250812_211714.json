@@ -1,0 +1,605 @@
+[
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "1739115867492",
+    "role_name": "Chef instructeur",
+    "task_title": "test",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "commandant_de_bord_20250209154602797597_7549",
+    "role_name": "Commandant de bord",
+    "task_title": "Planification des vols",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "commandant_de_bord_20250209154602797597_7549",
+    "role_name": "Commandant de bord",
+    "task_title": "Briefing d'équipage",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "commandant_de_bord_20250209154602797597_7549",
+    "role_name": "Commandant de bord",
+    "task_title": "Vérification pré-vol",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "commandant_de_bord_20250209154602797597_7549",
+    "role_name": "Commandant de bord",
+    "task_title": "Rapport de vol",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "MODULE_HAS_NO_SCREENS",
+    "role_id": "coordinateur_des_op_rations_20250209154602583657_7089",
+    "role_name": "Coordinateur des opérations",
+    "task_title": "Coordination vols",
+    "target_module_id": "module_dev_application_principale_v2",
+    "target_screen_id": "documentationmanagerdashboardscreen",
+    "screens_coll": "module_indexes_screens_module_dev_application_principale_v2_dev_application_principale_v2"
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "coordinateur_des_op_rations_20250209154602583657_7089",
+    "role_name": "Coordinateur des opérations",
+    "task_title": "Gestion ressources",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "MODULE_HAS_NO_SCREENS",
+    "role_id": "coordinateur_des_op_rations_20250209154602583657_7089",
+    "role_name": "Coordinateur des opérations",
+    "task_title": "Suivi opérations",
+    "target_module_id": "module_dev_application_principale_v2",
+    "target_screen_id": "adminassistantdashboardscreen",
+    "screens_coll": "module_indexes_screens_module_dev_application_principale_v2_dev_application_principale_v2"
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "copilote_20250209154601638980_4466",
+    "role_name": "Copilote",
+    "task_title": "Support pilotage",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "copilote_20250209154601638980_4466",
+    "role_name": "Copilote",
+    "task_title": "Surveillance systèmes",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "copilote_20250209154601638980_4466",
+    "role_name": "Copilote",
+    "task_title": "Communications",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "examinateur_20250209154601788307_4150",
+    "role_name": "Examinateur",
+    "task_title": "Examens théoriques",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "examinateur_20250209154601788307_4150",
+    "role_name": "Examinateur",
+    "task_title": "Examens pratiques",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "examinateur_20250209154601788307_4150",
+    "role_name": "Examinateur",
+    "task_title": "Certification",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "formateur_20250209154601869007_5483",
+    "role_name": "Formateur",
+    "task_title": "Donner formation",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "formateur_20250209154601869007_5483",
+    "role_name": "Formateur",
+    "task_title": "Évaluer progrès",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "formateur_20250209154601869007_5483",
+    "role_name": "Formateur",
+    "task_title": "Rapports élèves",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "gestionnaire_des_activit_s_de_maintenance_20250209154602333301_9261",
+    "role_name": "Gestionnaire des activités de maintenance",
+    "task_title": "Planning maintenance",
+    "target_module_id": "maintenance",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "gestionnaire_des_activit_s_de_maintenance_20250209154602333301_9261",
+    "role_name": "Gestionnaire des activités de maintenance",
+    "task_title": "Suivi des équipements",
+    "target_module_id": "maintenance",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "gestionnaire_des_activit_s_de_maintenance_20250209154602333301_9261",
+    "role_name": "Gestionnaire des activités de maintenance",
+    "task_title": "Rapports techniques",
+    "target_module_id": "maintenance",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "gestionnaire_du_cadre_documentaire_20250209154601714872_5632",
+    "role_name": "Gestionnaire du cadre documentaire",
+    "task_title": "Gestion documents",
+    "target_module_id": "documentation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "gestionnaire_du_cadre_documentaire_20250209154601714872_5632",
+    "role_name": "Gestionnaire du cadre documentaire",
+    "task_title": "Mise à jour procédures",
+    "target_module_id": "documentation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "gestionnaire_du_cadre_documentaire_20250209154601714872_5632",
+    "role_name": "Gestionnaire du cadre documentaire",
+    "task_title": "Archivage",
+    "target_module_id": "documentation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "inspecteur_20250209154602148559_9165",
+    "role_name": "Inspecteur",
+    "task_title": "Inspection conformité",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "inspecteur_20250209154602148559_9165",
+    "role_name": "Inspecteur",
+    "task_title": "Audit documentation",
+    "target_module_id": "documentation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "inspecteur_20250209154602148559_9165",
+    "role_name": "Inspecteur",
+    "task_title": "Rapports inspection",
+    "target_module_id": "documentation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "instructeur_20250209154602241623_4510",
+    "role_name": "Instructeur",
+    "task_title": "Formation pratique",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "instructeur_20250209154602241623_4510",
+    "role_name": "Instructeur",
+    "task_title": "Supervision vol",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "instructeur_20250209154602241623_4510",
+    "role_name": "Instructeur",
+    "task_title": "Évaluation progrès",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "observateur_au_sol_20250209154601953352_1681",
+    "role_name": "Observateur au sol",
+    "task_title": "Surveillance zone",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "observateur_au_sol_20250209154601953352_1681",
+    "role_name": "Observateur au sol",
+    "task_title": "Rapport sécurité",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "observateur_au_sol_20250209154601953352_1681",
+    "role_name": "Observateur au sol",
+    "task_title": "Communication équipe",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "op_rateur_de_charge_utile_20250209154602653054_5709",
+    "role_name": "Opérateur de charge utile",
+    "task_title": "Gestion payload",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "op_rateur_de_charge_utile_20250209154602653054_5709",
+    "role_name": "Opérateur de charge utile",
+    "task_title": "Contrôle capteurs",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "op_rateur_de_charge_utile_20250209154602653054_5709",
+    "role_name": "Opérateur de charge utile",
+    "task_title": "Collecte données",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "op_rateur_de_station_au_sol_20250209154602044502_4150",
+    "role_name": "Opérateur de station au sol",
+    "task_title": "Gestion station sol",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "op_rateur_de_station_au_sol_20250209154602044502_4150",
+    "role_name": "Opérateur de station au sol",
+    "task_title": "Suivi télémétrie",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "op_rateur_de_station_au_sol_20250209154602044502_4150",
+    "role_name": "Opérateur de station au sol",
+    "task_title": "Communications sol",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "ops_manager",
+    "role_name": "Responsable des opérations",
+    "task_title": "Gestion des opérations",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "ops_manager",
+    "role_name": "Responsable des opérations",
+    "task_title": "Planification stratégique",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "ops_manager",
+    "role_name": "Responsable des opérations",
+    "task_title": "Analyse des performances",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "pilot_controls",
+    "role_name": "Pilote aux commandes",
+    "task_title": "Pilotage RPAS",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "pilot_controls",
+    "role_name": "Pilote aux commandes",
+    "task_title": "Check-list vol",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "pilot_controls",
+    "role_name": "Pilote aux commandes",
+    "task_title": "Journal de bord",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "pilote_20250209154602727105_6859",
+    "role_name": "Pilote",
+    "task_title": "Opérations vol",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "pilote_20250209154602727105_6859",
+    "role_name": "Pilote",
+    "task_title": "Inspection RPAS",
+    "target_module_id": "maintenance",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "pilote_20250209154602727105_6859",
+    "role_name": "Pilote",
+    "task_title": "Rapports vol",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "quality_inspector",
+    "role_name": "Inspecteur qualité",
+    "task_title": "Inspection qualité",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "quality_inspector",
+    "role_name": "Inspecteur qualité",
+    "task_title": "Vérification normes",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "quality_inspector",
+    "role_name": "Inspecteur qualité",
+    "task_title": "Rapports qualité",
+    "target_module_id": "documentation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "quality_manager",
+    "role_name": "Responsable assurance de la qualité",
+    "task_title": "Audits qualité",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "quality_manager",
+    "role_name": "Responsable assurance de la qualité",
+    "task_title": "Contrôle processus",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "safety_officer",
+    "role_name": "Agent de sécurité",
+    "task_title": "Contrôle sécurité",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "safety_officer",
+    "role_name": "Agent de sécurité",
+    "task_title": "Gestion risques",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "safety_officer",
+    "role_name": "Agent de sécurité",
+    "task_title": "Rapports incidents",
+    "target_module_id": "documentation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "site_manager",
+    "role_name": "Gestionnaire de site",
+    "task_title": "Gestion du site",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "site_manager",
+    "role_name": "Gestionnaire de site",
+    "task_title": "Coordination équipe",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "site_manager",
+    "role_name": "Gestionnaire de site",
+    "task_title": "Rapports site",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "sp_cialiste_de_mission_20250209154602497849_6798",
+    "role_name": "Spécialiste de mission",
+    "task_title": "Planification mission",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "sp_cialiste_de_mission_20250209154602497849_6798",
+    "role_name": "Spécialiste de mission",
+    "task_title": "Support technique",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "sp_cialiste_de_mission_20250209154602497849_6798",
+    "role_name": "Spécialiste de mission",
+    "task_title": "Analyse mission",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "super_admin",
+    "role_name": "Super Administrateur",
+    "task_title": "Configuration système",
+    "target_module_id": "system",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "super_admin",
+    "role_name": "Super Administrateur",
+    "task_title": "Gestion des accès",
+    "target_module_id": "system",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "super_admin",
+    "role_name": "Super Administrateur",
+    "task_title": "Maintenance système",
+    "target_module_id": "system",
+    "target_screen_id": null
+  },
+  {
+    "kind": "NO_ROUTE_INFO",
+    "role_id": "super_admin",
+    "role_name": "Super Administrateur",
+    "task_title": "Gestion des rôles",
+    "target_module_id": null,
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "super_admin",
+    "role_name": "Super Administrateur",
+    "task_title": "Gestion des lites de vérifications",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "super_admin",
+    "role_name": "Super Administrateur",
+    "task_title": "Gestion des SOP's",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "super_admin",
+    "role_name": "Super Administrateur",
+    "task_title": "Gestion des listes et registres",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "MODULE_HAS_NO_SCREENS",
+    "role_id": "super_admin",
+    "role_name": "Super Administrateur",
+    "task_title": "Gestion des procédures",
+    "target_module_id": "module_dev_application_principale_v2",
+    "target_screen_id": "superadmindashboardscreen",
+    "screens_coll": "module_indexes_screens_module_dev_application_principale_v2_dev_application_principale_v2"
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "super_admin",
+    "role_name": "Super Administrateur",
+    "task_title": "Gestion du SSO",
+    "target_module_id": "operations",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "technicien_maintenance_20250209154602418833_9484",
+    "role_name": "Technicien Maintenance",
+    "task_title": "Maintenance préventive",
+    "target_module_id": "maintenance",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "technicien_maintenance_20250209154602418833_9484",
+    "role_name": "Technicien Maintenance",
+    "task_title": "Réparations",
+    "target_module_id": "maintenance",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "training_manager",
+    "role_name": "Gestionnaire de la formation",
+    "task_title": "Programme formation",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "training_manager",
+    "role_name": "Gestionnaire de la formation",
+    "task_title": "Suivi stagiaires",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  },
+  {
+    "kind": "LEGACY_TASK_WITH_MODULE_FIELD",
+    "role_id": "training_manager",
+    "role_name": "Gestionnaire de la formation",
+    "task_title": "Rapports formation",
+    "target_module_id": "formation",
+    "target_screen_id": null
+  }
+]

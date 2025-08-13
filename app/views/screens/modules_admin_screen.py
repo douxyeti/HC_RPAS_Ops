@@ -436,3 +436,5 @@ class ModulesAdminScreen(MDScreen):
                     self.manager.current = 'dashboard'
             except:
                 pass
+
+

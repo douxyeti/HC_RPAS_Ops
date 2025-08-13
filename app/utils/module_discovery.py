@@ -372,8 +372,9 @@ class ModuleDiscovery:
         """
         try:
             # Construire le chemin du module
-            module_path = f"services.module_{module_id}"
-            
+            import re
+            safe_id = re.sub(r"[^0-9a-zA-Z_]", "_", module_id)
+            module_path = f"services.module_{safe_id}"
             # Tenter d'importer le module
             try:
                 module = importlib.import_module(module_path)
@@ -396,3 +397,4 @@ class ModuleDiscovery:
         except Exception as e:
             self.logger.error(f"Erreur lors de la navigation vers l'écran {module_id}.{screen_id}: {str(e)}")
             return False
+

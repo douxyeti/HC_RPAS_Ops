@@ -1,0 +1,30 @@
+#:kivy 2.3.1
+#:import dp kivy.metrics.dp
+#:import MDTextField kivymd.uix.textfield.MDTextField
+
+<TaskEditDialog>:
+    title_field: title_field
+    description_field: description_field
+    
+    MDBoxLayout:
+        orientation: "vertical"
+        spacing: "12dp"
+        padding: "12dp"
+        size_hint_y: None
+        height: "120dp"
+        
+        MDTextField:
+            id: title_field
+            hint_text: "Titre de la tâche"
+            text: root.task_title
+            mode: "rectangle"
+            size_hint_y: None
+            height: "48dp"
+            
+        MDTextField:
+            id: description_field
+            hint_text: "Description de la tâche"
+            text: root.task_description
+            mode: "rectangle"
+            size_hint_y: None
+            height: "48dp"

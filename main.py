@@ -1,11 +1,53 @@
+import os
+from dotenv import load_dotenv
 from kivymd.app import MDApp
 from kivymd.uix.screenmanager import MDScreenManager
 from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
 from kivy.clock import Clock
-from dotenv import load_dotenv
-import os
-import logging
+import traceback
+from kivy.clock import Clock
+
+# Flag module-level (anti double déclenchement)
+_DEV_LAUNCH_DID_RUN = False
+
+def _dev_invoke_and_launch_once(*_args):
+    """Crée l’invocation Firestore vers 'test_module' (route='dashboard')
+    puis lance le module. Protégé contre les doubles déclenchements."""
+    global _DEV_LAUNCH_DID_RUN
+    if _DEV_LAUNCH_DID_RUN:
+        print("[DEV] _dev_invoke_and_launch_once: already ran, skipping")
+        return
+    _DEV_LAUNCH_DID_RUN = True
+    print("[DEV] _dev_invoke_and_launch_once: start")
+    try:
+        from app.services.firebase_service import FirebaseService
+        from app.core.invocation import create_invocation
+        from app.core.launcher import launch_module
+
+        fs = FirebaseService.get_instance()
+        user_id = getattr(fs, "current_user_id", None) or "unknown_user"
+
+        try:
+            create_invocation(
+                firebase=fs,
+                user_id=user_id,
+                module="test_module",
+                route="dashboard",
+                params={"from": "root"},
+                ttl_sec=300,
+            )
+            print(f"[DEV] invocation written -> invocations_{user_id}/{user_id}_test_module")
+        except Exception as e:
+            print("[DEV][WARN] create_invocation failed:", e)
+            traceback.print_exc()
+
+        print("[DEV] launching module 'test_module' via launcher()")
+        p = launch_module("test_module")
+        print(f"[DEV] launcher returned: {p!r}")
+    except Exception as e:
+        print("[DEV][ERROR] _dev_invoke_and_launch_once crashed:", e)
+        traceback.print_exc()
 
 # Import des services
 from app.services import ConfigService, FirebaseService, RolesManagerService
@@ -32,8 +74,15 @@ from app.models.application_model import ApplicationModel
 
 # Import du container
 from app.core.container import Container
+from app.core.invocation import create_invocation
+from app.core.launcher import launch_module
+from app.services.firebase_service import FirebaseService
+from app.core.invocation_mixin import InvocationConsumerMixin
 
-class MainScreenManager(MDScreenManager):
+class MainScreenManager(InvocationConsumerMixin, MDScreenManager):
+    MODULE_NAME = "RPAS_PRINCIPAL"
+    ROUTE_ON_INVOCATION = "dashboard"
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.transition = SlideTransition()
@@ -48,7 +97,126 @@ class MainScreenManager(MDScreenManager):
         self.add_widget(ModulesAdminScreen(name="modules_admin"))
         self.add_widget(SsoManagementScreen(name="sso_management"))
 
+    def on_start(self):
+        # ... (logique existante on_start ici)
+        firebase_service = FirebaseService.get_instance()
+        current_user_id = getattr(firebase_service, "current_user_id", None) or "unknown_user"
+        self.consume_invocation_for_self(firebase_service, current_user_id)
+        print("[DEV] on_start hook -> scheduling _dev_invoke_and_launch_once in 1.0s")
+        Clock.schedule_once(_dev_invoke_and_launch_once, 1.0)
+        print("[DEV] on_start hook -> scheduling _dev_invoke_and_launch_once in 1.0s")
+        Clock.schedule_once(_dev_invoke_and_launch_once, 1.0)
+
+        print("[DEV] forcing _dev_invoke_test_strict in 1.0s (no env var needed)")
+        Clock.schedule_once(self._dev_invoke_test_strict, 1.0)
+
 class HighCloudRPASApp(MDApp):
+    def _dev_invoke_test_strict(self, *args):
+        """
+        TEST TEMPORAIRE : crée une invocation Firestore vers 'test_module' (route='dashboard')
+        puis lance toujours le module. À supprimer après validation.
+        """
+        try:
+            from app.services.firebase_service import FirebaseService
+            from app.core.invocation import create_invocation
+            from app.core.launcher import launch_module
+
+            fs = FirebaseService.get_instance()
+            user_id = getattr(fs, "current_user_id", None) or "unknown_user"
+
+            # 1) Créer l’invocation single-use
+            create_invocation(
+                firebase=fs,
+                user_id=user_id,
+                module="test_module",
+                route="dashboard",
+                params={"from": "root"},
+                ttl_sec=300,
+            )
+            print(f"[DEV] invocation written -> invocations_{user_id}/{user_id}_test_module")
+
+            # 2) Lancer le module quoi qu’il arrive
+            print("[DEV] launching module 'test_module'")
+            launch_module("test_module")
+
+        except Exception as e:
+            print("[DEV][ERROR] _dev_invoke_test_strict:", e)
+            traceback.print_exc()
+
+    def _dev_invoke_test_strict(self, *args):
+        """
+        Envoie une invocation Firestore vers 'test_module' (route='dashboard') et lance TOUJOURS le module.
+        Logue tous les détails pour debug.
+        """
+        print("[DEV] _dev_invoke_test_strict: start")
+        try:
+            from app.services.firebase_service import FirebaseService
+            from app.core.invocation import create_invocation
+            from app.core.launcher import launch_module
+
+            fs = FirebaseService.get_instance()
+            user_id = getattr(fs, "current_user_id", None) or "unknown_user"
+            doc_id = f"{user_id}_test_module"
+            coll = f"invocations_{user_id}"
+            print(f"[DEV] user_id={user_id} -> will write {coll}/{doc_id}")
+
+            try:
+                create_invocation(
+                    firebase=fs,
+                    user_id=user_id,
+                    module="test_module",
+                    route="dashboard",
+                    params={"from": "root"},
+                    ttl_sec=120,
+                )
+                print(f"[DEV] create_invocation OK -> {coll}/{doc_id}")
+            except Exception as e:
+                print("[DEV][WARN] create_invocation failed:", e)
+                traceback.print_exc()
+
+            print("[DEV] launching module 'test_module' via launcher()")
+            p = launch_module("test_module")
+            print(f"[DEV] launcher returned: {p!r}")
+        except Exception as e:
+            print("[DEV][ERROR] _dev_invoke_test_strict crashed:", e)
+            traceback.print_exc()
+
+    def _dev_invoke_test(self, *args):
+        """Déclenche un envoi d'invocation vers test_module avec logs détaillés, puis lance le module quoi qu'il arrive."""
+        try:
+            print("[DEV] sending invocation to 'test_module' -> route='dashboard'")
+            # IMPORTANT: la méthode send_invocation est sur le ScreenManager (root)
+            try:
+                App.get_running_app().root.send_invocation("test_module", "dashboard", {"from": "root"}, ttl_sec=120)
+                print("[DEV] root.send_invocation() called")
+            except Exception as e:
+                print("[DEV][WARN] root.send_invocation failed:", e)
+                traceback.print_exc()
+        finally:
+            # Toujours tenter le lancement direct du module pour visualiser la fenêtre
+            from app.core.launcher import launch_module
+            print("[DEV] ensuring module launch via launcher()")
+            launch_module("test_module")
+
+    def _dev_invoke_test(self):
+        """Déclenche un envoi d'invocation vers test_module avec logs détaillés et lance toujours le module."""
+        try:
+            print("[DEV] preparing invocation for 'test_module' -> route='dashboard'")
+            # Appel existant : si Firebase n’est pas prêt, on log l’erreur sans bloquer le lancement
+            try:
+                self.send_invocation("test_module", "dashboard", {"from": "root"}, ttl_sec=120)
+                print("[DEV] send_invocation() called")
+            except Exception as e:
+                print("[DEV][WARN] send_invocation failed:", e)
+                traceback.print_exc()
+                # Fallback : tenter un lancement direct du module même sans Firestore
+                from app.core.launcher import launch_module
+                print("[DEV] fallback: launching module directly")
+                launch_module("test_module")
+        except Exception as e:
+            print("[DEV][ERROR] _dev_invoke_test crashed:", e)
+            traceback.print_exc()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.screen_manager = None
@@ -70,7 +238,55 @@ class HighCloudRPASApp(MDApp):
             }
         })
         
+
+    def send_invocation(self, target_module: str, route: str = "", params: dict = None, ttl_sec: int = 120):
+        """
+        Envoie une invocation (si Firebase dispo) puis lance le module.
+        """
+        from app.services.firebase_service import FirebaseService
+        from app.core.invocation import create_invocation
+        from app.core.launcher import launch_module
+
+        firebase_service = FirebaseService.get_instance()
+        current_user_id = getattr(firebase_service, "current_user_id", None) or "unknown_user"
+
+        try:
+            create_invocation(
+                firebase=firebase_service,
+                user_id=current_user_id,
+                module=target_module,
+                route=route,
+                params=params or {},
+                ttl_sec=ttl_sec,
+            )
+            print(f"[DEV] invocation created for user={current_user_id} module={target_module}")
+        except Exception as e:
+            print("[DEV][WARN] create_invocation failed:", e)
+            traceback.print_exc()
+        finally:
+            print(f"[DEV] launching module '{target_module}'")
+            launch_module(target_module)
+
+        """
+        Envoie une invocation vers un autre module et le lance immédiatement.
+        """
+        firebase_service = FirebaseService.get_instance()
+        current_user_id = getattr(firebase_service, "current_user_id", None) or "unknown_user"
+
+        create_invocation(
+            firebase=firebase_service,
+            user_id=current_user_id,
+            module=target_module,
+            route=route,
+            params=params or {},
+            ttl_sec=ttl_sec
+        )
+
+        # Lancer le module cible
+        launch_module(target_module)
     def build(self):
+        # ... logique build existante ...
+
         # Charge les variables d'environnement
         load_dotenv()
         
@@ -299,7 +515,28 @@ class HighCloudRPASApp(MDApp):
                 # Lancer l'indexation
                 self.logger.info("Lancement de l'indexation...")
                 module_initializer = get_module_initializer()
-                module_initializer.initialize_with_services(self.firebase_service)
+                # --- Appel robuste de ModuleInitializer (API variable selon branches)
+                init_methods = [
+                    "initialize_with_services",
+                    "initialize",
+                    "run_indexation",
+                    "build_index",
+                    "build",
+                    "run",
+                ]
+                called = False
+                try:
+                    for m in init_methods:
+                        if hasattr(module_initializer, m):
+                            self.logger.info(f"ModuleInitializer: appel {m}()")
+                            getattr(module_initializer, m)(self.firebase_service)
+                            called = True
+                            break
+                    if not called:
+                        self.logger.warning("ModuleInitializer: aucune méthode connue trouvée; on continue sans indexation.")
+                except Exception:
+                    self.logger.exception("Échec de l'initialisation des modules (indexation), on continue quand même.")
+                # ---
                 self.logger.info("Indexation des modules terminée.")
             except Exception as e:
                 self.logger.error(f"Erreur critique lors de l'indexation des modules: {e}", exc_info=True)
@@ -346,3 +583,10 @@ class HighCloudRPASApp(MDApp):
 
 if __name__ == "__main__":
     HighCloudRPASApp().run()
+
+
+
+
+
+
+
