@@ -1,0 +1,49 @@
+{
+  "stamp": "20250813_160907",
+  "apply": false,
+  "modules": [
+    {
+      "module_id": "module_dev_application_principale_v2",
+      "source": {
+        "name": "module_indexes_screens_module_dev_application_principale_v2_dev_application_principale_v2",
+        "count": 0
+      },
+      "dest": {
+        "name": "module_indexes_screens_module_dev_application_principale_v2",
+        "count_before": 0
+      },
+      "to_copy": 0,
+      "copied": 0
+    },
+    {
+      "module_id": "module_feature_SLASH_invocation-routing",
+      "source": {
+        "name": "module_indexes_screens_module_feature_SLASH_invocation-routing_feature_SLASH_invocation-routing",
+        "count": 2
+      },
+      "dest": {
+        "name": "module_indexes_screens_module_feature_SLASH_invocation-routing",
+        "count_before": 0
+      },
+      "to_copy": 2,
+      "copied": 0
+    },
+    {
+      "module_id": "module_master",
+      "source": {
+        "name": "module_indexes_screens_module_master_master",
+        "count": 40
+      },
+      "dest": {
+        "name": "module_indexes_screens_module_master",
+        "count_before": 0
+      },
+      "to_copy": 40,
+      "copied": 0
+    }
+  ],
+  "totals": {
+    "to_copy": 42,
+    "copied": 0
+  }
+}

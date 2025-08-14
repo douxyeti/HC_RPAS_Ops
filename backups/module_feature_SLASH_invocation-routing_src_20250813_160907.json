@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Dashboard",
+    "icon": "view_dashboard",
+    "updated_at": 1754927197,
+    "id": "dashboardscreen",
+    "category": "system"
+  },
+  {
+    "title": "Modules",
+    "icon": "puzzle",
+    "updated_at": 1754927197,
+    "id": "modulesadminscreen",
+    "category": "system"
+  }
+]

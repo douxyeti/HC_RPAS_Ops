@@ -1,0 +1,405 @@
+[
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran AdminAssistantDashboardScreen de l'application principale",
+    "id": "adminassistantdashboardscreen",
+    "file_path": "app/views/screens/admin_assistant_dashboard_screen.py",
+    "title": "Écran AdminAssistantDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.772675",
+    "name": "AdminAssistantDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran AdminDashboardScreen de l'application principale",
+    "id": "admindashboardscreen",
+    "file_path": "app/views/screens/admin_dashboard_screen.py",
+    "title": "Écran AdminDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.772675",
+    "name": "AdminDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran AuditorDashboardScreen de l'application principale",
+    "id": "auditordashboardscreen",
+    "file_path": "app/views/screens/auditor_dashboard_screen.py",
+    "title": "Écran AuditorDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.772675",
+    "name": "AuditorDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran ChiefPilotDashboardScreen de l'application principale",
+    "id": "chiefpilotdashboardscreen",
+    "file_path": "app/views/screens/chief_pilot_dashboard_screen.py",
+    "title": "Écran ChiefPilotDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.772675",
+    "name": "ChiefPilotDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran CopilotDashboardScreen de l'application principale",
+    "id": "copilotdashboardscreen",
+    "file_path": "app/views/screens/copilot_dashboard_screen.py",
+    "title": "Écran CopilotDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.773712",
+    "name": "CopilotDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran DashboardScreen de l'application principale",
+    "id": "dashboardscreen",
+    "file_path": "app/views/screens/dashboard_screen.py",
+    "category": "system",
+    "title": "Dashboard (master)",
+    "icon": "view_dashboard",
+    "updated_at": 1754927215,
+    "indexed_at": "2025-08-09T20:46:29.773712",
+    "name": "DashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran DocumentationManagerDashboardScreen de l'application principale",
+    "id": "documentationmanagerdashboardscreen",
+    "file_path": "app/views/screens/documentation_manager_dashboard_screen.py",
+    "title": "Écran DocumentationManagerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.773712",
+    "name": "DocumentationManagerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran EvaluatorDashboardScreen de l'application principale",
+    "id": "evaluatordashboardscreen",
+    "file_path": "app/views/screens/evaluator_dashboard_screen.py",
+    "title": "Écran EvaluatorDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.773712",
+    "name": "EvaluatorDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran ExaminerDashboardScreen de l'application principale",
+    "id": "examinerdashboardscreen",
+    "file_path": "app/views/screens/examiner_dashboard_screen.py",
+    "title": "Écran ExaminerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.773712",
+    "name": "ExaminerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran GroundObserverDashboardScreen de l'application principale",
+    "id": "groundobserverdashboardscreen",
+    "file_path": "app/views/screens/ground_observer_dashboard_screen.py",
+    "title": "Écran GroundObserverDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.774710",
+    "name": "GroundObserverDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran InspectorDashboardScreen de l'application principale",
+    "id": "inspectordashboardscreen",
+    "file_path": "app/views/screens/inspector_dashboard_screen.py",
+    "title": "Écran InspectorDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.774710",
+    "name": "InspectorDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran InstructorDashboardScreen de l'application principale",
+    "id": "instructordashboardscreen",
+    "file_path": "app/views/screens/instructor_dashboard_screen.py",
+    "title": "Écran InstructorDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.774710",
+    "name": "InstructorDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran LoginScreen de l'application principale",
+    "id": "loginscreen",
+    "file_path": "app/views/screens/login_screen.py",
+    "title": "Écran LoginScreen",
+    "indexed_at": "2025-08-09T20:46:29.774710",
+    "name": "LoginScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran MaintenanceActivitiesManagerDashboardScreen de l'application principale",
+    "id": "maintenanceactivitiesmanagerdashboardscreen",
+    "file_path": "app/views/screens/maintenance_activities_manager_dashboard_screen.py",
+    "title": "Écran MaintenanceActivitiesManagerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.775707",
+    "name": "MaintenanceActivitiesManagerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran MaintenanceManagerDashboardScreen de l'application principale",
+    "id": "maintenancemanagerdashboardscreen",
+    "file_path": "app/views/screens/maintenance_manager_dashboard_screen.py",
+    "title": "Écran MaintenanceManagerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.775707",
+    "name": "MaintenanceManagerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran MaintenanceTechnicianDashboardScreen de l'application principale",
+    "id": "maintenancetechniciandashboardscreen",
+    "file_path": "app/views/screens/maintenance_technician_dashboard_screen.py",
+    "title": "Écran MaintenanceTechnicianDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.775707",
+    "name": "MaintenanceTechnicianDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran MissionSpecialistDashboardScreen de l'application principale",
+    "id": "missionspecialistdashboardscreen",
+    "file_path": "app/views/screens/mission_specialist_dashboard_screen.py",
+    "title": "Écran MissionSpecialistDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.776211",
+    "name": "MissionSpecialistDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran ModulesAdminScreen de l'application principale",
+    "id": "modulesadminscreen",
+    "file_path": "app/views/screens/modules_admin_screen.py",
+    "title": "Écran ModulesAdminScreen",
+    "indexed_at": "2025-08-09T20:46:29.776211",
+    "name": "ModulesAdminScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran OperationsCoordinatorDashboardScreen de l'application principale",
+    "id": "operationscoordinatordashboardscreen",
+    "file_path": "app/views/screens/operations_coordinator_dashboard_screen.py",
+    "title": "Écran OperationsCoordinatorDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.776211",
+    "name": "OperationsCoordinatorDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran OpsManagerDashboardScreen de l'application principale",
+    "id": "opsmanagerdashboardscreen",
+    "file_path": "app/views/screens/ops_manager_dashboard_screen.py",
+    "title": "Écran OpsManagerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.776211",
+    "name": "OpsManagerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran PayloadOperatorDashboardScreen de l'application principale",
+    "id": "payloadoperatordashboardscreen",
+    "file_path": "app/views/screens/payload_operator_dashboard_screen.py",
+    "title": "Écran PayloadOperatorDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.777215",
+    "name": "PayloadOperatorDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran PilotDashboardScreen de l'application principale",
+    "id": "pilotdashboardscreen",
+    "file_path": "app/views/screens/pilot_dashboard_screen.py",
+    "title": "Écran PilotDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.777215",
+    "name": "PilotDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran ProceduresManagerScreen de l'application principale",
+    "id": "proceduresmanagerscreen",
+    "file_path": "app/views/screens/procedures_manager_screen.py",
+    "title": "Écran ProceduresManagerScreen",
+    "indexed_at": "2025-08-09T20:46:29.777215",
+    "name": "ProceduresManagerScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran QualityAssuranceManagerDashboardScreen de l'application principale",
+    "id": "qualityassurancemanagerdashboardscreen",
+    "file_path": "app/views/screens/quality_assurance_manager_dashboard_screen.py",
+    "title": "Écran QualityAssuranceManagerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.777215",
+    "name": "QualityAssuranceManagerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran QualityInspectorDashboardScreen de l'application principale",
+    "id": "qualityinspectordashboardscreen",
+    "file_path": "app/views/screens/quality_inspector_dashboard_screen.py",
+    "title": "Écran QualityInspectorDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.778213",
+    "name": "QualityInspectorDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran RoleEditScreen de l'application principale",
+    "id": "roleeditscreen",
+    "file_path": "app/views/screens/role_edit_screen.py",
+    "title": "Écran RoleEditScreen",
+    "indexed_at": "2025-08-09T20:46:29.778287",
+    "name": "RoleEditScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran RolesManagerScreen de l'application principale",
+    "id": "rolesmanagerscreen",
+    "file_path": "app/views/screens/roles_manager_screen.py",
+    "title": "Écran RolesManagerScreen",
+    "indexed_at": "2025-08-09T20:46:29.778287",
+    "name": "RolesManagerScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran SecurityAgentDashboardScreen de l'application principale",
+    "id": "securityagentdashboardscreen",
+    "file_path": "app/views/screens/security_agent_dashboard_screen.py",
+    "title": "Écran SecurityAgentDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.778287",
+    "name": "SecurityAgentDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran SeniorManagerDashboardScreen de l'application principale",
+    "id": "seniormanagerdashboardscreen",
+    "file_path": "app/views/screens/senior_manager_dashboard_screen.py",
+    "title": "Écran SeniorManagerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.778287",
+    "name": "SeniorManagerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran SiteManagerDashboardScreen de l'application principale",
+    "id": "sitemanagerdashboardscreen",
+    "file_path": "app/views/screens/site_manager_dashboard_screen.py",
+    "title": "Écran SiteManagerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.779233",
+    "name": "SiteManagerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran SMSManagerDashboardScreen de l'application principale",
+    "id": "smsmanagerdashboardscreen",
+    "file_path": "app/views/screens/sms_manager_dashboard_screen.py",
+    "title": "Écran SMSManagerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.779233",
+    "name": "SMSManagerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran SpecializedDashboardScreen de l'application principale",
+    "id": "specializeddashboardscreen",
+    "file_path": "app/views/screens/specialized_dashboard_screen.py",
+    "title": "Écran SpecializedDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.779233",
+    "name": "SpecializedDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran SplashScreen de l'application principale",
+    "id": "splashscreen",
+    "file_path": "app/views/screens/splash_screen.py",
+    "title": "Écran SplashScreen",
+    "indexed_at": "2025-08-09T20:46:29.779233",
+    "name": "SplashScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran SsoManagementScreen de l'application principale",
+    "id": "ssomanagementscreen",
+    "file_path": "app/views/screens/sso_management_screen.py",
+    "title": "Écran SsoManagementScreen",
+    "indexed_at": "2025-08-09T20:46:29.779233",
+    "name": "SsoManagementScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran SuperAdminDashboardScreen de l'application principale",
+    "id": "superadmindashboardscreen",
+    "file_path": "app/views/screens/super_admin_dashboard_screen.py",
+    "title": "Écran SuperAdminDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.780230",
+    "name": "SuperAdminDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran SystemMaintainerDashboardScreen de l'application principale",
+    "id": "systemmaintainerdashboardscreen",
+    "file_path": "app/views/screens/system_maintainer_dashboard_screen.py",
+    "title": "Écran SystemMaintainerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.780230",
+    "name": "SystemMaintainerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran TaskManagerScreen de l'application principale",
+    "id": "taskmanagerscreen",
+    "file_path": "app/views/screens/task_manager_screen.py",
+    "title": "Écran TaskManagerScreen",
+    "indexed_at": "2025-08-09T20:46:29.780750",
+    "name": "TaskManagerScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran TrainerDashboardScreen de l'application principale",
+    "id": "trainerdashboardscreen",
+    "file_path": "app/views/screens/trainer_dashboard_screen.py",
+    "title": "Écran TrainerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.780750",
+    "name": "TrainerDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran TrainingCoordinatorDashboardScreen de l'application principale",
+    "id": "trainingcoordinatordashboardscreen",
+    "file_path": "app/views/screens/training_coordinator_dashboard_screen.py",
+    "title": "Écran TrainingCoordinatorDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.780750",
+    "name": "TrainingCoordinatorDashboardScreen"
+  },
+  {
+    "branch": "master",
+    "module_id": "module_master",
+    "description": "Écran TrainingManagerDashboardScreen de l'application principale",
+    "id": "trainingmanagerdashboardscreen",
+    "file_path": "app/views/screens/training_manager_dashboard_screen.py",
+    "title": "Écran TrainingManagerDashboardScreen",
+    "indexed_at": "2025-08-09T20:46:29.780750",
+    "name": "TrainingManagerDashboardScreen"
+  }
+]
