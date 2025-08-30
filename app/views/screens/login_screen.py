@@ -4,6 +4,7 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.label import MDLabel
 from kivymd.app import MDApp
 from app.services.firebase_service import FirebaseService
+from app.services.device_manager import get_device_manager
 import os
 
 class LoginScreen(MDScreen):
@@ -27,6 +28,17 @@ class LoginScreen(MDScreen):
 
             # Marquer cette instance comme la source de la connexion SSO
             app.is_primary_instance = True
+
+            # Verifier que ce device est autorise pour le SSO
+            device_manager = get_device_manager()
+            current_device = device_manager.get_current_device()
+            
+            if not device_manager.is_device_authorized(current_device['fingerprint']):
+                app.logger.warning('Device non autorise pour SSO: ' + current_device['fingerprint'] + ' (' + current_device['hostname'] + ')')
+                app.logger.info('Connexion locale reussie mais SSO desactive')
+                # On continue sans SSO mais on redirige quand meme
+                self.manager.current = 'dashboard'
+                return
             
             # Tenter de publier le token SSO
             try:
