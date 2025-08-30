@@ -6,6 +6,7 @@ from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
 from kivy.clock import Clock
 import traceback
+import logging
 from kivy.clock import Clock
 
 # Flag module-level (anti double déclenchement)
